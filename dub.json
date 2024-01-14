@@ -1,0 +1,10 @@
+{
+	"authors": [
+		"cet"
+	],
+	"copyright": "Copyright © 2024, cet",
+	"description": "Utility library",
+	"license": "MPL-2.0",
+	"name": "caiman",
+    "targetType": "executable"
+}

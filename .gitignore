@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/caiman
+caiman.so
+caiman.dylib
+caiman.dll
+caiman.a
+caiman.lib
+caiman-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
