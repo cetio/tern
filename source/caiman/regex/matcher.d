@@ -39,7 +39,7 @@ pure bool isFulfilled(Element element, State state, string text)
             state.index--;
             return k >= element.min;
         }
-
+        
         switch (element.token)
         {
             case CHARACTERS:
@@ -53,6 +53,12 @@ pure bool isFulfilled(Element element, State state, string text)
                 if (element.modifiers.hasFlag(EXCLUSIONARY) ? match : !match)
                     return k >= element.min;
                 break;
+
+            case ANCHOR_START:
+                return state.index == 0 || (state.flags.hasFlag(MULTILINE) && (text[state.index - 1] == '\r' || text[state.index - 1] == '\n' || text[state.index - 1] == '\f'));
+
+            case ANCHOR_END:
+                return state.index >= text.length || (state.flags.hasFlag(MULTILINE) && (text[state.index + 1] == '\r' || text[state.index + 1] == '\n' || text[state.index + 1] == '\f' || text[state.index + 1] == '\0'));
 
             default:
                 return false;
@@ -125,8 +131,6 @@ pure string[][] matchInternal(Element[] elements, ubyte flags, string text, uint
                 if (!elements[0].isFulfilled(state, text))
                     state.index++;
                 
-                // Something about this seems wrong?
-                // Is there a better way?
                 matches[k] = new string[1];
                 debug writeln(matches[k][0] == null);
                 j = -1;

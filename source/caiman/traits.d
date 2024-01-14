@@ -1,4 +1,4 @@
-module source.traits;
+module caiman.traits;
 
 import std.string;
 import std.algorithm;
@@ -23,6 +23,10 @@ public alias isValueType(T) = Alias!(!isIndirection!T);
 public alias isExport(alias func) = Alias!(__traits(getVisibility, func) == "export");
 /// True if `T` acts as a native integer, otherwise, false.
 public alias isNative(T) = Alias!(__traits(isScalar, T) || ((is(T == struct) || is(T == union) || is(T == enum)) && (T.sizeof == 1 || T.sizeof == 2 || T.sizeof == 4 || T.sizeof == 8)));
+public alias isTemplate(T) = Alias!(__traits(isTemplate, T));
+public alias isModule(T) = Alias!(__traits(isModule, T));
+public alias isPackage(T) = Alias!(__traits(isPackage, T));
+public alias isField(T) = Alias!(!isType!T && !isFunction!T && !isTemplate!T && !isModule!T && !isPackage!T);
 
 public template wrapsIndirection(T)
 {
@@ -41,12 +45,56 @@ public template elementType(T)
         alias elementType = T;
 }
 
-/// Gets an AliasSeq of all modules publicly imported by `mod`
-public template imports(alias mod)
+public template getFields(T)
 {
-    pure string[] _imports()
+    public pure string[] getFields()
     {
-        string[] ret;
+        return staticMap!(isField, __traits(allMembers, T));
+    }
+}
+
+public template getFunctions(T)
+{
+    public pure string[] _getFunctions()
+    {
+        return staticMap!(isFunction, __traits(allMembers, T));
+    }
+
+    mixin("alias getFunctions = AliasSeq!("~ 
+        _getFunctions.join(", ")~ 
+    ");");
+}
+
+public template getTypes(T)
+{
+    public pure string[] _getTypes()
+    {
+        return staticMap!(isType, __traits(allMembers, T));
+    }
+
+    mixin("alias getTypes = AliasSeq!("~ 
+        _getTypes.join(", ")~ 
+    ");");
+}
+
+public template getTemplates(T)
+{
+    public pure string[] _getTemplates()
+    {
+        return staticMap!(isTemplates, __traits(allMembers, T));
+    }
+
+    mixin("alias getTemplates = AliasSeq!("~ 
+        _getTemplates.join(", ")~ 
+    ");");
+}
+
+/// Gets an AliasSeq of all modules publicly imported by `mod`
+public template getImports(alias mod)
+{
+    private pure string[] _getImports()
+    {
+        string[] imports;
         foreach (line; import((__traits(identifier, mod)).replace("", "") ~ ".d").splitter('\n'))
         {
             long ii = line.indexOf("public import ");
@@ -54,14 +102,14 @@ public template imports(alias mod)
             {
                 long si = line.indexOf(";", ii + 13);
                 if (si != -1)
-                    ret ~= line[(ii + 13).. si].strip;
+                    imports ~= line[(ii + 13).. si].strip;
             }
         }
-        return ret;
+        return imports;
     }
 
-    mixin("alias Imports = AliasSeq!("~ 
-        _imports.join(", ")~ 
+    mixin("alias getImports = AliasSeq!("~ 
+        _getImports.join(", ")~ 
     ");");
 }
 
