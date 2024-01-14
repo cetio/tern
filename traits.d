@@ -1,4 +1,4 @@
-module caiman.traits;
+module traits;
 
 import std.string;
 import std.algorithm;

@@ -1,5 +1,5 @@
 /// Provides interface for enums, properties, and hresult
-module caiman.state;
+module state;
 
 import std.traits;
 import caiman.traits : exempt;
