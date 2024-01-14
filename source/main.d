@@ -1,4 +1,4 @@
-module caiman.main;
+module source.main;
 
 import std.stdio;
 import caiman;

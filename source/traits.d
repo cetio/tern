@@ -1,4 +1,4 @@
-module traits;
+module source.traits;
 
 import std.string;
 import std.algorithm;
