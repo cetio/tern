@@ -5,6 +5,6 @@ import caiman;
 
 void main()
 {
-    Regex re = regex!(r"a").ctor();
+    Regex re = regex!(r"abc").ctor();
     re.match("abc").writeln;
 }

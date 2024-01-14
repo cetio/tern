@@ -31,6 +31,12 @@ pure bool isFulfilled(Element element, State state, string text)
         else if (qdef && k >= element.min && state.elements[state.next].isFulfilled(state, text))
             return true;
 
+        if (state.index + 1 >= text.length)
+            return k >= element.min;
+        
+        if (k != 0)
+            state.index++;
+
         switch (element.token)
         {
             case CHARACTERS:
@@ -41,51 +47,61 @@ pure bool isFulfilled(Element element, State state, string text)
                         match = true;
                 }
 
-                if (element.modifiers.hasFlag(EXCLUSIONARY))
-                    return !match;
-                else
-                    return match;
+                if (element.modifiers.hasFlag(EXCLUSIONARY) ? match : !match)
+                    return k >= element.min;
+                break;
+
             default:
                 return false;
         }
     }
-    assert(0, "What the hell have you done! element.max should never be 0!");
+    return true;
 }
 
 pragma(inline, true)
-pure string[] matchInternal(Element[] elements, ubyte flags, string text, uint stopAt = -1)
+pure string[][] matchInternal(Element[] elements, ubyte flags, string text, uint stopAt = -1)
 {
-    string[] matches;
-    int k;
+    string[][] matches;
+    int k = 0;
+    int g = 1;
+    
     State state = new State();
     state.elements = elements;
     state.flags = flags;
 
-    for (; state.index < text.length; state.index++)
+    while (state.index < text.length)
     {
-        matches ~= null;
+        if (matches.length == 0 || matches[$-1] != null)
+        {
+            matches ~= null;
+            matches[$-1] ~= null;
+        }
+        
         for (int j; j < elements.length; j++)
         {
             Element element = elements[j];
             debug element.str.writeln;
+            debug state.index.writeln;
             uint ci = state.index;
-            state.next = j + 1 < elements.length ? -1 : j + 1;
+            state.next = j + 1 >= elements.length ? -1 : j + 1;
 
             if (stopAt == matches.length || (element.token != ANCHOR_END && state.index >= text.length))
             {
                 debug writeln("ship left ", state.index);
-                return matches;
+                if (matches[$-1] == null)
+                    return matches[0..$-1];
+                else
+                    return matches;
             }
 
             if (element.isFulfilled(state, text))
             {
                 debug "fulfilled".writeln;
+                if (state.index != ci)
+                    state.index--;
+                
                 if (element.min != 0 || element.modifiers.hasFlag(QUANTIFIED))
-                {
-                    //matches[k] ~= text[ci..state.index++];
-                    matches[k] ~= element.str;
-                    debug matches.writeln;
-                }
+                    matches[k][0] ~= text[ci..++state.index];
             }
             else if (element.token == RESET)
             {
@@ -103,17 +119,16 @@ pure string[] matchInternal(Element[] elements, ubyte flags, string text, uint s
                 if (!elements[0].isFulfilled(state, text))
                     state.index++;
                 
-                if (matches.length > 1)
-                    matches = matches[0..$-1];
-                else
-                    matches[k] = null;
+                matches[k] = null;
                 j = -1;
             }
         }
-        k++;
+
+        if (matches[$-1] != null)
+            k++;
     }
-    if (matches[0] == null)
-        return null;
+    if (matches[$-1] == null)
+        return matches[0..$-1];
     else
         return matches;
 }

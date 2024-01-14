@@ -7,6 +7,7 @@ import std.algorithm;
 import caiman.state;
 import caiman.traits : flags;
 
+// Tokens
 package enum : ubyte
 {
     BAD,
@@ -78,13 +79,13 @@ package @flags enum : ubyte
     NONCAPTURE = 8,
     /// `(...!...)`
     /// Matches if not matched
-    NEGATIVE = 8,
+    NEGATIVE = 16,
     /// `...?`
     /// Matches as few times as possible
-    LAZY = 8,
+    LAZY = 32,
     /// `...+`
     /// Matches as many times as possible
-    GREEDY = 16
+    GREEDY = 64
 }
 
 // Regex flags
@@ -126,15 +127,55 @@ align(1):
     /// Maximum times to allow fulfillment
     /// eg: `1`
     uint max = 1;
+
+    pure string tokenName()
+    {
+        switch (token)
+        {
+            case BAD: return "BAD";
+            case LOOK_AHEAD: return "LOOK_AHEAD";
+            case LOOK_BEHIND: return "LOOK_BEHIND";
+            case CHARACTERS: return "CHARACTERS";
+            case ANCHOR_START: return "ANCHOR_START";
+            case ANCHOR_END: return "ANCHOR_END";
+            case GROUP: return "GROUP";
+            case ANY: return "ANY";
+            case REFERENCE: return "REFERENCE";
+            case RESET: return "RESET";
+            case PUSHFW: return "PUSHFW";
+            case PUSHBW: return "PUSHBW";
+            default: assert(0);
+        }
+    }
+
+    pure string modifiersName()
+    {
+        string ret;
+        switch (modifiers)
+        {
+            case NONE: ret = "NONE"; break;
+            case ALTERNATE: (ret != null) ? ret ~= " | ALTERNATE" : ret ~= "ALTERNATE"; break;
+            case EXCLUSIONARY: (ret != null) ? ret ~= " | EXCLUSIONARY" : ret ~= "EXCLUSIONARY"; break;
+            case QUANTIFIED: (ret != null) ? ret ~= " | QUANTIFIED" : ret ~= "QUANTIFIED"; break;
+            case NONCAPTURE: (ret != null) ? ret ~= " | NONCAPTURE" : ret ~= "NONCAPTURE"; break;
+            case NEGATIVE: (ret != null) ? ret ~= " | NEGATIVE" : ret ~= "NEGATIVE"; break;
+            case LAZY: (ret != null) ? ret ~= " | LAZY" : ret ~= "LAZY"; break;
+            case GREEDY: (ret != null) ? ret ~= " | GREEDY" : ret ~= "GREEDY"; break;
+            default: assert(0);
+        }
+        return ret;
+    }
 }
 
 package:
 static:
+pragma(inline, true)
 pure @nogc bool modifierQuantifiable(Element element)
 {
-    return element.modifiers.hasFlag(QUANTIFIED);
+    return !element.modifiers.hasFlag(QUANTIFIED);
 }
 
+pragma(inline, true)
 pure @nogc bool tokenQuantifiable(Element element)
 {
     return element.token != ANCHOR_START && 
@@ -144,6 +185,7 @@ pure @nogc bool tokenQuantifiable(Element element)
         element.token != RESET;
 }
 
+pragma(inline, true)
 pure @nogc string getArgument(string pattern, int start, char opener, char closer)
 {
     int openers = 1;
@@ -160,6 +202,7 @@ pure @nogc string getArgument(string pattern, int start, char opener, char close
     return pattern[(start + 1)..pattern.length];
 }
 
+pragma(inline, true)
 pure string expand(string str, ref string[string] lookups)
 {
     if (str in lookups)
@@ -190,6 +233,17 @@ pure string expand(string str, ref string[string] lookups)
     return ret;
 }
 
+pure string highlightError(string str, uint index)
+{
+    string highlightColor = "\x1B[31;4m";
+    string resetColor = "\x1B[0m";
+
+    return "                      "~str[0..index]~highlightColor~str[index..index + 1]~resetColor~str[index + 1..$];
+}
+
+
+// TODO: Refer to future group/element
+//       \b \B (?:..) (..) lookahead lookbehind
 pragma(inline, true)
 pure Element[] build(string pattern, string[string] lookups)
 {
@@ -202,7 +256,7 @@ pure Element[] build(string pattern, string[string] lookups)
         {
             case '+':
                 if (!elements[$-1].tokenQuantifiable)
-                    continue;
+                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '+' (non-quantifiable!)\n"~highlightError(pattern, i));
 
                 if (elements[$-1].modifierQuantifiable)
                 {
@@ -218,10 +272,10 @@ pure Element[] build(string pattern, string[string] lookups)
 
             case '*':
                 if (!elements[$-1].tokenQuantifiable)
-                    continue;
+                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '*' (non-quantifiable!)\n"~highlightError(pattern, i));
 
                 if (!elements[$-1].modifierQuantifiable)
-                    continue;
+                    throw new Throwable(elements[$-1].modifiersName()~" cannot be succeeded by quantifier token '*' (non-quantifiable!)\n"~highlightError(pattern, i));
 
                 elements[$-1].min = 0;
                 elements[$-1].max = uint.max;
@@ -230,7 +284,7 @@ pure Element[] build(string pattern, string[string] lookups)
 
             case '?':
                 if (!elements[$-1].tokenQuantifiable)
-                    continue;
+                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '?' (non-quantifiable!)\n"~highlightError(pattern, i));
 
                 if (elements[$-1].modifierQuantifiable)
                 {
@@ -246,13 +300,14 @@ pure Element[] build(string pattern, string[string] lookups)
 
             case '{':
                 if (!elements[$-1].tokenQuantifiable)
-                    continue;
+                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '{' (non-quantifiable!)\n"~highlightError(pattern, i));
 
                 if (!elements[$-1].modifierQuantifiable)
-                    continue;
+                    throw new Throwable(elements[$-1].modifiersName()~" cannot be succeeded by quantifier token '{' (non-quantifiable!)\n"~highlightError(pattern, i));
 
                 string arg = pattern.getArgument(i, '{', '}');
                 string[] args = arg.split("..");
+
                 if (args.length == 1)
                 {
                     elements[$-1].min = args[0].to!uint;
@@ -263,6 +318,11 @@ pure Element[] build(string pattern, string[string] lookups)
                     elements[$-1].min = args[0].to!uint;
                     elements[$-1].max = args[1].to!uint;
                 }
+                else
+                {
+                    throw new Throwable("Quantifier range ('{') expected 1-2 arguments (found "~args.length.to!string~"!)\n"~highlightError(pattern, i));
+                }
+
                 i += arg.length + 1;
                 elements[$-1].modifiers |= QUANTIFIED;
                 break;
@@ -315,6 +375,10 @@ pure Element[] build(string pattern, string[string] lookups)
                         element.token = REFERENCE;
                         element.elements = [ elements[id] ];
                     }
+                    else
+                    {
+                        throw new Throwable("REFERENCE ('%n') refers to element "~id.to!string~", which is outside of valid range!\n"~highlightError(pattern, i));
+                    }
                     break;
                 }
                 break;
@@ -335,6 +399,8 @@ pure Element[] build(string pattern, string[string] lookups)
                             break;
                         }
                     }
+                    if (element.token != REFERENCE)
+                        throw new Throwable("REFERENCE ('$n') refers to group "~id.to!string~", which is outside of valid range!\n"~highlightError(pattern, i));
                 }
                 element.token = ANCHOR_END;
                 break;
@@ -357,6 +423,10 @@ pure Element[] build(string pattern, string[string] lookups)
                     element.token = PUSHBW;
                     element.min = len;
                     break;
+                }
+                else
+                {
+                    throw new Throwable("Expected syntax <-n or <-| for PUSHBW! "~highlightError(pattern, i));
                 }
                 break;
 
@@ -405,11 +475,12 @@ pure Element[] build(string pattern, string[string] lookups)
                             {
                                 if (elements[ii].token == GROUP && visits++ == id)
                                 {
-                                    element.token = REFERENCE;
                                     element.elements = [ elements[ii] ];
                                     break;
                                 }
                             }
+                            if (element.elements.length == 0)
+                                throw new Throwable(r"RESET ('\K') refers to group "~id.to!string~", which is outside of valid range!\n"~highlightError(pattern, i));
                         }
                         break;
                     }
