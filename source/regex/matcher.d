@@ -30,12 +30,15 @@ pure bool isFulfilled(Element element, State state, string text)
             return true;
         else if (qdef && k >= element.min && state.elements[state.next].isFulfilled(state, text))
             return true;
-
-        if (state.index + 1 >= text.length)
-            return k >= element.min;
         
         if (k != 0)
             state.index++;
+
+        if (state.index >= text.length)
+        {
+            state.index--;
+            return k >= element.min;
+        }
 
         switch (element.token)
         {
@@ -64,6 +67,7 @@ pure string[][] matchInternal(Element[] elements, ubyte flags, string text, uint
     string[][] matches;
     int k = 0;
     int g = 1;
+    int j = 0;
     
     State state = new State();
     state.elements = elements;
@@ -77,7 +81,7 @@ pure string[][] matchInternal(Element[] elements, ubyte flags, string text, uint
             matches[$-1] ~= null;
         }
         
-        for (int j; j < elements.length; j++)
+        for (; j < elements.length; j++)
         {
             Element element = elements[j];
             debug element.str.writeln;
@@ -87,8 +91,10 @@ pure string[][] matchInternal(Element[] elements, ubyte flags, string text, uint
 
             if (stopAt == matches.length || (element.token != ANCHOR_END && state.index >= text.length))
             {
-                debug writeln("ship left ", state.index);
-                if (matches[$-1] == null)
+                if (elements.length != 0 && j != elements.length)
+                    matches = matches[0..$-1];
+
+                if (matches.length != 0 && matches[$-1] == null)
                     return matches[0..$-1];
                 else
                     return matches;
@@ -119,15 +125,26 @@ pure string[][] matchInternal(Element[] elements, ubyte flags, string text, uint
                 if (!elements[0].isFulfilled(state, text))
                     state.index++;
                 
-                matches[k] = null;
+                // Something about this seems wrong?
+                // Is there a better way?
+                matches[k] = new string[1];
+                debug writeln(matches[k][0] == null);
                 j = -1;
             }
         }
 
-        if (matches[$-1] != null)
+        if (state.index >= text.length - 1)
+            break;
+
+        if (matches[$-1][0] != null)
             k++;
+        j = 0;
     }
-    if (matches[$-1] == null)
+
+    if (elements.length != 0 && j != elements.length)
+        matches = matches[0..$-1];
+
+    if (matches.length != 0 && matches[$-1] == null)
         return matches[0..$-1];
     else
         return matches;
