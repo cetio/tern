@@ -135,6 +135,8 @@ Largely fills in any gaps of std.traits, while also providing some unique reflec
 - Ease of use template for automatically generating properties for all fields (unless marked `@exempt`) and their possible flag states (if enum type and enum is marked `@flags`.)
 - `pragmatize` for stripping all special characters from a string and replacing all of the important ones with literals.
 
+No dependencies.
+
 ## License
 
 [MPL-2](/LICENSE.txt)
