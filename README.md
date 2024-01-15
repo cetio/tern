@@ -1,5 +1,7 @@
 # Caiman
 
+[![Godwit](https://img.shields.io/badge/Godwit-orange?style=for-the-badge&logo=github)](https://)
+
 Library with various different utilities, mostly centered around filling comptime niches and improving parts of the standard library that I deem lacking.
 
 ## Formats
