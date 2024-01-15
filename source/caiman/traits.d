@@ -1,3 +1,4 @@
+/// Largely fills in any gaps of std.traits, while also providing some unique reflection.
 module caiman.traits;
 
 import std.string;
@@ -45,50 +46,6 @@ public template elementType(T)
         alias elementType = T;
 }
 
-public template getFields(T)
-{
-    public pure string[] getFields()
-    {
-        return staticMap!(isField, __traits(allMembers, T));
-    }
-}
-
-public template getFunctions(T)
-{
-    public pure string[] _getFunctions()
-    {
-        return staticMap!(isFunction, __traits(allMembers, T));
-    }
-
-    mixin("alias getFunctions = AliasSeq!("~ 
-        _getFunctions.join(", ")~ 
-    ");");
-}
-
-public template getTypes(T)
-{
-    public pure string[] _getTypes()
-    {
-        return staticMap!(isType, __traits(allMembers, T));
-    }
-
-    mixin("alias getTypes = AliasSeq!("~ 
-        _getTypes.join(", ")~ 
-    ");");
-}
-
-public template getTemplates(T)
-{
-    public pure string[] _getTemplates()
-    {
-        return staticMap!(isTemplates, __traits(allMembers, T));
-    }
-
-    mixin("alias getTemplates = AliasSeq!("~ 
-        _getTemplates.join(", ")~ 
-    ");");
-}
-
 /**
     Gets an `AliasSeq` all types that `T` implements.
 
@@ -128,6 +85,50 @@ public template getImplements(T)
         else
             alias getImplements = AliasSeq!();
     }  
+}
+
+public template getFields(alias ne)
+{
+    public pure string[] getFields()
+    {
+        return staticMap!(isField, __traits(allMembers, ne));
+    }
+}
+
+public template getFunctions(alias ne)
+{
+    public pure string[] _getFunctions()
+    {
+        return staticMap!(isFunction, __traits(allMembers, ne));
+    }
+
+    mixin("alias getFunctions = AliasSeq!("~ 
+        _getFunctions.join(", ")~ 
+    ");");
+}
+
+public template getTypes(alias ne)
+{
+    public pure string[] _getTypes()
+    {
+        return staticMap!(isType, __traits(allMembers, ne));
+    }
+
+    mixin("alias getTypes = AliasSeq!("~ 
+        _getTypes.join(", ")~ 
+    ");");
+}
+
+public template getTemplates(alias ne)
+{
+    public pure string[] _getTemplates()
+    {
+        return staticMap!(isTemplates, __traits(allMembers, ne));
+    }
+
+    mixin("alias getTemplates = AliasSeq!("~ 
+        _getTemplates.join(", ")~ 
+    ");");
 }
 
 /// Gets an `AliasSeq` of all modules publicly imported by `mod`

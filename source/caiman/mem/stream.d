@@ -1,10 +1,10 @@
+/// Very advanced data stream support, with optional reading, file access, endianness support, and much more.
 module caiman.mem.stream;
 
 import std.file;
 import std.conv;
 import std.algorithm.mutation;
 import std.traits;
-import caiman.traits;
 
 public enum Endianness : ubyte
 {
@@ -83,12 +83,30 @@ public:
         this.filePath = filePath;
     }
 
-    bool mayRead()(int size = 1)
+    /**
+        Checks if there are enough elements left in the data array to read.
+        
+        Params:
+        - `size`: The number of elements to try to read. Defaults to 1.
+        
+        Returns:
+            True if there are at least size elements left to read from the current position. 
+    */
+    @nogc bool mayRead()(int size = 1)
     {
         return position + size - 1 < data.length;
     }
 
-    bool mayRead(T)()
+    /**
+        Checks if there are enough elements left in the data array to read `T`.
+        
+        Params:
+        - `T`: The type to check if can be read.
+        
+        Returns:
+            True if there are at least `T.sizeof` bytes left to read from the current position. 
+    */
+    @nogc bool mayRead(T)()
     {
         return position + T.sizeof - 1 < data.length;
     }
@@ -99,7 +117,7 @@ public:
     * Params:
     *   - `T`: The size of type to move the position by.
     */
-    void step(T)()
+    @nogc void step(T)()
     {
         position += T.sizeof;
     }
@@ -111,7 +129,7 @@ public:
     *   - `T`: The size of type to move the position by.
     *   - `count`: The number of elements.
     */
-    void step(T)(int count)
+    @nogc void step(T)(int count)
     {
         position += T.sizeof * count;
     }
@@ -124,7 +142,7 @@ public:
     *   - `T`: The offset value for seeking.
     *   - `SEEK`: The direction of the seek operation (Start, Current, or End).
     */
-    void seek(T, Seek SEEK)()
+    @nogc void seek(T, Seek SEEK)()
         if (isIntegral!T)
     {
         static if (SEEK == Seek.Start)
@@ -150,7 +168,7 @@ public:
     * Returns:
     *   The value read from the stream.
     */
-    T read(T)()
+    @nogc T read(T)()
         if (!isArray!T)
     {
         if (data.length <= position)
@@ -170,7 +188,7 @@ public:
     * Returns:
     *   The value peeked from the stream.
     */
-    T peek(T)()
+    @nogc T peek(T)()
         if (!isArray!T)
     {
         if (data.length <= position)
@@ -189,7 +207,7 @@ public:
     * Returns:
     *   An array read from the stream.
     */
-    T read(T)()
+    @nogc T read(T)()
         if (isArray!T)
     {
         T items;
@@ -207,7 +225,7 @@ public:
     * Returns:
     *   An array peeked from the stream.
     */
-    T peek(T)()
+    @nogc T peek(T)()
         if (isArray!T)
     {
         ulong _position = position;
@@ -222,7 +240,7 @@ public:
     *   - `T`: The type of data to be written.
     *   - `val`: The value to be written to the stream.
     */
-    void write(T)(T val)
+    @nogc void write(T)(T val)
     {
         if (data.length <= position)
             return;
@@ -238,7 +256,7 @@ public:
     *   - `T`: The type of data to be written.
     *   - `val`: The value to be written to the stream.
     */
-    void put(T)(T val)
+    @nogc void put(T)(T val)
     {
         if (data.length <= position)
             return;
@@ -256,7 +274,7 @@ public:
     * Returns:
     *   An array of values read from the stream.
     */
-    T[] read(T)(int count)
+    @nogc T[] read(T)(int count)
     {
         T[] items;
         foreach (ulong i; 0..count)
@@ -274,7 +292,7 @@ public:
     * Returns:
     *   An array of values peeked from the stream.
     */
-    T[] peek(T)(int count)
+    @nogc T[] peek(T)(int count)
     {
         ulong _position = position;
         scope(exit) position = _position;
@@ -288,7 +306,7 @@ public:
     *   - `T`: The type of data to be written.
     *   - `items`: An array of values to be written to the stream.
     */
-    void write(T, bool NOPREFIX = false)(T[] items)
+    @nogc void write(T, bool NOPREFIX = false)(T[] items)
     {
         static if (!NOPREFIX)
             write7EncodedInt(cast(int)items.length);

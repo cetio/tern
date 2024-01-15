@@ -1,4 +1,4 @@
-/// Provides interface for enums, properties, and hresult
+/// Provides interface for enums and HResult.
 module caiman.state;
 
 import std.traits;
@@ -16,7 +16,7 @@ static:
 * Returns:
 *     A boolean indicating whether the flag is set in the value.
 */
-@nogc bool hasFlag(T)(T value, T flag)
+pure @nogc bool hasFlag(T)(T value, T flag)
 {
     return (value & flag) != 0;
 }
@@ -32,7 +32,7 @@ static:
 * Returns:
 *     A boolean indicating whether the flag matches the masked value.
 */
-@nogc bool hasFlagMasked(T)(T value, T mask, T flag)
+pure @nogc bool hasFlagMasked(T)(T value, T mask, T flag)
 {
     return (value & mask) == flag;
 }
@@ -45,7 +45,7 @@ static:
 *   - `flag`: The flag to set or clear.
 *   - `state`: A boolean indicating whether to set or clear the flag.
 */
-@nogc void setFlag(T)(ref T value, T flag, bool state)
+pure @nogc void setFlag(T)(ref T value, T flag, bool state)
 {
     value = cast(T)(state ? (value | flag) : (value & ~flag));
 }
@@ -57,7 +57,7 @@ static:
 *   - `value`: Reference to the value where the flag will be toggled.
 *   - `flag`: The flag to toggle.
 */
-@nogc void toggleFlag(T)(ref T value, T flag)
+pure @nogc void toggleFlag(T)(ref T value, T flag)
 {
     value = cast(T)(value ^ flag);
 }
@@ -71,7 +71,7 @@ static:
 *   - `flag`: The flag to set or clear.
 *   - `state`: A boolean indicating whether to set or clear the flag.
 */
-@nogc void setFlagMasked(T)(ref T value, T mask, T flag, bool state)
+pure @nogc void setFlagMasked(T)(ref T value, T mask, T flag, bool state)
 {
     value = cast(T)(state ? (value & mask) | flag : (value & mask) & ~flag);
 }
@@ -84,7 +84,7 @@ static:
 *   - `mask`: The mask to apply to the value.
 *   - `flag`: The flag to toggle within the masked value.
 */
-@nogc void toggleFlagMasked(T)(ref T value, T mask, T flag)
+pure @nogc void toggleFlagMasked(T)(ref T value, T mask, T flag)
 {
     value = cast(T)((value & mask) ^ flag);
 }
@@ -99,7 +99,7 @@ static:
 * Returns:
 *     The value after clearing the specified mask.
 */
-@nogc T clearMask(T)(T value, T mask)
+pure @nogc T clearMask(T)(T value, T mask)
 {
     return cast(T)(value & ~mask);
 }

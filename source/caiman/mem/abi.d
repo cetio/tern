@@ -111,7 +111,7 @@ else
 
 alias FLOAT = float;
 alias NATIVE = ptrdiff_t;
-alias ARRAY = int[];
+alias ARRAY = void[];
 public struct REFERENCE { ubyte[33] bytes; }
 public struct INOUT { ubyte[33] bytes; }
 

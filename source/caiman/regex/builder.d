@@ -5,7 +5,6 @@ import std.conv;
 import std.ascii;
 import std.algorithm;
 import caiman.state;
-import caiman.traits : flags;
 
 // Tokens
 package enum : ubyte
@@ -50,7 +49,7 @@ package enum : ubyte
 }
 
 // Element modifiers
-package @flags enum : ubyte
+package enum : ubyte
 {
     /// No special rules, matches until the next element can match
     NONE = 0,
@@ -89,7 +88,7 @@ package @flags enum : ubyte
 }
 
 // Regex flags
-package @flags enum : ubyte
+package enum : ubyte
 {
     /// Match more than once
     GLOBAL = 2,
