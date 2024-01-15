@@ -6,6 +6,7 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import std.traits;
+import godwit;
 
 /// Attribute signifying an enum uses flags
 enum flags;
@@ -54,7 +55,7 @@ public template elementType(T)
 */
 public template getImplements(T)
 {
-    private template Flatten(H, T...)
+    /* private template Flatten(H, T...)
     {
         static if (T.length)
         {
@@ -67,16 +68,16 @@ public template getImplements(T)
             else
                 alias Flatten = getImplements!H;
         }
-    }
+    } */
 
     // Checks if T has any inherit, if so, calls Flatten to get the inherit and call getImplements again
     // Recursively gets every super (inherit/base)
     static if (is(T S == super) && S.length)
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias getImplements = AliasSeq!(NoDuplicates!(Flatten!S), typeof(__traits(getMember, T, __traits(getAliasThis, T))), getImplements!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+            alias getImplements = AliasSeq!(S, typeof(__traits(getMember, T, __traits(getAliasThis, T))), getImplements!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
         else
-            alias getImplements = NoDuplicates!(Flatten!S);
+            alias getImplements = S;
     }
     else
     {
@@ -260,9 +261,9 @@ public template accessors()
                         static if (!__traits(hasMember, typeof(this), "is"~flag))
                         {
                             // @property bool Eastern()...
-                            mixin("@property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
                             // @property bool Eastern(bool state)...
-                            mixin("@property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
                         }
                     }
                 }

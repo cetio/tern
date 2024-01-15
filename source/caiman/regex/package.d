@@ -29,7 +29,7 @@ final:
         return new Regex(PATTERN, FLAGS);
     }
 
-    pure string[][] matchFirst(string TEXT)()
+    pure string[] matchFirst(string TEXT)()
     {
         string[string] lookups;
         lookups["\\w"] = expand("a-zA-Z0-9_", lookups);
@@ -45,7 +45,8 @@ final:
         lookups["\\a"] = expand("\a", lookups);
         lookups["\\0"] = expand("\0", lookups);
 
-        return matchInternal(PATTERN.build(lookups), FLAGS, TEXT, 1);
+        auto ret = matchInternal(PATTERN.build(lookups), FLAGS, TEXT, 1);
+        return ret.length != 0 ? ret[0] : null;
     }
 
     pure string[][] match(string TEXT)()
@@ -83,9 +84,10 @@ public:
         this.flags = flags;
     }
 
-    string[][] matchFirst(string text)
+    string[] matchFirst(string text)
     {
-        return matchInternal(elements, flags, text, 1);
+        auto ret = matchInternal(elements, flags, text, 1);
+        return ret.length != 0 ? ret[0] : null;
     }
 
     string[][] match(string text)

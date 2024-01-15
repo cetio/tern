@@ -274,7 +274,7 @@ public:
     * Returns:
     *   An array of values read from the stream.
     */
-    @nogc T[] read(T)(int count)
+    T[] read(T)(int count)
     {
         T[] items;
         foreach (ulong i; 0..count)
@@ -292,7 +292,7 @@ public:
     * Returns:
     *   An array of values peeked from the stream.
     */
-    @nogc T[] peek(T)(int count)
+    T[] peek(T)(int count)
     {
         ulong _position = position;
         scope(exit) position = _position;
@@ -323,7 +323,7 @@ public:
     *   - `T`: The type of data to be written.
     *   - `items`: An array of values to be written to the stream.
     */
-    void put(T, bool NOPREFIX = false)(T[] items)
+    @nogc void put(T, bool NOPREFIX = false)(T[] items)
     {
         ulong _position = position;
         scope(exit) position = _position;
@@ -344,11 +344,7 @@ public:
         if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
     {
         static if (PREFIXED)
-        {
-            import std.stdio;
             return read!(CHAR[]).to!string;
-        }
-            
 
         char[] chars;
         while (peek!CHAR != '\0')
@@ -414,7 +410,7 @@ public:
     * Returns:
     *   The integer value read from the stream.
     */
-    int read7EncodedInt()
+    @nogc int read7EncodedInt()
     {
         int result = 0;
         int shift = 0;
@@ -437,7 +433,7 @@ public:
     * Params:
     *   - `val`: The integer value to be written to the stream.
     */
-    void write7EncodedInt(int val)
+    @nogc void write7EncodedInt(int val)
     {
         foreach (int i; 0..5)
         {
@@ -461,7 +457,7 @@ public:
     * Returns:
     *   The read type read from the stream.
     */
-    T readPlasticized(T, ARGS...)()
+    @nogc T readPlasticized(T, ARGS...)()
         if (ARGS.length % 3 == 0)
     {
         T val;
