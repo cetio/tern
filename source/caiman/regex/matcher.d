@@ -60,6 +60,14 @@ pure bool isFulfilled(Element element, State state, string text)
             case ANCHOR_END:
                 return state.index >= text.length || (state.flags.hasFlag(MULTILINE) && (text[state.index + 1] == '\r' || text[state.index + 1] == '\n' || text[state.index + 1] == '\f' || text[state.index + 1] == '\0'));
 
+            case ANY:
+                if (!state.flags.hasFlag(SINGLELINE) && (text[state.index] == '\r' || text[state.index] == '\n' || text[state.index] == '\f')) 
+                    return k >= element.min;
+                break;
+
+            case REFERENCE:
+                
+
             default:
                 return false;
         }

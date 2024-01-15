@@ -21,31 +21,18 @@ static:
         A b = a.dup();
         ```
 */
-pure @nogc @trusted T dup(T)(T val)
-    if (!isArray!T && !isAssociativeArray!T)
+pure @trusted T dup(T)(T val)
+    if (!isArray!T)
 {
     // Cloned when passed as a parameter
     return val;
 }
 
-/// ditto
-pure @trusted T dup(T)(T arr)
-    if (isArray!T && !isAssociativeArray!T)
+// ditto
+pure @trusted T dup(T)(T val)
+    if (isArray!T)
 {
-    T ret;
-    foreach (u; arr)
-        ret ~= u.dup();
-    return ret;
-}
-
-/// ditto
-pure @trusted T dup(T)(T arr)
-    if (isAssociativeArray!T)
-{
-    T ret;
-    foreach (key, value; arr)
-        ret[key.dup()] = value.dup();
-    return ret;
+    return object.dup(val);
 }
 
 /**

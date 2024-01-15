@@ -21,13 +21,13 @@ public alias isReference(T) = isIndirection!T;
 public alias isValueType(T) = Alias!(!isIndirection!T);
 /// True if `func` is exported, otherwise, false.
 public alias isExport(alias func) = Alias!(__traits(getVisibility, func) == "export");
-/// True if `T` acts as a native integer, otherwise, false.
-public alias isNative(T) = Alias!(__traits(isScalar, T) || ((is(T == struct) || is(T == union) || is(T == enum)) && (T.sizeof == 1 || T.sizeof == 2 || T.sizeof == 4 || T.sizeof == 8)));
 public alias isTemplate(T) = Alias!(__traits(isTemplate, T));
 public alias isModule(T) = Alias!(__traits(isModule, T));
 public alias isPackage(T) = Alias!(__traits(isPackage, T));
 public alias isField(T) = Alias!(!isType!T && !isFunction!T && !isTemplate!T && !isModule!T && !isPackage!T);
+public alias hasParents(T) = Alias!(__traits(compiles, __traits(parent, T)));
 
+/// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
 {
     static if (__traits(compiles, __traits(allMembers, T)))
@@ -89,7 +89,48 @@ public template getTemplates(T)
     ");");
 }
 
-/// Gets an AliasSeq of all modules publicly imported by `mod`
+/**
+    Gets an `AliasSeq` all types that `T` implements.
+
+    This is functionally very similar to `InterfacesTuple(T)` from `std.traits`, but is more advanced and \
+    includes *all* implements, including class inherits and alias this.
+*/
+public template getImplements(T)
+{
+    private template Flatten(H, T...)
+    {
+        static if (T.length)
+        {
+            alias Flatten = AliasSeq!(Flatten!H, Flatten!T);
+        }
+        else
+        {
+            static if ((is(H == interface) || is(H == class)) && !is(H == Object))
+                alias Flatten = AliasSeq!(H, getImplements!H);
+            else
+                alias Flatten = getImplements!H;
+        }
+    }
+
+    // Checks if T has any inherit, if so, calls Flatten to get the inherit and call getImplements again
+    // Recursively gets every super (inherit/base)
+    static if (is(T S == super) && S.length)
+    {
+        static if (__traits(getAliasThis, T).length != 0)
+            alias getImplements = AliasSeq!(NoDuplicates!(Flatten!S), typeof(__traits(getMember, T, __traits(getAliasThis, T))), getImplements!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+        else
+            alias getImplements = NoDuplicates!(Flatten!S);
+    }
+    else
+    {
+        static if (__traits(getAliasThis, T).length != 0)
+            alias getImplements = AliasSeq!(typeof(__traits(getMember, T, __traits(getAliasThis, T))), getImplements!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+        else
+            alias getImplements = AliasSeq!();
+    }  
+}
+
+/// Gets an `AliasSeq` of all modules publicly imported by `mod`
 public template getImports(alias mod)
 {
     private pure string[] _getImports()
@@ -127,12 +168,8 @@ pure void*[] indirections(T)(T val)
 
 pure string pragmatize(string str) 
 {
-    // holy import, is there a better way?
-    import std.algorithm;
     import std.ascii;
-    import std.array;
     import std.conv;
-    import std.string;
     size_t idx = str.lastIndexOf('.');
     if (idx != -1)
         str = str[(idx + 1)..$];
@@ -153,6 +190,7 @@ pure string pragmatize(string str)
 //       Flag get/sets from pre-existing get/sets (see methodtable.d relatedTypeKind)
 //       Auto import types (generics!!)
 //       Allow for indiv. get/sets without needing both declared
+//       Exports for flags!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 /// Does not support multiple fields with the same enum type!
 public template accessors()
 {
@@ -190,9 +228,9 @@ public template accessors()
                                     static if (!__traits(hasMember, typeof(this), "is"~flag[1..$]))
                                     {
                                         // @property bool isEastern()...
-                                        mixin("@property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"_get\") extern (C) export final @property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
                                         // @property bool isEastern(bool state)...
-                                        mixin("@property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") | "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") & ~"~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~")) == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"get\") extern (C) export final @property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") | "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") & ~"~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~")) == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
                                     }
                                 }
 
@@ -203,9 +241,9 @@ public template accessors()
                             static if (!__traits(hasMember, typeof(this), "is"~flag))
                             {
                                 // @property bool isEastern()...
-                                mixin("@property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") != 0; }");
+                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") != 0; }");
                                 // @property bool isEastern(bool state)...
-                                mixin("@property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"))) != 0; }");
+                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"))) != 0; }");
                             }
                         }
                     }
