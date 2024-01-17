@@ -10,7 +10,7 @@ public import caiman.mem.ddup;
 
 public:
 static:
-version (Windows)
+version (Windows) // MSABI
 {
     const uint a0    = rcx - 30;
     const uint a1    = rdx - 30;
@@ -19,7 +19,7 @@ version (Windows)
     const uint a4    = 4;
     const uint a5    = 5;
 }
-else
+else // SystemV
 {
     const uint a0    = rdi - 30;
     const uint a1    = rsi - 30;
@@ -120,6 +120,20 @@ pure string prep(uint COUNT)()
     version (Windows)
     {
         static if (COUNT > 4)
+            return "mixin(\"asm { xor R12, R12; sub RSP, "~((COUNT - 4) * 16 + 40).to!string~"; }\");";
+    }
+    else
+    {
+        static if (COUNT > 6)
+            return "mixin(\"asm { xor R12, R12; sub RSP, "~((COUNT - 6) * 16 + 40).to!string~"; }\");";
+    }
+}
+
+pure string rest(uint COUNT)()
+{
+    version (Windows)
+    {
+        static if (COUNT > 4)
             return "mixin(\"asm { add RSP, "~((COUNT - 4) * 16 + 40).to!string~"; }\");";
     }
     else
@@ -134,8 +148,8 @@ shared ubyte[8] movBuff;
     All chained uses of mov must be enclosed in a scope using `{..}` \
     Failure to do this will result in registers being overwritten by other movs, as this template uses `scope (exit)` for inline asm!
 
-    Does not automatically prepare the stack for you and `R10` will be scrapped to be used as a buffer if the stack is needed. \
-    Use `prep!(uint)` to prepare the stack!
+    Does not automatically prepare the stack for you, and R10, R11, R12 & XMM8 are used as scratch registers. \
+    Use `prep!(uint)` to prepare the stack and rest!(uint) to restore the stack.
 
     Params:
     - `ID`: Register (or argument index) to put `VAR` into.
@@ -153,10 +167,10 @@ shared ubyte[8] movBuff;
         ```
 */
 // TODO: isOverflow!T
-//       Throw if no pair found
 //       Fix stack arguments
-public template mov(uint ID, alias VAR, AS = void, string LINE = __LINE__.to!string)
+public template mov(uint ID, alias VAR, AS = void, uint _LINE = __LINE__)
 {
+    immutable string LINE = _LINE.to!string;
     immutable string[uint] register = [ 
         eax: "EAX",
         ebx: "EBX",
@@ -215,6 +229,7 @@ public template mov(uint ID, alias VAR, AS = void, string LINE = __LINE__.to!str
         alias T = typeof(VAR);
     else
         alias T = AS;
+    alias RT = typeof(VAR);
 
     static if (ID >= eax)
     {
@@ -222,34 +237,35 @@ public template mov(uint ID, alias VAR, AS = void, string LINE = __LINE__.to!str
         {
             static if (isFloat!T)
             {
-                static if (ID > xmm0 || ID < xmm15)
+                static if (ID < xmm0 || ID > xmm15)
                     pragma(msg, "Floats can only be stored in XMM registers, not "~register[ID]~", UB may occur!");
 
                 static if (isSplit!T)
-                    return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"])[0];
-                        ulong low"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(T.sizeof - 8 >= 8 ? 8 : T.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[8.."~(T.sizeof >= 16 ? 16 : T.sizeof).to!string~"])[0];
-                            mixin(\"asm { pinsrq "~register[ID]~", high"~__traits(identifier, VAR)~LINE~", 0; }\");
-                                mixin(\"asm { pinsrq "~register[ID]~", low"~__traits(identifier, VAR)~LINE~", 1; }\");";
+                    return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"])[0];
+                    ulong low"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(RT.sizeof - 8 >= 8 ? 8 : RT.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[8.."~(RT.sizeof >= 16 ? 16 : RT.sizeof).to!string~"])[0];
+                    mixin(\"asm { pinsrq "~register[ID]~", high"~__traits(identifier, VAR)~LINE~", 0; }\");
+                    mixin(\"asm { pinsrq "~register[ID]~", low"~__traits(identifier, VAR)~LINE~", 1; }\");";
 
-                return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"])[0];
-                    scope (exit) mixin(\"asm { movq "~register[ID]~", high"~__traits(identifier, VAR)~LINE~"; }\");";
+                return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"])[0];
+                scope (exit) mixin(\"asm { movq "~register[ID]~", high"~__traits(identifier, VAR)~LINE~"; }\");";
                 
             }
             else static if (isPair!T)
             {
-                // throw if no pair found
+                static if (ID !in pair)
+                    throw new Throwable("Cannot put "~fullyQualifiedName!T~" into "~register[ID]~", as it is a pairing type and "~register[ID]~" has no pair!");
 
                 pragma(msg, fullyQualifiedName!T~" is being put into register "~register[ID]~" but is being paired with register "~pair[ID][1]~", this behavior may be unintentional!");
 
-                return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"])[0];
-                    ulong low"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(T.sizeof - 8 >= 8 ? 8 : T.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[8.."~(T.sizeof >= 16 ? 16 : T.sizeof).to!string~"])[0];
-                        scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~pair[ID][0]~", high"~__traits(identifier, VAR)~LINE~"; }\");
-                            scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~pair[ID][1]~", low"~__traits(identifier, VAR)~LINE~"; }\");";
+                return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"])[0];
+                ulong low"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(RT.sizeof - 8 >= 8 ? 8 : RT.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[8.."~(RT.sizeof >= 16 ? 16 : RT.sizeof).to!string~"])[0];
+                scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~pair[ID][0]~", high"~__traits(identifier, VAR)~LINE~"; }\");
+                scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~pair[ID][1]~", low"~__traits(identifier, VAR)~LINE~"; }\");";
             }   
             else static if (isNative!T)
             {
-                return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(T.sizeof >= 8 ? 8 : T.sizeof).to!string~"])[0];
-                    scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~register[ID]~", high"~__traits(identifier, VAR)~LINE~"; }\");";
+                return "ulong high"~__traits(identifier, VAR)~LINE~" = *cast(ulong*)&((movBuff = new ubyte[8])[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"] = (cast(ubyte*)&"~__traits(identifier, VAR)~")[0.."~(RT.sizeof >= 8 ? 8 : RT.sizeof).to!string~"])[0];
+                scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~register[ID]~", high"~__traits(identifier, VAR)~LINE~"; }\");";
             }
             else
             {
@@ -258,11 +274,11 @@ public template mov(uint ID, alias VAR, AS = void, string LINE = __LINE__.to!str
                 // SYSV: Array e0 ptr (no len)
                 static if (is (T == INOUT))
                     return "ulong high"~__traits(identifier, VAR)~LINE~" = cast(ulong)&"~__traits(identifier, VAR)~";
-                        scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~register[ID]~", high"~__traits(identifier, VAR)~LINE~"; }\");";
+                    scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~register[ID]~", high"~__traits(identifier, VAR)~LINE~"; }\");";
 
                 return fullyQualifiedName!(typeof(VAR))~" tval"~__traits(identifier, VAR)~LINE~" = "~__traits(identifier, VAR)~".dup;
-                    ulong hightval"~__traits(identifier, VAR)~LINE~" = cast(ulong)&tval"~__traits(identifier, VAR)~LINE~";
-                        scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~register[ID]~", hightval"~__traits(identifier, VAR)~LINE~"; }\");";
+                ulong hightval"~__traits(identifier, VAR)~LINE~" = cast(ulong)&tval"~__traits(identifier, VAR)~LINE~";
+                scope (exit) mixin(\"asm { mov"~(ID >= xmm0 ? "q " : " ")~register[ID]~", hightval"~__traits(identifier, VAR)~LINE~"; }\");";
             }
         }
     }
@@ -272,23 +288,41 @@ public template mov(uint ID, alias VAR, AS = void, string LINE = __LINE__.to!str
         {
             static if (isFloat!T)
                 // XMM0 is offset by 18 from RAX
-                return mov!(ID + 48, VAR, AS, LINE);
+                return mov!(ID + 48, VAR, AS, _LINE);
             else
-                return mov!(ID + 30, VAR, AS, LINE);
+                return mov!(ID + 30, VAR, AS, _LINE);
         }
     }
     else // Stack
     {
         pure string mov()
         {
-            return mov!(r10, VAR, AS, LINE)~" mixin(\"asm { mov [RSP + "~((ID - 4) * 8 + 32).to!string~"], R10; }\");";
+            version (Windows)
+                uint offset = ((ID - 4) * 8 + 32);
+            else
+                uint offset = ((ID - 6) * 8 + 32);
+
+            static if (isFloat!T)
+            {
+                return mov!(xmm8, VAR, AS, _LINE)[0..$-5]~" add RSP, R12; mov [RSP + "~offset.to!string~"], XMM8; sub RSP, R12; }\");";
+            }
+            else static if (isPair!T)
+            {
+                return mov!(r10, VAR, AS, _LINE)[0..$-5]~" add RSP, R12; mov [RSP + "~offset.to!string~"], R10; mov [RSP + "~(offset + 8).to!string~"], R11; sub RSP, R12; add R12, 8; }\");";
+            }
+            else
+            {
+                return mov!(r10, VAR, AS, _LINE)[0..$-5]~" add RSP, R12; mov [RSP + "~offset.to!string~"], R10; sub RSP, R12; }\");";
+            }
         }
     }
 }
 
 /// ditto
-public template mov(uint ID, T, T val, AS = void, string LINE = __LINE__.to!string)
+/// Precision past 2 decimals is lost if `T` is a floating point.
+public template mov(uint ID, T, T val, AS = void, uint _LINE = __LINE__)
 {
+    immutable string LINE = _LINE.to!string;
     pure string mov()
     {
         static if (is(T == string))
@@ -298,7 +332,7 @@ public template mov(uint ID, T, T val, AS = void, string LINE = __LINE__.to!stri
         else
             const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = "~val.to!string~";";
         mixin(mix);
-        return mix~"\n"~mov!(ID, mixin("tval"~val.to!string.pragmatize()~LINE), AS, LINE);
+        return mix~"\n"~mov!(ID, mixin("tval"~val.to!string.pragmatize()~LINE), AS, _LINE);
     }
 }
 

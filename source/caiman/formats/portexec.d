@@ -52,12 +52,10 @@ final:
     }
 
 public:
-    /// The DOS header of the PE file.
     DOSHeader dosHeader;
-    /// The COFF header of the PE file.
     COFFHeader coffHeader;
-    /// The optional image data of the PE file.
     OptionalImage optionalImage;
+    DataDirectory[] dataDirectories;
 
     /**
     * Reads a PE file from the specified file path.

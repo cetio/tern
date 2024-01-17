@@ -22,17 +22,10 @@ static:
         ```
 */
 pure @trusted T dup(T)(T val)
-    if (!isArray!T)
+    if (!__traits(compiles, object.dup(val)))
 {
     // Cloned when passed as a parameter
     return val;
-}
-
-// ditto
-pure @trusted T dup(T)(T val)
-    if (isArray!T)
-{
-    return object.dup(val);
 }
 
 /**
@@ -79,7 +72,7 @@ pure @trusted T ddup(T)(T arr)
     if (isArray!T && !isAssociativeArray!T)
 {
     T ret;
-    foreach (u; arr)
+    static foreach (u; arr)
         ret ~= u.ddup();
     return ret;
 }
@@ -89,7 +82,7 @@ pure @trusted T ddup(T)(T arr)
     if (isAssociativeArray!T)
 {
     T ret;
-    foreach (key, value; arr)
+    static foreach (key, value; arr)
         ret[key.ddup()] = value.ddup();
     return ret;
 }

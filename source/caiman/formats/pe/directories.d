@@ -1,5 +1,8 @@
 module caiman.formats.pe.directories;
 
+import caiman.formats.pe.optional;
+import std.bitmanip;
+
 public struct ExportTable
 {
 public:
@@ -26,6 +29,25 @@ final:
     uint forwarderChain;
     uint nameRVA;
     uint importAddressTableRVA;
+}
+
+/* public struct ImportLookupTable
+{
+public:
+final:
+    mixin(bitfields!(
+        bool, "importByName", 1,
+        ushort, "ordinalNumber", 16,
+        uint, "nameTableRVA", 31
+    ));
+} */
+
+public struct NameTable
+{
+public:
+final:
+    ushort hint;
+    string name;
 }
 
 public struct ResourceTable
@@ -64,4 +86,22 @@ public:
 final:
     uint pageRVA;
     RelocEntry[] entries;
+}
+
+public struct ClrRuntimeHeader
+{
+public:
+final:
+    uint size;
+    ushort majorRuntimeVersion;
+    ushort minorRuntimeVersion;
+    DataDirectory metaData;
+    uint flags;
+    uint entryPointToken;
+    DataDirectory resources;
+    DataDirectory strongNameSignature;
+    DataDirectory codeManagerTable;
+    DataDirectory vtableFixups;
+    DataDirectory exportAddressTableJumps;
+    DataDirectory managedNativeHeader;
 }
