@@ -4,6 +4,7 @@ import std.stdio;
 import caiman.mem.abi;
 import std.traits;
 import std.meta;
+import core.simd;
 
 public class A
 {

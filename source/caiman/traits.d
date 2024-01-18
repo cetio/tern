@@ -6,6 +6,7 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import std.traits;
+import godwit;
 
 /// Attribute signifying an enum uses flags
 enum flags;
@@ -137,7 +138,7 @@ public template getImports(alias mod)
     private pure string[] _getImports()
     {
         string[] imports;
-        foreach (line; import((__traits(identifier, mod)).replace("", "") ~ ".d").splitter('\n'))
+        foreach (line; import(__traits(identifier, mod)~".d").splitter('\n'))
         {
             long ii = line.indexOf("public import ");
             if (ii != -1)
