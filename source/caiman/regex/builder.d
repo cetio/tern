@@ -240,7 +240,6 @@ pure string highlightError(string str, uint index)
     return "                      "~str[0..index]~highlightColor~str[index..index + 1]~resetColor~str[index + 1..$];
 }
 
-
 // TODO: Refer to future group/element
 //       \b \B (?:..) (..) lookahead lookbehind
 pragma(inline, true)

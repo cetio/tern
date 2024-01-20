@@ -6,7 +6,6 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import std.traits;
-import godwit;
 
 /// Attribute signifying an enum uses flags
 enum flags;
