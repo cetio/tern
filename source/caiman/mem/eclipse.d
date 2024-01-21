@@ -270,9 +270,9 @@ final:
         struct
         {
             mixin(bitfields!(
+                Mode, "mode", 2,
                 ubyte, "reg", 3,
                 ubyte, "rm", 3,
-                Mode, "mode", 2
             ));
         }
     }
@@ -621,7 +621,7 @@ pure ubyte[] assemble(string str)
         else if (inst in imrm)
         {
             ubyte[] opcode = cast(ubyte[])imrm[inst];
-            if (regind.length != 0)
+            if (needsEncoding)
             {
                 if (regstr[0] in r64)
                     assembly ~= rex[regind[0]];
@@ -637,7 +637,7 @@ pure ubyte[] assemble(string str)
             else
             {
                 assembly ~= opcode;
-                assembly ~= ModRM(0b101, 0, Mode.Memory);
+                assembly ~= ModRM(0b101, 0, Mode.Memory );
                 assembly ~= data;
             }
         }

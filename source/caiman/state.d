@@ -113,7 +113,7 @@ pure @nogc T clearMask(T)(T value, T mask)
 * Returns:
 *     A string representing the flag members set in the value.
 */
-pure string toString(T)(T value) const
+pure string toString(T)(T value)
 {
     foreach (string member; __traits(allMembers, T))
     {

@@ -106,7 +106,7 @@ package struct Element
 {
 public:
 final:
-align(1):
+align(8):
     /// What kind of element is this?
     /// eg: `CHARACTERS`
     ubyte token;
