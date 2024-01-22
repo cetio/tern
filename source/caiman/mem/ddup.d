@@ -87,9 +87,24 @@ pure @trusted T ddup(T)(T arr)
     return ret;
 }
 
-pure @trusted T drip(T, U)(U val)
+pure @trusted A ddupa(A, T)(T val)
+    if (!isArray!A)
 {
-    T ret;
-    (cast(ubyte*)&ret)[0..U.sizeof] = (cast(ubyte*)&val)[0..U.sizeof];
+    static if (isPointer!A)
+        A ret = val;
+    else static if (is(A == class) || is(A == interface))
+        A ret = new A();
+    else 
+        A ret;
+    static foreach (field; FieldNameTuple!T)
+    {
+        static if (hasMember!(A, field))
+        {
+            static if (field != "" && !hasIndirections!(typeof(__traits(getMember, A, field))))
+                __traits(getMember, ret, field) = cast(typeof(__traits(getMember, ret, field)))__traits(getMember, val, field);
+            else static if (field != "")
+                __traits(getMember, ret, field) = cast(typeof(__traits(getMember, ret, field)))__traits(getMember, val, field).ddup();
+        }
+    }
     return ret;
 }

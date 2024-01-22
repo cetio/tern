@@ -61,7 +61,7 @@ final:
     uint baseOfData;
     // All below unset if type == ImageType.ROM!
     // Assumes that this image is ImageType.PE64.
-    ubyte* imageBase;
+    ulong imageBase;
     uint sectionAlignment;
     uint fileAlignment;
     ushort majorOSVersion;
@@ -112,7 +112,6 @@ final:
     uint sizeOfUninitializedData;
     uint addressOfEntryPoint;
     uint baseOfCode;
-    // PE32 only!
     uint baseOfData;
     uint imageBase;
     uint sectionAlignment;
@@ -150,9 +149,9 @@ final:
     uint sizeOfUninitializedData;
     uint addressOfEntryPoint;
     uint baseOfCode;
-    // Will be ignored!
+    // Ignored
     uint baseOfData;
-    ubyte* imageBase;
+    ulong imageBase;
     uint sectionAlignment;
     uint fileAlignment;
     ushort majorOSVersion;

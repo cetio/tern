@@ -87,21 +87,3 @@ final:
     uint pageRVA;
     RelocEntry[] entries;
 }
-
-public struct ClrRuntimeHeader
-{
-public:
-final:
-    uint size;
-    ushort majorRuntimeVersion;
-    ushort minorRuntimeVersion;
-    DataDirectory metaData;
-    uint flags;
-    uint entryPointToken;
-    DataDirectory resources;
-    DataDirectory strongNameSignature;
-    DataDirectory codeManagerTable;
-    DataDirectory vtableFixups;
-    DataDirectory exportAddressTableJumps;
-    DataDirectory managedNativeHeader;
-}

@@ -5,8 +5,9 @@ import std.file;
 import std.conv;
 import std.algorithm.mutation;
 import std.traits;
+import caiman.traits;
 
-public enum Endianness : ubyte
+public enum Endianness
 {
     Native,
     LittleEndian,
@@ -18,6 +19,12 @@ public enum Seek
     Start,
     Current,
     End
+}
+
+public enum ReadKind
+{
+    Prefix,
+    Field
 }
 
 /**
@@ -61,7 +68,7 @@ final:
 
 public:
     ubyte[] data;
-    ulong position;
+    ptrdiff_t position;
     Endianness endianness;
 
     this(ubyte[] data, Endianness endianness = Endianness.Native)
@@ -134,6 +141,23 @@ public:
         position += T.sizeof * count;
     }
 
+    /** 
+     * Moves the position in the stream forward by one until `val` is peeked.
+     */
+    @nogc void stepUntil(T)(T val)
+    {
+        static if (is(T == string))
+        {
+            while (peekString!(elementType!T) != val)
+                position++;
+        }
+        else
+        {
+            while (peek!T != val)
+                position++;
+        }
+    }
+
     /**
     * Seeks to a new position in the stream based on the provided offset and seek direction.
     * Does not work like a conventional seek, and will read type T from the stream, using that as the seek offset.
@@ -169,7 +193,7 @@ public:
     *   The value read from the stream.
     */
     @nogc T read(T)()
-        if (!isArray!T)
+        if (!isArray!T || isStaticArray!T)
     {
         if (data.length <= position)
             return T.init;
@@ -207,12 +231,12 @@ public:
     * Returns:
     *   An array read from the stream.
     */
-    @nogc T read(T)()
-        if (isArray!T)
+    T read(T : U[], U)()
+        if (!isStaticArray!T)
     {
         T items;
         foreach (ulong i; 0..read7EncodedInt())
-            items ~= read!(ElementType!T);
+            items ~= read!(U);
         return items;
     }
 
@@ -225,8 +249,8 @@ public:
     * Returns:
     *   An array peeked from the stream.
     */
-    @nogc T peek(T)()
-        if (isArray!T)
+    T peek(T : U[], U)()
+        if (!isStaticArray!T)
     {
         ulong _position = position;
         scope(exit) position = _position;
@@ -447,6 +471,86 @@ public:
         }
     }
 
+    T read(T, ARGS...)()
+    {
+        T val;
+        foreach (field; FieldNameTuple!T)
+        {
+            alias M = typeof(__traits(getMember, val, field));
+            bool cread;
+            static foreach (i, ARG; ARGS)
+            {
+                static if (i % 3 == 0)
+                {
+                    static assert(is(typeof(ARG) == string),
+                        "Field name expected, found " ~ ARG.stringof);  
+                }
+                else static if (i % 3 == 1)
+                {
+                    static assert(is(typeof(ARG) == ReadKind),
+                        "Read kind expected, found " ~ ARG.stringof);  
+                }
+                else
+                {
+                    static if (field == ARGS[i - 2])
+                    {
+                        static if (!isStaticArray!M && is(M == string))
+                        {
+                            cread = true;
+                            static if (ARGS[i - 1] == ReadKind.Field)
+                            {
+                                __traits(getMember, val, field) = read!char(__traits(getMember, val, ARG)).to!string;
+                            }
+                            else
+                            {
+                                __traits(getMember, val, field) = readString!(char, ARG);
+                            }
+                        }
+                        else static if (!isStaticArray!M && is(M == wstring))
+                        {
+                            cread = true;
+                            static if (ARGS[i - 1] == ReadKind.Field)
+                            {
+                                __traits(getMember, val, field) = read!wchar(__traits(getMember, val, ARG)).to!string;
+                            }
+                            else
+                            {
+                                __traits(getMember, val, field) = readString!(wchar, ARG);
+                            }
+                        }
+                        static if (!isStaticArray!M && is(M == dstring))
+                        {
+                            cread = true;
+                            static if (ARGS[i - 1] == ReadKind.Field)
+                            {
+                                __traits(getMember, val, field) = read!dchar(__traits(getMember, val, ARG)).to!string;
+                            }
+                            else
+                            {
+                                __traits(getMember, val, field) = readString!(dchar, ARG);
+                            }
+                        }
+                        else static if (isDynamicArray!M)
+                        {
+                            cread = true;
+                            static if (ARGS[i - 1] == ReadKind.Field)
+                            {
+                                __traits(getMember, val, field) = read!(elementType!M)(__traits(getMember, val, ARG));
+                            }
+                            else
+                            {
+                                __traits(getMember, val, field) = read!M;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!cread)
+                __traits(getMember, val, field) = read!M;
+        }
+        return val;
+    }
+
     /**
     * Reads a type from the stream using optional fields.
     *
@@ -457,14 +561,14 @@ public:
     * Returns:
     *   The read type read from the stream.
     */
-    @nogc T readPlasticized(T, ARGS...)()
+    T readPlasticized(T, ARGS...)()
         if (ARGS.length % 3 == 0)
     {
         T val;
         foreach (string field; FieldNameTuple!T)
         {
             bool cread = true;
-            foreach (i, ARG; ARGS)
+            static foreach (i, ARG; ARGS)
             {
                 static if (i % 3 == 0)
                 {
@@ -488,12 +592,19 @@ public:
         return val;
     }
 
+    /**
+        Flushes the data stored in this stream to the given file path.
+
+        Params:
+        - `filePath`: The file path to flush to.
+    */
     void flush(string filePath)
     {
         if (filePath != null)
             std.file.write(filePath, data);
     }
 
+    /// Flushes the data stored in this stream to the file path that this stream was initialized with.
     void flush()
     {
         if (this.filePath != null)

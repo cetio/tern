@@ -21,12 +21,12 @@ public alias isReference(T) = isIndirection!T;
 /// True if `T` is not an indirection, otherwise, false.
 public alias isValueType(T) = Alias!(!isIndirection!T);
 /// True if `func` is exported, otherwise, false.
-public alias isExport(alias func) = Alias!(__traits(getVisibility, func) == "export");
-public alias isTemplate(T) = Alias!(__traits(isTemplate, T));
-public alias isModule(T) = Alias!(__traits(isModule, T));
-public alias isPackage(T) = Alias!(__traits(isPackage, T));
-public alias isField(T) = Alias!(!isType!T && !isFunction!T && !isTemplate!T && !isModule!T && !isPackage!T);
-public alias hasParents(T) = Alias!(__traits(compiles, __traits(parent, T)));
+public alias isExport(alias F) = Alias!(__traits(getVisibility, func) == "export");
+public alias isTemplate(alias A) = Alias!(__traits(isTemplate, A));
+public alias isModule(alias A) = Alias!(__traits(isModule, A));
+public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
+public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
+public alias hasParents(alias A) = Alias!(__traits(compiles, __traits(parent, A)));
 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
@@ -87,57 +87,57 @@ public template getImplements(T)
     }  
 }
 
-public template getFields(alias ne)
+public template getFields(alias A)
 {
-    public pure string[] getFields()
+    alias getFields = AliasSeq!();
+
+    static foreach (member; __traits(allMembers, A))
     {
-        return staticMap!(isField, __traits(allMembers, ne));
+        static if (isField!(__traits(getMember, A, member)))
+            getFields = AliasSeq!(getFields, member);
     }
 }
 
-public template getFunctions(alias ne)
+public template getFunctions(alias A)
 {
-    public pure string[] _getFunctions()
-    {
-        return staticMap!(isFunction, __traits(allMembers, ne));
-    }
+    alias getFunctions = AliasSeq!();
 
-    mixin("alias getFunctions = AliasSeq!("~ 
-        _getFunctions.join(", ")~ 
-    ");");
+    static foreach (member; __traits(allMembers, A))
+    {
+        static if (isFunction!(__traits(getMember, A, member)))
+            getFunctions = AliasSeq!(getFunctions, member);
+    }
 }
 
-public template getTypes(alias ne)
+public template getTypes(alias A)
 {
-    public pure string[] _getTypes()
-    {
-        return staticMap!(isType, __traits(allMembers, ne));
-    }
+    alias getTypes = AliasSeq!();
 
-    mixin("alias getTypes = AliasSeq!("~ 
-        _getTypes.join(", ")~ 
-    ");");
+    static foreach (member; __traits(allMembers, A))
+    {
+        static if (isType!(__traits(getMember, A, member)))
+            getTypes = AliasSeq!(getTypes, member);
+    }
 }
 
-public template getTemplates(alias ne)
+public template getTemplates(alias A)
 {
-    public pure string[] _getTemplates()
-    {
-        return staticMap!(isTemplates, __traits(allMembers, ne));
-    }
+    alias getTemplates = AliasSeq!();
 
-    mixin("alias getTemplates = AliasSeq!("~ 
-        _getTemplates.join(", ")~ 
-    ");");
+    static foreach (member; __traits(allMembers, A))
+    {
+        static if (isTemplate!(__traits(getMember, A, member)))
+            getTemplates = AliasSeq!(getTemplates, member);
+    }
 }
 
 /// Gets an `AliasSeq` of all modules publicly imported by `mod`
-public template getImports(alias mod)
+public template getImports(alias M)
 {
     private pure string[] _getImports()
     {
         string[] imports;
-        foreach (line; import(__traits(identifier, mod)~".d").splitter('\n'))
+        foreach (line; import(__traits(identifier, M)~".d").splitter('\n'))
         {
             long ii = line.indexOf("public import ");
             if (ii != -1)
