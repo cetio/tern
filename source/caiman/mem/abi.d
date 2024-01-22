@@ -93,28 +93,51 @@ r8: ["R8", "R9"],
 // MSABI
 version (Windows)
 {
+    /// True if `T` is a floating point to the ABI, otherwise, false.
     alias isFloat(T) = Alias!(__traits(isFloating, T));
+    /// True if `T` is a native structure to the ABI, otherwise, false.
     alias isNative(T) = Alias!(__traits(isScalar, T) || ((is(T == struct) || is(T == union) || is(T == enum)) && (T.sizeof == 1 || T.sizeof == 2 || T.sizeof == 4 || T.sizeof == 8)));
+    /// True if `T` would be paired into multiple registers, otherwise, false.
     alias isPair(T) = Alias!false;
+    /// True if `T` would spill into the stack after pairing, otherwise, false.
     alias isOverflow(T) = Alias!false;
+    /// True if `T` would be split into several XMM registers, otherwise, false.
     alias isSplit(T) = Alias!(isFloat!T && T.sizeof > 8);
 }
 // SystemV
 else
 {
+    /// True if `T` is a floating point to the ABI, otherwise, false.
     alias isFloat(T) = Alias!(__traits(isFloating, T) || is(T == string) || is(T == char[]));
+    /// True if `T` is a native structure to the ABI, otherwise, false.
     alias isNative(T) = Alias!(__traits(isScalar, T) || ((is(T == struct) || is(T == union) || is(T == enum)) && (T.sizeof <= 8)));
+    /// True if `T` would be paired into multiple registers, otherwise, false.
     alias isPair(T) = Alias!(!isFloat!T && is(T == struct) && T.sizeof > 8 && T.sizeof <= 32);
+    /// True if `T` would spill into the stack after pairing, otherwise, false.
     alias isOverflow(T) = Alias!(!isFloat!T && T.sizeof > 16 && T.sizeof <= 32);
+    /// True if `T` would be split into several XMM registers, otherwise, false.
     alias isSplit(T) = Alias!(isFloat!T && T.sizeof > 8);
 }
 
+/// Alias type to act as a floating point (`float`)
 alias FLOAT = float;
+/// Alias type to act as a native (`ptrdiff_t`)
 alias NATIVE = ptrdiff_t;
+/// Alias type to act as an array (`void[]`)
 alias ARRAY = void[];
+/// Struct to act as a reference (`ubyte[33]`)
 public struct REFERENCE { ubyte[33] bytes; }
+/// Struct to act as an inout, reference with special treatment by `mov`
 public struct INOUT { ubyte[33] bytes; }
 
+/** 
+    Creates a mixin for preparing the stack for `COUNT` arguments.
+
+    Params:
+    - `COUNT`: The number of arguments to prepare for.
+
+    Returns: Mixin
+*/
 pure string prep(uint COUNT)()
 {
     version (Windows)
@@ -129,6 +152,14 @@ pure string prep(uint COUNT)()
     }
 }
 
+/** 
+    Creates a mixin for restoring the stack after a call with `COUNT` arguments.
+
+    Params:
+    - `COUNT`: The number of arguments to restore for.
+
+    Returns: Mixin
+*/
 pure string rest(uint COUNT)()
 {
     version (Windows)

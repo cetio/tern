@@ -11,6 +11,7 @@ import std.meta;
 import std.array;
 import caiman.regex;
 
+/// Used internally for generating C# conventions conforming names.
 private static pure string toPascalCase(string input) 
 {
     auto words = input.split(".");
@@ -29,7 +30,7 @@ private static pure string toPascalCase(string input)
     Automatic C# and .h binding generator.
 
     Remarks:
-        Same requirements as `llv.traits.imports` \
+        Same requirements as `traits.getImports` \
         Depends on Importer for C# \
         Depends on types having accessors generated using `mixin accessors`
 */

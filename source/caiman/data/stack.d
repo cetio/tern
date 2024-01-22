@@ -1,5 +1,5 @@
 /// Wrapper for stack arrays & interface for popping/pushing on arrays with support for LIFO and FILO
-module caiman.mem.stack;
+module caiman.data.stack;
 
 /**
     Last In First Out
@@ -85,7 +85,7 @@ public:
         Params:
         - `val`: The value to push onto the stack.
     */
-    final push(T val)
+    void push(T val)
     {
         return arr.push(val);
     }
@@ -110,7 +110,7 @@ static:
     Throws:
     - `assert`: If array is empty.
 */
-pure @trusted U pop(O = LIFO, T : U[], U)(ref T arr)
+pure U pop(O = LIFO, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
 {
     assert(arr.length != 0, "Cannot pop from an empty collection!");
@@ -144,7 +144,7 @@ pure @trusted U pop(O = LIFO, T : U[], U)(ref T arr)
     Throws:
     - `assert`: If array is empty.
 */
-pure @trusted U peek(O, T : U[], U)(ref T arr)
+pure U peek(O, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
 {
     assert(arr.length != 0, "Cannot dup from an empty collection!");
@@ -173,7 +173,7 @@ pure @trusted U peek(O, T : U[], U)(ref T arr)
     Throws:
     - `assert`: If array has less than 2 elements.
 */
-pure @trusted void swap(O = LIFO, T : U[], U)(ref T arr)
+pure void swap(O = LIFO, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
 {
     assert(arr.length >= 2, "Cannot swap in a collection with less than 2 elements!");
@@ -200,7 +200,7 @@ pure @trusted void swap(O = LIFO, T : U[], U)(ref T arr)
     - `arr`: The array being pushed to.
     - `val`: The value to push onto the array.
 */
-pure nothrow @trusted void push(T : U[], U)(ref T arr, U val)
+pure nothrow void push(T : U[], U)(ref T arr, U val)
 {
     arr ~= val;
 }

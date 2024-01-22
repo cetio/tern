@@ -5,7 +5,7 @@ import std.algorithm;
 import std.array;
 import std.string;
 import std.conv;
-import caiman.logging;
+import caiman.data;
 
 // Directly encoded instructions
 // +r instructions

@@ -1,4 +1,4 @@
-module caiman.logging;
+module caiman.data.logging;
 
 import std.string;
 import std.algorithm;

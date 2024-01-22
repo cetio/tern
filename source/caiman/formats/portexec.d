@@ -2,6 +2,7 @@
 // TODO: ELF
 module caiman.formats.portexec;
 
+import caiman.data;
 import caiman.mem;
 import caiman.formats.pe;
 import std.traits;

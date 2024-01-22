@@ -1,5 +1,5 @@
 /// Very advanced data stream support, with optional reading, file access, endianness support, and much more.
-module caiman.mem.stream;
+module caiman.data.stream;
 
 import std.file;
 import std.conv;

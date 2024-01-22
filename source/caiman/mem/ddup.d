@@ -16,10 +16,10 @@ static:
         A shallow clone of the provided value.
 
     Example usage:
-        ```d
-        A a;
-        A b = a.dup();
-        ```
+    ```d
+    A a;
+    A b = a.dup();
+    ```
 */
 pure @trusted T dup(T)(T val)
     if (!__traits(compiles, object.dup(val)))
@@ -38,10 +38,10 @@ pure @trusted T dup(T)(T val)
         A deep clone of the provided value.
 
     Example usage:
-        ```d
-        B a; // where B is a class containing indirection
-        B b = a.ddup();
-        ```
+    ```d
+    B a; // where B is a class containing indirection
+    B b = a.ddup();
+    ```
 */
 pure @trusted T ddup(T)(T val)
     if (!isArray!T && !isAssociativeArray!T)
@@ -87,6 +87,19 @@ pure @trusted T ddup(T)(T arr)
     return ret;
 }
 
+/**
+    Deep clones a value as another type.
+
+    Params:
+    - `A`: The type to deep clone as.
+    - `val`: The value to be deep cloned.
+
+    Example usage:
+    ```d
+    B a; // where B is a class containing indirection
+    C b = a.ddupa!C();
+    ```
+*/
 pure @trusted A ddupa(A, T)(T val)
     if (!isArray!A)
 {

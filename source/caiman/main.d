@@ -39,8 +39,7 @@ struct test
 
 void main()
 {
-    PE pe = PE.read(r"C:\Users\stake\Documents\source\repos\Squire-Obfuscator\bin\x64\Release\net6.0-windows10.0.22621.0\Core.dll");
+    /* PE pe = PE.read(r"C:\Users\stake\Documents\source\repos\Squire-Obfuscator\bin\x64\Release\net6.0-windows10.0.22621.0\Core.dll");
     //PE pe = PE.read(r"C:\Users\stake\source\repos\godwit\Tests\bin\Debug\net6.0\Tests.dll");
-    writeln(pe.storageStreams[2].name);
-    writeln(getTypes!test);
+    writeln(pe.storageStreams[2].name); */
 }

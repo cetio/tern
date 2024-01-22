@@ -6,4 +6,4 @@ public import caiman.mem;
 public import caiman.make;
 public import caiman.state;
 public import caiman.traits;
-public import caiman.logging;
+public import caiman.data;

@@ -113,16 +113,16 @@ pure @nogc T clearMask(T)(T value, T mask)
 * Returns:
 *     A string representing the flag members set in the value.
 */
-pure string toString(T)(T value)
+pure string toString(T)(T val)
 {
     foreach (string member; __traits(allMembers, T))
     {
-        if (value.hasFlag(__traits(getMember, T, member)))
+        if (val.hasFlag(__traits(getMember, T, member)))
         {
             string str;
             foreach (m; __traits(allMembers, T))
             {
-                if (value.hasFlag(__traits(getMember, T, m)))
+                if (val.hasFlag(__traits(getMember, T, m)))
                     str ~= m ~ " | ";
             }
             return str[0 .. $ - 3];

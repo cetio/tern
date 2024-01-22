@@ -20,13 +20,21 @@ public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || i
 public alias isReference(T) = isIndirection!T;
 /// True if `T` is not an indirection, otherwise, false.
 public alias isValueType(T) = Alias!(!isIndirection!T);
-/// True if `func` is exported, otherwise, false.
+/// True if `F` is exported, otherwise, false.
 public alias isExport(alias F) = Alias!(__traits(getVisibility, func) == "export");
+/// True if `A` is a template, otherwise, false.
 public alias isTemplate(alias A) = Alias!(__traits(isTemplate, A));
+/// True if `A` is a module, otherwise, false.
 public alias isModule(alias A) = Alias!(__traits(isModule, A));
+/// True if `A` is a package, otherwise, false.
 public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
+/// True if `A` is a field, otherwise false. \
+/// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`
 public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
+/// True if `A` has any parents, otherwise, false.
 public alias hasParents(alias A) = Alias!(__traits(compiles, __traits(parent, A)));
+/// True if `A` has any children, otherwise, false.
+public alias hasChildren(alias A) = Alias!(__traits(allMembers, A).length != 0);
 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
@@ -87,6 +95,7 @@ public template getImplements(T)
     }  
 }
 
+/// Gets an AliasSeq of all fields in `A`
 public template getFields(alias A)
 {
     alias getFields = AliasSeq!();
@@ -98,6 +107,7 @@ public template getFields(alias A)
     }
 }
 
+/// Gets an AliasSeq of all functions in `A`
 public template getFunctions(alias A)
 {
     alias getFunctions = AliasSeq!();
@@ -109,6 +119,7 @@ public template getFunctions(alias A)
     }
 }
 
+/// Gets an AliasSeq of all types in `A`
 public template getTypes(alias A)
 {
     alias getTypes = AliasSeq!();
@@ -120,6 +131,7 @@ public template getTypes(alias A)
     }
 }
 
+/// Gets an AliasSeq of all templates in `A`
 public template getTemplates(alias A)
 {
     alias getTemplates = AliasSeq!();
