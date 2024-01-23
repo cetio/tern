@@ -298,10 +298,10 @@ public:
     * Returns:
     *   An array of values read from the stream.
     */
-    T[] read(T)(int count)
+    T[] read(T)(ptrdiff_t count)
     {
         T[] items;
-        foreach (ulong i; 0..count)
+        foreach (i; 0..count)
             items ~= read!T;
         return items;
     }
@@ -316,7 +316,7 @@ public:
     * Returns:
     *   An array of values peeked from the stream.
     */
-    T[] peek(T)(int count)
+    T[] peek(T)(ptrdiff_t count)
     {
         ulong _position = position;
         scope(exit) position = _position;
@@ -474,7 +474,7 @@ public:
     T read(T, ARGS...)()
     {
         T val;
-        foreach (field; FieldNameTuple!T)
+        foreach (field; getFields!T)
         {
             alias M = typeof(__traits(getMember, val, field));
             bool cread;
@@ -565,7 +565,7 @@ public:
         if (ARGS.length % 3 == 0)
     {
         T val;
-        foreach (string field; FieldNameTuple!T)
+        foreach (field; getFields!T)
         {
             bool cread = true;
             static foreach (i, ARG; ARGS)

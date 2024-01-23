@@ -1,5 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"mir-linux-kernel": "1.0.1",
+		"tanya": "0.19.0"
 	}
 }

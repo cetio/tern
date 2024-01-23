@@ -15,7 +15,7 @@ Currently only contains support for reading PE files, but is intended to add sup
     - Optional headers
     - Standard headers
 
-Depends on `caiman.mem.stream`.
+Depends on `caiman.experimental.stream`.
 
 ## Mem
 
@@ -44,7 +44,7 @@ For example, this makes it possible to use a string as an `inout` parameter desp
     - `REFERENCE` (`struct byte[33]`)
     - `INOUT`
 
-Depends on `caiman.mem.ddup` and `caiman.traits`.
+Depends on `caiman.experimental.ddup` and `caiman.traits`.
 
 ### DDUP
 

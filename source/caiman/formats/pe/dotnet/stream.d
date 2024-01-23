@@ -11,7 +11,7 @@ final:
 
 public enum HeapFlags : ubyte
 {
-    BigStrings = 0,
+    BigStrings = 1,
     BigBlob = 2,
     Reserved = 4,
     ExtraData = 8,

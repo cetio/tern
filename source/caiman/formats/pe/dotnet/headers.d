@@ -20,7 +20,7 @@ final:
     DataDirectory managedNativeHeader;
 }
 
-public struct Metadata
+public struct MetadataTable
 {
 public:
 final:

@@ -37,3 +37,4 @@ public import caiman.formats.pe.dotnet.tables.standalonesig;
 public import caiman.formats.pe.dotnet.tables.ttypedef;
 public import caiman.formats.pe.dotnet.tables.typeref;
 public import caiman.formats.pe.dotnet.tables.typespec;
+public import caiman.formats.pe.dotnet.tables.methodspec;

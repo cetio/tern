@@ -1,12 +1,12 @@
 /// Provides interface to ABI specific assembly templates & easy assembly templates
-module caiman.mem.abi;
+module caiman.experimental.abi;
 
 import std.conv;
 import std.traits;
 import std.meta;
 import std.string;
 import caiman.traits;
-public import caiman.mem.ddup;
+public import caiman.experimental.ddup;
 
 public:
 static:

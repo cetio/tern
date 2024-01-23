@@ -2,16 +2,64 @@
 // TODO: ELF
 module caiman.formats.portexec;
 
-import caiman.data;
-import caiman.mem;
-import caiman.formats.pe;
+import caiman;
 import std.traits;
 import std.string;
+
+public struct ClrMetadata
+{
+    MetadataTable metadataTable;
+
+    StorageStream[] storageStreams;
+    TablesStream tablesStream;
+    char[] stringsStream;
+    char[] usStream;
+    ubyte[] guidStream;
+    ubyte[] blobStream;
+
+    Assembly[] assembly;
+    AssemblyOS[] assemblyOS;
+    AssemblyProcessor[] assemblyProcessor;
+    AssemblyRef[] assemblyRef;
+    AssemblyRefOS[] assemblyRefOS;
+    AssemblyRefProcessor[] assemblyRefProcessor;
+    ClassLayout[] classLayout;
+    Constant[] constant;
+    CustomAttribute[] customAttribute;
+    DeclSecurity[] declSecurity;
+    Event[] event;
+    EventMap[] eventMap;
+    ExportedType[] exportedType;
+    Field[] field;
+    FieldLayout[] fieldLayout;
+    FieldMarshal[] fieldMarshal;
+    FieldRVA[] fieldRVA;
+    File[] file;
+    GenericParam[] genericParam;
+    GenericParamConstraint[] genericParamConstraint;
+    ImplMap[] implMap;
+    InterfaceImpl[] interfaceImpl;
+    ManifestResource[] manifestResource;
+    MemberRef[] memberRef;
+    Method[] method;
+    MethodImpl[] methodImpl;
+    MethodSemantics[] methodSemantics;
+    Module[] mmodule;
+    ModuleRef[] moduleRef;
+    NestedClass[] nestedClass;
+    Param[] param;
+    Property[] property;
+    PropertyMap[] propertyMap;
+    StandAloneSig[] standAloneSig;
+    TypeDef[] typeDef;
+    TypeRef[] typeRef;
+    TypeSpec[] typeSpec;
+    MethodSpec[] methodSpec;
+}
 
 /**
  * Represents a PE file, providing methods to read its headers and optional image data.
  */
- // TODO: DataDirectory & metadata
 public class PE
 {
 private:
@@ -61,7 +109,7 @@ final:
         sections = stream.read!Section(coffHeader.numberOfSections);
     }
 
-    void readCor20Header()
+    void readClr()
     {
         if (dataDirectories.length < 15 || dataDirectories[14].rva == 0)
             return;
@@ -69,20 +117,146 @@ final:
         stream.position = getOffset(dataDirectories[14].rva);
         cor20Header = stream.read!Cor20Header;
         stream.position = getOffset(cor20Header.metadata.rva);
-        metadata = stream.read!(Metadata, "versionString", ReadKind.Field, "versionStringLength");
+        clrMetadata.metadataTable = stream.read!(MetadataTable, "versionString", ReadKind.Field, "versionStringLength");
 
-        foreach (i; 0..metadata.streams)
+        foreach (i; 0..clrMetadata.metadataTable.streams)
         {
-            StorageStream ss;
-            ss.offset = stream.read!uint;
-            ss.size = stream.read!uint;
-            ss.name = stream.readString!char;
+            auto ss = StorageStream(
+                stream.read!uint,
+                stream.read!uint,
+                stream.readString!char
+            );
 
-            if (i < metadata.streams - 1)
+            if (i < clrMetadata.metadataTable.streams - 1)
                 stream.stepUntil('#');
+                
             stream.position -= 8;
-            storageStreams ~= ss;
+            clrMetadata.storageStreams ~= ss;
         }
+
+        ptrdiff_t position;
+        foreach (ss; clrMetadata.storageStreams)
+        {
+            if (ss.name == "#~" || ss.name == "#-")
+            {
+                stream.position = getOffset(cor20Header.metadata.rva) + ss.offset;
+                position = stream.position;
+                clrMetadata.tablesStream = stream.read!TablesStream;
+            }
+            else if (ss.name == "#Strings")
+            {
+                stream.position = getOffset(cor20Header.metadata.rva) + ss.offset;
+                clrMetadata.stringsStream = stream.read!char(ss.size);
+            }
+            else if (ss.name == "#US")
+            {
+                stream.position = getOffset(cor20Header.metadata.rva) + ss.offset;
+                clrMetadata.usStream = stream.read!char(ss.size);
+            }
+            else if (ss.name == "#GUID")
+            {
+                stream.position = getOffset(cor20Header.metadata.rva) + ss.offset;
+                clrMetadata.guidStream = stream.read!ubyte(ss.size);
+            }
+            else if (ss.name == "#Blob")
+            {
+                stream.position = getOffset(cor20Header.metadata.rva) + ss.offset;
+                clrMetadata.blobStream = stream.read!ubyte(ss.size);
+            }
+        }
+        stream.position = position + TablesStream.sizeof;
+
+        foreach (member; getFields!TableTokens)
+        {
+            if (!clrMetadata.tablesStream.tokens.hasFlag(__traits(getMember, TableTokens, member)))
+                continue;
+
+            if (member == "Module")
+                clrMetadata.mmodule = new Module[stream.read!uint];
+            else if (member == "TypeRef")
+                clrMetadata.typeRef = new TypeRef[stream.read!uint];
+            else if (member == "TypeDef")
+                clrMetadata.typeDef = new TypeDef[stream.read!uint];
+            else if (member == "Field")
+                clrMetadata.field = new Field[stream.read!uint];
+            else if (member == "MethodDef")
+                clrMetadata.method = new Method[stream.read!uint];
+            else if (member == "Param")
+                clrMetadata.param = new Param[stream.read!uint];
+            else if (member == "InterfaceImpl")
+                clrMetadata.interfaceImpl = new InterfaceImpl[stream.read!uint];
+            else if (member == "MemberRef")
+                clrMetadata.memberRef = new MemberRef[stream.read!uint];
+            else if (member == "Constant")
+                clrMetadata.constant = new Constant[stream.read!uint];
+            else if (member == "CustomAttribute")
+                clrMetadata.customAttribute = new CustomAttribute[stream.read!uint];
+            else if (member == "FieldMarshal")
+                clrMetadata.fieldMarshal = new FieldMarshal[stream.read!uint];
+            else if (member == "DeclSecurity")
+                clrMetadata.declSecurity = new DeclSecurity[stream.read!uint];
+            else if (member == "ClassLayout")
+                clrMetadata.classLayout = new ClassLayout[stream.read!uint];
+            else if (member == "FieldLayout")
+                clrMetadata.fieldLayout = new FieldLayout[stream.read!uint];
+            else if (member == "StandAloneSig")
+                clrMetadata.standAloneSig = new StandAloneSig[stream.read!uint];
+            else if (member == "EventMap")
+                clrMetadata.eventMap = new EventMap[stream.read!uint];
+            else if (member == "Event")
+                clrMetadata.event = new Event[stream.read!uint];
+            else if (member == "PropertyMap")
+                clrMetadata.propertyMap = new PropertyMap[stream.read!uint];
+            else if (member == "Property")
+                clrMetadata.property = new Property[stream.read!uint];
+            else if (member == "MethodSemantics")
+                clrMetadata.methodSemantics = new MethodSemantics[stream.read!uint];
+            else if (member == "MethodImpl")
+                clrMetadata.methodImpl = new MethodImpl[stream.read!uint];
+            else if (member == "ModuleRef")
+                clrMetadata.moduleRef = new ModuleRef[stream.read!uint];
+            else if (member == "TypeSpec")
+                clrMetadata.typeSpec = new TypeSpec[stream.read!uint];
+            else if (member == "ImplMap")
+                clrMetadata.implMap = new ImplMap[stream.read!uint];
+            else if (member == "FieldRva")
+                clrMetadata.fieldRVA = new FieldRVA[stream.read!uint];
+            else if (member == "Assembly")
+                clrMetadata.assembly = new Assembly[stream.read!uint];
+            else if (member == "AssemblyProcessor")
+                clrMetadata.assemblyProcessor = new AssemblyProcessor[stream.read!uint];
+            else if (member == "AssemblyOS")
+                clrMetadata.assemblyOS = new AssemblyOS[stream.read!uint];
+            else if (member == "AssemblyRef")
+                clrMetadata.assemblyRef = new AssemblyRef[stream.read!uint];
+            else if (member == "AssemblyRefProcessor")
+                clrMetadata.assemblyRefProcessor = new AssemblyRefProcessor[stream.read!uint];
+            else if (member == "AssemblyRefOS")
+                clrMetadata.assemblyRefOS = new AssemblyRefOS[stream.read!uint];
+            else if (member == "File")
+                clrMetadata.file = new File[stream.read!uint];
+            else if (member == "ExportedType")
+                clrMetadata.exportedType = new ExportedType[stream.read!uint];
+            else if (member == "ManifestResource")
+                clrMetadata.manifestResource = new ManifestResource[stream.read!uint];
+            else if (member == "NestedClass")
+                clrMetadata.nestedClass = new NestedClass[stream.read!uint];
+            else if (member == "GenericParam")
+                clrMetadata.genericParam = new GenericParam[stream.read!uint];
+            else if (member == "MethodSpec")
+                clrMetadata.methodSpec = new MethodSpec[stream.read!uint];
+            else if (member == "GenericParamConstraint")
+                clrMetadata.genericParamConstraint = new GenericParamConstraint[stream.read!uint];
+        }
+import std.stdio;
+        import std.conv;
+        writeln(stream.position.to!string(16));
+        foreach (member; getFields!TableTokens)
+        {
+            if (member == "Module")
+                clrMetadata.mmodule = stream.read!Module(clrMetadata.mmodule.length);
+        }
+        
     }
 
 public:
@@ -93,8 +267,7 @@ public:
     Section[] sections;
 
     Cor20Header cor20Header;
-    Metadata metadata;
-    StorageStream[] storageStreams;
+    ClrMetadata clrMetadata;
 
     /**
     * Reads a PE file from the specified file path.
@@ -115,7 +288,7 @@ public:
         pe.readOptionalImage();
         pe.readDirSec();
 
-        pe.readCor20Header();
+        pe.readClr();
 
         return pe;
     }

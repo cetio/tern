@@ -5,8 +5,8 @@ public struct Module
 public:
 final:
     ushort generation;
-    uint name;
-    uint mvid;
-    uint encId;
-    uint encBaseId;
+    ushort name;
+    ushort mvid;
+    ushort encId;
+    ushort encBaseId;
 }

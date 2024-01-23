@@ -1,5 +1,5 @@
 /// Provides advanced shallow and deep cloning support
-module caiman.mem.ddup;
+module caiman.experimental.ddup;
 
 import std.traits;
 import std.meta;

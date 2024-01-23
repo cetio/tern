@@ -1,4 +1,4 @@
-module caiman.mem.eclipse;
+module caiman.experimental.eclipse;
 
 import std.bitmanip;
 import std.algorithm;

@@ -171,7 +171,7 @@ public template getImports(alias M)
 pure void*[] indirections(T)(T val)
 {
     void*[] ptrs;
-    static foreach (field; FieldNameTuple!T)
+    static foreach (field; getFields!T)
     {
         static if (isIndirection!T)
             ptrs ~= cast(void*)&__traits(getMember, val, field);
