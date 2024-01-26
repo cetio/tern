@@ -1,5 +1,8 @@
 # Caiman
 
+[![GitHub tag](https://img.shields.io/github/tag/cetio/caiman?include_prereleases=&sort=semver&color=blue)](https://github.com/cetio/caiman/releases/)
+[![License](https://img.shields.io/badge/License-AGPL--3-blue)](#license)
+
 [![Godwit](https://img.shields.io/badge/Godwit-orange?style=for-the-badge&logo=github)](https://github.com/cetio/godwit)
 
 Library with various different utilities, mostly centered around filling comptime niches and improving parts of the standard library that I deem lacking.
@@ -141,4 +144,4 @@ No dependencies.
 
 ## License
 
-[MPL-2](/LICENSE.txt)
+Released under [AGPL-3](/LICENSE.txt) by [@cetio](https://github.com/cetio).
