@@ -4,9 +4,23 @@ module caiman.meta.random;
 import std.traits;
 import std.meta;
 
+/** 
+ * Generates a random boolean with the odds `1/max`
+ *
+ * Params:
+ *   max = Maximum odds, this is what the chance is out of.
+ */
 public alias randomBool(uint max, uint seed = uint.max, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__) 
     = Alias!(random!(uint, 0, max, seed, r0, r1, r2, r3) == 0);
 
+/** 
+ * Generates a random floating point value.
+ *
+ * Params:
+ *   min = Minimum value.
+ *   max = Maximum value.
+ *   seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
+ */
 public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__) 
     if (is(T == float) || is(T == double))
 {
@@ -16,6 +30,14 @@ public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__
     }
 }
 
+/** 
+ * Generates a random integral value.
+ *
+ * Params:
+ *   min = Minimum value.
+ *   max = Maximum value.
+ *   seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
+ */
 public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)
     if (isIntegral!T)
 {

@@ -95,7 +95,7 @@ public:
         Checks if there are enough elements left in the data array to read.
         
         Params:
-        - `size`: The number of elements to try to read. Defaults to 1.
+           size = The number of elements to try to read. Defaults to 1.
         
         Returns:
             True if there are at least size elements left to read from the current position. 
@@ -109,7 +109,7 @@ public:
         Checks if there are enough elements left in the data array to read `T`.
         
         Params:
-        - `T`: The type to check if can be read.
+           T = The type to check if can be read.
         
         Returns:
             True if there are at least `T.sizeof` bytes left to read from the current position. 
@@ -123,7 +123,7 @@ public:
      * Moves the position in the stream by the size of type T.
      *
      * Params:
-     *   - `T`: The size of type to move the position by.
+     *    T = The size of type to move the position by.
      */
     @nogc void step(T)()
     {
@@ -134,8 +134,8 @@ public:
      * Moves the position in the stream by the size of type T * elements.
      *
      * Params:
-     *   - `T`: The size of type to move the position by.
-     *   - `count`: The number of elements.
+     *    T = The size of type to move the position by.
+     *    count = The number of elements.
      */
     @nogc void step(T)(int count)
     {
@@ -164,8 +164,8 @@ public:
      * Does not work like a conventional seek, and will read type T from the stream, using that as the seek offset.
      *
      * Params:
-     *   - `T`: The offset value for seeking.
-     *   - `SEEK`: The direction of the seek operation (Start, Current, or End).
+     *    T = The offset value for seeking.
+     *    SEEK = The direction of the seek operation (Start, Current, or End).
      */
     @nogc void seek(T, Seek SEEK)()
         if (isIntegral!T)
@@ -188,7 +188,7 @@ public:
      * Reads the next value from the stream of type T.
      *
      * Params:
-     *   - `T`: The type of data to be read.
+     *    T = The type of data to be read.
      *
      * Returns:
      *   The value read from the stream.
@@ -208,7 +208,7 @@ public:
     * Peeks at the next value from the stream of type T without advancing the stream position.
     *
     * Params:
-    *   - `T`: The type of data to peek.
+    *    T = The type of data to peek.
     *
     * Returns:
     *   The value peeked from the stream.
@@ -227,7 +227,7 @@ public:
     * Reads an array of type T from the stream.
     *
     * Params:
-    *   - `T`: The type of data to be read.
+    *    T = The type of data to be read.
     *
     * Returns:
     *   An array read from the stream.
@@ -245,7 +245,7 @@ public:
     * Peeks an array of type T from the stream without advancing the stream position.
     *
     * Params:
-    *   - `T`: The type of data to peek.
+    *    T = The type of data to peek.
     *
     * Returns:
     *   An array peeked from the stream.
@@ -262,8 +262,8 @@ public:
     * Writes the provided value to the stream.
     *
     * Params:
-    *   - `T`: The type of data to be written.
-    *   - `val`: The value to be written to the stream.
+    *    T = The type of data to be written.
+    *    val = The value to be written to the stream.
     */
     @nogc void write(T)(T val)
     {
@@ -278,8 +278,8 @@ public:
     * Writes the provided value to the stream without advancing the stream position.
     *
     * Params:
-    *   - `T`: The type of data to be written.
-    *   - `val`: The value to be written to the stream.
+    *    T = The type of data to be written.
+    *    val = The value to be written to the stream.
     */
     @nogc void put(T)(T val)
     {
@@ -293,8 +293,8 @@ public:
     * Reads multiple values of type T from the stream.
     *
     * Params:
-    *   - `T`: The type of data to be read.
-    *   - `count`: The number of values to read from the stream.
+    *    T = The type of data to be read.
+    *    count = The number of values to read from the stream.
     *
     * Returns:
     *   An array of values read from the stream.
@@ -311,8 +311,8 @@ public:
     * Peeks at multiple values of type T from the stream without advancing the stream position.
     *
     * Params:
-    *   - `T`: The type of data to peek.
-    *   - `count`: The number of values to peek from the stream.
+    *    T = The type of data to peek.
+    *    count = The number of values to peek from the stream.
     *
     * Returns:
     *   An array of values peeked from the stream.
@@ -328,8 +328,8 @@ public:
     * Writes multiple values of type T to the stream.
     *
     * Params:
-    *   - `T`: The type of data to be written.
-    *   - `items`: An array of values to be written to the stream.
+    *    T = The type of data to be written.
+    *    items = An array of values to be written to the stream.
     */
     @nogc void write(T, bool NOPREFIX = false)(T[] items)
     {
@@ -345,8 +345,8 @@ public:
     * Writes multiple values of type T to the stream without advancing the stream position.
     *
     * Params:
-    *   - `T`: The type of data to be written.
-    *   - `items`: An array of values to be written to the stream.
+    *    T = The type of data to be written.
+    *    items = An array of values to be written to the stream.
     */
     @nogc void put(T, bool NOPREFIX = false)(T[] items)
     {
@@ -359,8 +359,8 @@ public:
     * Reads a string from the stream considering the character width and prefixing.
     *
     * Params:
-    *   - `CHAR`: The character type used for reading the string (char, wchar, or dchar).
-    *   - `PREFIXED`: Indicates whether the string is prefixed. Default is false.
+    *    CHAR = The character type used for reading the string (char, wchar, or dchar).
+    *    PREFIXED = Indicates whether the string is prefixed. Default is false.
     *
     * Returns:
     *   The read string from the stream.
@@ -381,8 +381,8 @@ public:
     * Reads a string from the stream considering the character width and prefixing without advancing the stream position.
     *
     * Params:
-    *   - `CHAR`: The character type used for reading the string (char, wchar, or dchar).
-    *   - `PREFIXED`: Indicates whether the string is prefixed. Default is false.
+    *    CHAR = The character type used for reading the string (char, wchar, or dchar).
+    *    PREFIXED = Indicates whether the string is prefixed. Default is false.
     *
     * Returns:
     *   The read string from the stream.
@@ -399,9 +399,9 @@ public:
     * Writes a string to the stream considering the character width and prefixing.
     *
     * Params:
-    *   - `CHAR`: The character type used for writing the string (char, wchar, or dchar).
-    *   - `PREFIXED`: Indicates whether the string is prefixed. Default is false.
-    *   - `str`: The string to be written to the stream.
+    *    CHAR = The character type used for writing the string (char, wchar, or dchar).
+    *    PREFIXED = Indicates whether the string is prefixed. Default is false.
+    *    str = The string to be written to the stream.
     */
     void writeString(CHAR, bool PREFIXED = false)(string str)
         if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
@@ -416,9 +416,9 @@ public:
     * Writes a string into the stream considering the character width and prefixing without advancing the stream position.
     *
     * Params:
-    *   - `CHAR`: The character type used for writing the string (char, wchar, or dchar).
-    *   - `PREFIXED`: Indicates whether the string is prefixed. Default is false.
-    *   - `str`: The string to be put into the stream.
+    *    CHAR = The character type used for writing the string (char, wchar, or dchar).
+    *    PREFIXED = Indicates whether the string is prefixed. Default is false.
+    *    str = The string to be put into the stream.
     */
     void putString(CHAR, bool PREFIXED = false)(string str)
         if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
@@ -456,7 +456,7 @@ public:
     * Writes an integer value encoded in 7 bits to the stream.
     *
     * Params:
-    *   - `val`: The integer value to be written to the stream.
+    *    val = The integer value to be written to the stream.
     */
     @nogc void write7EncodedInt(int val)
     {
@@ -476,8 +476,8 @@ public:
     * Commits the results of multiple functions to a byte stream and returns the combined result.
     *
     * Params:
-    *   - `T`: The type representing the return value.
-    *   - `FUNCS`: Variadic template parameter representing the functions to be executed.
+    *    T = The type representing the return value.
+    *    FUNCS = Variadic template parameter representing the functions to be executed.
     *
     * Returns:
     *   Returns the combined result of executing the provided functions as a byte stream.
@@ -506,8 +506,8 @@ public:
     * Commits the results of multiple functions to the stream and writes it to the stream.
     *
     * Params:
-    * - `T`: The type representing the return value.
-    * - `FUNCS`: Variadic template parameter representing the functions to be executed.
+    *    T = The type representing the return value.
+    *    FUNCS = Variadic template parameter representing the functions to be executed.
     */
     void commitWrite(T, FUNCS...)()
     {
@@ -524,8 +524,8 @@ public:
     * Commits the results of multiple functions the stream and writes it to the stream without advancing the stream position.
     *
     * Params:
-    * - `T`: The type representing the return value.
-    * - `FUNCS`: Variadic template parameter representing the functions to be executed.
+    *    T = The type representing the return value.
+    *    FUNCS = Variadic template parameter representing the functions to be executed.
     */
     void commitPut(T, FUNCS...)()
     {
@@ -543,8 +543,8 @@ public:
     * Designed specifically for better control reading string and array fields.
     *
     * Params:
-    * - `T`: The type representing the structure to read into.
-    * - `ARGS`: Variadic template parameter representing field names and read kinds.
+    *    T = The type representing the structure to read into.
+    *    ARGS = Variadic template parameter representing field names and read kinds.
     *
     * Returns:
     *   Returns an instance of type T with fields populated based on the specified read operations.
@@ -658,8 +658,8 @@ public:
     * Reads a type from the stream using optional fields.
     *
     * Params:
-    *   - `T`: The type to be read from the stream.
-    *   - `ARGS...`: The arguments for optional fields.
+    *    T = The type to be read from the stream.
+    *    ARGS... = The arguments for optional fields.
     *
     * Returns:
     *   The read type read from the stream.
@@ -699,7 +699,7 @@ public:
         Flushes the data stored in this stream to the given file path.
 
         Params:
-        - `filePath`: The file path to flush to.
+           filePath = The file path to flush to.
     */
     void flush(string filePath)
     {

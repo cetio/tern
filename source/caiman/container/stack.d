@@ -45,9 +45,6 @@ public:
 
         Returns:
             The value that was popped off of the stack.
-
-        Throws:
-        `assert`: If array is empty.
     */
     T pop()
     {
@@ -59,9 +56,6 @@ public:
 
         Returns:
             The value that was popped off of the stack.
-
-        Throws:
-        `assert`: If array is empty.
     */
     T peek()
     {
@@ -70,9 +64,6 @@ public:
 
     /** 
         Swaps the two top values of the stack.
-
-        Throws:
-        `assert`: If array has less than 2 elements.
     */
     void swap()
     {
@@ -83,7 +74,7 @@ public:
         Pushes a value onto the stack.
         
         Params:
-        - `val`: The value to push onto the stack.
+           val = The value to push onto the stack.
     */
     void push(T val)
     {
@@ -97,18 +88,15 @@ static:
     Pops a value off of the array
 
     Params:
-    - `O`: Stack order to pop the value using.
-    - `T`: Array type being popped from.
-    - `arr`: The array being popped from.
+       O = Stack order to pop the value using.
+       T = Array type being popped from.
+       arr = The array being popped from.
 
     Returns: 
         The value that was popped off the stack.
 
     Remarks:
         Defaults to `LIFO`
-
-    Throws:
-    - `assert`: If array is empty.
 */
 pure U pop(O = LIFO, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
@@ -131,18 +119,15 @@ pure U pop(O = LIFO, T : U[], U)(ref T arr)
     Duplicates the top value of the array without modifying the stack.
 
     Params:
-    - `O`: Stack order to duplicate the value using.
-    - `T`: Array type.
-    - `arr`: The array.
+       O = Stack order to duplicate the value using.
+       T = Array type.
+       arr = The array.
 
     Returns: 
         The duplicated value from the top of the stack.
 
     Remarks:
         Defaults to `LIFO`
-
-    Throws:
-    - `assert`: If array is empty.
 */
 pure U peek(O, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
@@ -163,15 +148,12 @@ pure U peek(O, T : U[], U)(ref T arr)
     Swaps the top two values on the stack.
 
     Params:
-    - `O`: Stack order to perform the swap on.
-    - `T`: Array type.
-    - `arr`: The array.
+       O = Stack order to perform the swap on.
+       T = Array type.
+       arr = The array.
 
     Remarks:
         Defaults to `LIFO`
-
-    Throws:
-    - `assert`: If array has less than 2 elements.
 */
 pure void swap(O = LIFO, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
@@ -196,9 +178,9 @@ pure void swap(O = LIFO, T : U[], U)(ref T arr)
     Pushes a value onto the array.
 
     Params:
-    - `T`: Array type being pushed to.
-    - `arr`: The array being pushed to.
-    - `val`: The value to push onto the array.
+       T = Array type being pushed to.
+       arr = The array being pushed to.
+       val = The value to push onto the array.
 */
 pure nothrow void push(T : U[], U)(ref T arr, U val)
 {

@@ -31,18 +31,18 @@ For example, this makes it possible to use a string as an `inout` parameter desp
 - 20 arguments
 - Specifically designed for SystemV and MSABI (automatically picks by OS)
 - Aliases for determining how a type is interacted with by the ABI
-    - `isFloat`
-    - `isSplit`
-    - `isNative`
-    - `isReference`
-    - `isPaired`
-    - `isOverflow`
+       isFloat`
+       isSplit`
+       isNative`
+       isReference`
+       isPaired`
+       isOverflow`
 - Types/aliases for specific type interactions
-    - `FLOAT` (`float`)
-    - `NATIVE` (`ptrdiff_t`)
-    - `ARRAY` (`void[]`)
-    - `REFERENCE` (`struct byte[33]`)
-    - `INOUT`
+       FLOAT` (`float`)
+       NATIVE` (`ptrdiff_t`)
+       ARRAY` (`void[]`)
+       REFERENCE` (`struct byte[33]`)
+       INOUT`
 
 Depends on `caiman.memory.ddup` and `caiman.traits`.
 
@@ -50,12 +50,12 @@ Depends on `caiman.memory.ddup` and `caiman.traits`.
 
 Deep and shallow cloning support.
 
-- `dup` for shallow cloning any type
+   dup` for shallow cloning any type
     - Will use the default object.dup() for arrays
         - This is heresy, because object.dup() isn't even actually a shallow clone, it's a deep clone; but we must try to retain portability.
-- `ddup` for deep cloning any type, including arrays
+   ddup` for deep cloning any type, including arrays
     - Acts identically to object.dup() on arrays.
-- `drip` for direct copying bytes from any type to another type.
+   drip` for direct copying bytes from any type to another type.
 
 No dependencies.
 
@@ -63,7 +63,7 @@ No dependencies.
 
 Wrapper for stack arrays & interface for popping/pushing on arrays with support for LIFO and FILO.
 
-- `push`, `pop`, and `peek` for interacting with arrays like stacks.
+   push`, `pop`, and `peek` for interacting with arrays like stacks.
 - Stack structures.
 
 No dependencies.
@@ -82,8 +82,8 @@ No dependencies.
 
 Fast, highly efficient regex designed for both runtime and comptime.
 
-- `regex` for all your comptime needs, including building `Regex` at comptime for using it later at runtime, or doing comptime regex operations.
-- `Regex` for all your runtime needs.
+   regex` for all your comptime needs, including building `Regex` at comptime for using it later at runtime, or doing comptime regex operations.
+   Regex` for all your runtime needs.
 
 Depends on `caiman.state`.
 
@@ -115,27 +115,27 @@ Depends on `caiman.traits` very loosely (only for `@exempt` attribute.)
 Largely fills in any gaps of std.traits, while also providing some unique reflection.
 
 - Aliases and templates for checking properties of types/functions.
-    - `isIndirection(T)`
-    - `isReference(T)`
-    - `isValueType(T)`
-    - `isExport(T)`
-    - `isTemplate(T)`
-    - `isModule(T)`
-    - `isPackage(T)`
-    - `isField(T)`
-    - `hasParents(T)`
-    - `wrapsIndirection(T)`
+       isIndirection(T)`
+       isReference(T)`
+       isValueType(T)`
+       isExport(T)`
+       isTemplate(T)`
+       isModule(T)`
+       isPackage(T)`
+       isField(T)`
+       hasParents(T)`
+       wrapsIndirection(T)`
 - Templates for getting data from types and modules.
-    - `ElementType(T)`
-    - `getImplements(T)`
-    - `getFields(alias)`
-    - `getFunctions(alias)`
-    - `getTypes(alias)`
-    - `getTemplates(alias)`
-    - `getImports(alias)`
-    - `indirections(T)`
+       ElementType(T)`
+       getImplements(T)`
+       getFields(alias)`
+       getFunctions(alias)`
+       getTypes(alias)`
+       getTemplates(alias)`
+       getImports(alias)`
+       indirections(T)`
 - Ease of use template for automatically generating properties for all fields (unless marked `@exempt`) and their possible flag states (if enum type and enum is marked `@flags`.)
-- `pragmatize` for stripping all special characters from a string and replacing all of the important ones with literals.
+   pragmatize` for stripping all special characters from a string and replacing all of the important ones with literals.
 
 No dependencies.
 

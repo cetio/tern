@@ -36,9 +36,9 @@ import std.traits;
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *      mixin liberty;
+ *    mixin liberty;
  *
- *      string y() => "yohoho!";
+ *    string y() => "yohoho!";
  *  }
  *  ```
  */
@@ -72,9 +72,9 @@ public template coalesce(T)
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *      mixin liberty;
+ *    mixin liberty;
  *
- *      string y() => "yohoho!";
+ *    string y() => "yohoho!";
  *  }
  *  ```
  */

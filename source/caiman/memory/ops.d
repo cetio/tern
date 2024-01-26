@@ -10,7 +10,7 @@ static:
     Shallow clones a value.
 
     Params:
-    - `val`: The value to be shallow cloned.
+       val = The value to be shallow cloned.
 
     Returns:
         A shallow clone of the provided value.
@@ -32,7 +32,7 @@ pure @trusted T dup(T)(T val)
     Deep clones a value.
 
     Params:
-    - `val`: The value to be deep cloned.
+       val = The value to be deep cloned.
 
     Returns:
         A deep clone of the provided value.
@@ -91,8 +91,8 @@ pure @trusted T ddup(T)(T arr)
     Deep clones a value as another type.
 
     Params:
-    - `A`: The type to deep clone as.
-    - `val`: The value to be deep cloned.
+       A = The type to deep clone as.
+       val = The value to be deep cloned.
 
     Example usage:
     ```d
@@ -122,6 +122,15 @@ pure @trusted A ddupa(A, T)(T val)
     return ret;
 }
 
+/** 
+ * Extracts a `uint` from an arbitrarily sized byte array.
+ *
+ * Params:
+ *   bytes = The bytes to extract a `uint` from.
+ *
+ * Returns: A uint derived from `bytes`
+ */
+ // TODO: Remove this?
 uint drip(ubyte[] bytes) 
 {
     uint ret = 0;
@@ -130,6 +139,14 @@ uint drip(ubyte[] bytes)
     return ret;
 }
 
+/** 
+ * Copies all data from `src` to `dest` within range `0..length`
+ *
+ * Params:
+ *   src = Data source pointer.
+ *   dest = Data destination pointer.
+ *   length = Length of data to be copied.
+ */
 void copy(void* src, void* dest, ptrdiff_t length)
 {
     switch (length & 15)
@@ -157,6 +174,14 @@ void copy(void* src, void* dest, ptrdiff_t length)
     }
 }
 
+/** 
+ * Sets all bytes at `dest` to `val` within range `0..length`
+ *
+ * Params:
+ *   dest = Data destination pointer.
+ *   length = Length of data to be copied.
+ *   val = Value to set all bytes to.
+ */
 void memset(void* dest, ptrdiff_t length, ubyte val)
 {
     switch (length & 15)

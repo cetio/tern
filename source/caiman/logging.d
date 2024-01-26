@@ -61,7 +61,16 @@ public enum AnsiColor
 public:
 static:
 
-
+/** 
+ * Highlights `matchOf` in `matchTo` with `color`
+ *
+ * Params:
+ *   color = The color to highlight using.
+ *   matchTo = The string being highlighted.
+ *   matchOf = The string to highlight.
+ *
+ * Returns: `matchTo` with the color and reset inserted as to highlight `matchOf`
+ */
 pure string highlight(AnsiColor color, string matchTo, string matchOf)
 {
     if (!matchTo.canFind(matchOf)) 
@@ -70,6 +79,17 @@ pure string highlight(AnsiColor color, string matchTo, string matchOf)
     return matchTo.replace(matchOf, color~matchOf~AnsiColor.Reset);
 }
 
+/** 
+ * Highlights the string between `matchStart` and `matchEnd` in `matchTo` with `color`
+ *
+ * Params:
+ *   color = The color to highlight using.
+ *   matchTo = The string being highlighted.
+ *   matchStart = The start index of the string to highlight.
+ *   matchEnd = The end index of the string to highlight.
+ *
+ * Returns: `matchTo` with the color and reset inserted as to highlight the specified string.
+ */
 pure string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
     if (!matchStart >= 0 && matchEnd >= matchStart && matchEnd <= matchTo.length)
@@ -78,6 +98,14 @@ pure string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptr
     return matchTo[0..matchStart]~color~matchTo[matchStart..matchEnd]~AnsiColor.Reset~matchTo[matchEnd..$];
 }
 
+/** 
+ * Raises an exception using optional highlighting.
+ *
+ * Params:
+ *   exception = The exception to be raised.
+ *   matchTo = String to use for syntax/error highlighting.
+ *   matchOf = String to use to search for and highlight in `matchTo`
+ */
 pure void raise(string exception, string matchTo = null, string matchOf = null)
 {
     if (matchTo == null)
@@ -86,26 +114,59 @@ pure void raise(string exception, string matchTo = null, string matchOf = null)
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchOf));
 }
 
+/** 
+ * Raises an exception using optional highlighting.
+ *
+ * Params:
+ *   exception = The exception to be raised.
+ *   matchTo = String to use for syntax/error highlighting.
+ *   matchStart = Start index of the string to use to search for and highlight in `matchTo`
+ *   matchEnd = End index of the string to use to search for and highlight in `matchTo`
+ */
 pure void raise(string exception, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchStart, matchEnd));
 }
 
+/** 
+ * Logs `message` as an error (`[!]`) in stdout.
+ *
+ * Params:
+ *   message = The message to be logged.
+ */
 void logError(string message)
 {
     writeln(format("[%Y-%m-%d %H:%M:%S]", Clock.currTime())~" "~AnsiColor.Red~"[!] "~AnsiColor.Reset~message);
 }
 
+/** 
+ * Logs `message` as a warning (`[~]`) in stdout.
+ *
+ * Params:
+ *   message = The message to be logged.
+ */
 void logBad(string message)
 {
-    writeln(format("[%Y-%m-%d %H:%M:%S]", Clock.currTime())~" "~AnsiColor.Yellow~"[<] "~AnsiColor.Reset~message);
+    writeln(format("[%Y-%m-%d %H:%M:%S]", Clock.currTime())~" "~AnsiColor.Yellow~"[~] "~AnsiColor.Reset~message);
 }
 
+/** 
+ * Logs `message` as okay (`[>]`) in stdout.
+ *
+ * Params:
+ *   message = The message to be logged.
+ */
 void logOk(string message)
 {
     writeln(format("[%Y-%m-%d %H:%M:%S]", Clock.currTime())~" "~AnsiColor.Green~"[>] "~AnsiColor.Reset~message);
 }
 
+/** 
+ * Logs `message` as information (`[i]`) in stdout.
+ *
+ * Params:
+ *   message = The message to be logged.
+ */
 void logInfo(string message)
 {
     writeln(format("[%Y-%m-%d %H:%M:%S]", Clock.currTime())~" "~AnsiColor.Blue~"[i] "~AnsiColor.Reset~message);

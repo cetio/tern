@@ -134,7 +134,7 @@ public struct INOUT { ubyte[33] bytes; }
     Creates a mixin for preparing the stack for `COUNT` arguments.
 
     Params:
-    - `COUNT`: The number of arguments to prepare for.
+       COUNT = The number of arguments to prepare for.
 
     Returns: Mixin
 */
@@ -156,7 +156,7 @@ pure string prep(uint COUNT)()
     Creates a mixin for restoring the stack after a call with `COUNT` arguments.
 
     Params:
-    - `COUNT`: The number of arguments to restore for.
+       COUNT = The number of arguments to restore for.
 
     Returns: Mixin
 */
@@ -183,10 +183,10 @@ shared ubyte[8] movBuff;
     Use `prep!(uint)` to prepare the stack and rest!(uint) to restore the stack.
 
     Params:
-    - `ID`: Register (or argument index) to put `VAR` into.
-    - `VAR`: Value to put into `ID`
-    - `AS`: Type to emulate `VAR` as, defaults to void for the same type as `VAR` is.
-    - `LINE`: Used for preventing collisions when storing high/low of `VAR`. Change to a different value if getting errors.
+       ID = Register (or argument index) to put `VAR` into.
+       VAR = Value to put into `ID`
+       AS = Type to emulate `VAR` as, defaults to void for the same type as `VAR` is.
+       LINE = Used for preventing collisions when storing high/low of `VAR`. Change to a different value if getting errors.
 
     Example:
         ```d
