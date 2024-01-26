@@ -53,9 +53,11 @@ void main()
     c.print();
     c.x().writeln;
     c.y().writeln; */
-    ubyte16 vec;
+    /* ubyte16 vec;
     vec = vec + cast(ubyte)1;
-    vec.writeln;
+    vec.writeln; */
+    foreach (i; 0..1_000_000)
+        malloc(32);
 }
 
 

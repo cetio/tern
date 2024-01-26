@@ -6,6 +6,9 @@ import core.simd;
 
 public:
 static:
+pure:
+@nogc:
+@trusted:
 /**
     Shallow clones a value.
 
@@ -21,7 +24,7 @@ static:
     A b = a.dup();
     ```
 */
-pure @trusted T dup(T)(T val)
+T dup(T)(T val)
     if (!__traits(compiles, object.dup(val)))
 {
     // Cloned when passed as a parameter
@@ -43,7 +46,7 @@ pure @trusted T dup(T)(T val)
     B b = a.ddup();
     ```
 */
-pure @trusted T ddup(T)(T val)
+T ddup(T)(T val)
     if (!isArray!T && !isAssociativeArray!T)
 {
     static if (!hasIndirections!T)
@@ -68,7 +71,7 @@ pure @trusted T ddup(T)(T val)
 }
 
 /// ditto
-pure @trusted T ddup(T)(T arr)
+T ddup(T)(T arr)
     if (isArray!T && !isAssociativeArray!T)
 {
     T ret;
@@ -78,7 +81,7 @@ pure @trusted T ddup(T)(T arr)
 }
 
 /// ditto
-pure @trusted T ddup(T)(T arr)
+T ddup(T)(T arr)
     if (isAssociativeArray!T)
 {
     T ret;
@@ -100,7 +103,7 @@ pure @trusted T ddup(T)(T arr)
     C b = a.ddupa!C();
     ```
 */
-pure @trusted A ddupa(A, T)(T val)
+A ddupa(A, T)(T val)
     if (!isArray!A)
 {
     static if (isPointer!A)
