@@ -1,4 +1,4 @@
-module caiman.experimental.allocator;
+/+ module caiman.memory.allocator.talloc;
 
 import std.experimental.allocator.mmap_allocator;
 import std.experimental.allocator;
@@ -7,10 +7,9 @@ import core.sync.mutex;
 debug import std.stdio;
 import std.algorithm;
 debug import std.conv;
+import caiman.container.linkedlist;
 
-private enum BLOCK_SIZE = 1048576;
-private enum TAKE_SIZE = 256;
-private enum ALIGNMENT = ptrdiff_t.sizeof - 1;
+private enum SLAB_SIZE = 1048576;
 private static immutable MmapAllocator os;
 private shared static Mutex mutex;
 
@@ -19,132 +18,58 @@ shared static this()
     mutex = new shared Mutex();
 }
 
-private struct Block
+private struct Slab
 {
 public:
 final:
 @nogc:
     void* baseAddress;
-    void* currentAddress;
+    ptrdiff_t offset;
     ptrdiff_t size;
-    uint[] taken;
-    Entry[] entries;
+    LinkedList!Entry available;
+    LinkedList!Entry entries;
 
     pure this(void* baseAddress, ptrdiff_t size)
     {
         this.baseAddress = baseAddress;
-        this.currentAddress = baseAddress;
         this.size = size;
-        this.taken = os.makeArray!uint(TAKE_SIZE);
     }
 
-    void claimId(void* ptr)
+    Entry* getEntry(ptrdiff_t size)
     {
-        synchronized (mutex)
+        foreach (ref entry; available)
         {
-            foreach (i; 0..taken.length)
-            {
-                if (taken[i] != 0)
-                {
-                    if (i == taken.length - 1)
-                        os.expandArray!uint(taken, TAKE_SIZE);
-                    continue;
-                }
-                taken[i] = cast(uint)(cast(ptrdiff_t)ptr ^ cast(ptrdiff_t)baseAddress) + 1;
-                break;
-            }
+            if (entry.size >= size)
+                return &entry;
         }
-    }
-
-    ptrdiff_t findId(void* ptr)
-    {
-        synchronized (mutex)
-        {
-            uint id = cast(uint)(cast(ptrdiff_t)ptr ^ cast(ptrdiff_t)baseAddress) + 1;
-            foreach (i; 0..taken.length)
-            {
-                if (taken[i] == id)
-                    return i;
-            }
-            return -1;
-        }
-    }
-
-    @nogc Entry* findEntry(ptrdiff_t size)
-    {
-        synchronized (mutex)
-        {
-            foreach (ref entry; entries)
-            {
-                ptrdiff_t index = findId(entry.ptr);
-                debug writeln("Checked entry for allocation ", entry.ptr, " is available: ", index == -1 && entry.size >= size);
-                if (index == -1 && entry.size >= size)
-                    return &entry;
-            }
-            debug writeln("Found no available entries");
-            return null;
-        }
+        return null;
     }
 
     bool empty()
     {
-        synchronized (mutex)
-        {
-            foreach (id; taken)
-            {
-                if (id != 0)
-                    return false;
-            }
-            return true;
-        }
+        return available.length == entries.length;
     }
 
     bool free(void* ptr)
     {
-        synchronized (mutex)
-        {
-            ptrdiff_t index = findId(ptr);
-            if (index != -1)
-            {
-                if (empty)
-                {
-                    currentAddress = baseAddress;
-                    taken = null;
-                    entries = null;
-                    debug writeln("Freed block");
-                }
-                else 
-                {
-                    debug writeln("Freed entry");
-                    taken[index] = 0;
-                }
-                return true;
-            }
+        if (ptr !in entries)
             return false;
+        
+        available.insertBack(entries[ptr]);
+        if (empty)
+        {
+            available.clear();
+            entries.clear();
         }
+        return true;
     }
 
-    Entry allocate(ptrdiff_t size)
+    void* insertEntry(ptrdiff_t size)
     {
-        synchronized (mutex)
-        {
-            if (baseAddress == currentAddress)
-            {
-                entries = os.makeArray!Entry(1);
-                entries[0] = Entry(currentAddress, size);
-                debug writeln("Allocated new table for entry ", currentAddress, ", size: ", size);
-            }
-            else
-            {
-                os.expandArray!Entry(entries, 1);
-                entries[$-1] = Entry(currentAddress, size);
-                debug writeln("Created new entry in table ", currentAddress, ", size: ", size);
-            }
-
-            claimId(entries[$-1].ptr);
-            currentAddress += size + (ptrdiff_t.sizeof - (size & ALIGNMENT));
-            return entries[$-1];
-        }
+        scope (exit) offset += size;
+        void* ptr = baseAddress + offset;
+        entries[ptr] = Entry(ptr, size);
+        return ptr;
     }
 }
 
@@ -157,6 +82,49 @@ final:
 }
 
 public static class Caimallocator
+{
+public:
+final:
+@nogc:
+static:
+    private static LinkedList!Slab slabs;
+
+    shared static this()
+    {
+        insertSlab();
+    }
+
+    private void insertSlab()
+    {
+        void[] alloc = os.allocate(SLAB_SIZE);
+        slabs.insertBack(Slab(alloc.ptr, SLAB_SIZE));
+    }
+
+    void* malloc(ptrdiff_t size)
+    {
+        if (size > SLAB_SIZE)
+        {
+            insertSlab();
+            return slabs[$-1].insertEntry(size);
+        }
+
+        foreach_reverse (ref slab; slabs)
+        {
+            if (slab.offset + size <= slab.size)
+            {
+                Entry* entry = slab.getEntry(size);
+                if (entry != null)
+                    return entry.ptr;
+                else
+                    return slab.insertEntry(size);
+            }
+        }
+
+        insertSlab();
+        return slabs[$-1].insertEntry(size);
+    }
+}
+/* public static class Caimallocator
 {
 public:
 final:
@@ -175,7 +143,7 @@ static:
         }
     }
 
-    private void allocate(ptrdiff_t size)
+    extern (C) export void allocate(ptrdiff_t size)
     {
         synchronized (mutex)
         {
@@ -186,7 +154,7 @@ static:
         }
     }
 
-    void* malloc(ptrdiff_t size)
+    extern (C) export void* malloc(ptrdiff_t size)
     {
         synchronized (mutex)
         {
@@ -199,17 +167,14 @@ static:
             foreach (ref block; blocks)
             {
                 const ptrdiff_t offset = block.currentAddress - block.baseAddress;
-                if (offset >= BLOCK_SIZE)
+                if (offset >= cast(ptrdiff_t)block.baseAddress + block.size)
                     continue;
 
                 if (block.size - offset >= size)
                 {
                     Entry* entry = block.findEntry(size);
                     if (entry != null)
-                    {
-                        block.claimId(entry.ptr);
                         return entry.ptr;
-                    }
                     else
                         return block.allocate(size).ptr;
                 }
@@ -220,7 +185,7 @@ static:
         }
     }
 
-    void* calloc(ptrdiff_t size)
+    extern (C) export void* calloc(ptrdiff_t size)
     {
         void* ptr = malloc(size);
         if (size == 0)
@@ -252,7 +217,7 @@ static:
         return ptr;
     }
 
-    void* realloc(alias alloc)(void* ptr, ptrdiff_t size)
+    extern (C) export void* realloc(alias alloc)(void* ptr, ptrdiff_t size)
     {
         synchronized (mutex)
         {
@@ -301,7 +266,7 @@ static:
         }
     }
 
-    bool free(T : U*, U)(T ptr)
+    extern (C) export bool free(T : U*, U)(T ptr)
     {
         synchronized (mutex)
         {
@@ -314,7 +279,7 @@ static:
         }
     }
 
-    bool deallocate(T : U*, U)(T ptr)
+    extern (C) export bool deallocate(T : U*, U)(T ptr)
     {
         synchronized (mutex)
         {
@@ -346,7 +311,7 @@ static:
         }
     }
 
-    bool empty()
+    extern (C) export bool empty()
     {
         synchronized (mutex)
         {
@@ -359,7 +324,7 @@ static:
         }
     }
 
-    ptrdiff_t totalAlloc()
+    extern (C) export ptrdiff_t totalAlloc()
     {
         synchronized (mutex)
         {
@@ -373,3 +338,4 @@ static:
         }
     }
 }
+ */ +/

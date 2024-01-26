@@ -2,8 +2,10 @@ module caiman;
 
 public import caiman.formats;
 public import caiman.regex;
-public import caiman.experimental;
-public import caiman.make;
+public import caiman.memory;
+public import caiman.meta;
+public import caiman.container;
+public import caiman.crypto;
+public import caiman.logging;
 public import caiman.state;
-public import caiman.traits;
-public import caiman.data;
+public import caiman.simd;

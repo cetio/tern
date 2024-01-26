@@ -1,11 +1,11 @@
-module caiman.experimental.eclipse;
+module caiman.memory.eclipse;
 
 import std.bitmanip;
 import std.algorithm;
 import std.array;
 import std.string;
 import std.conv;
-import caiman.data;
+import caiman.logging;
 
 // Directly encoded instructions
 // +r instructions

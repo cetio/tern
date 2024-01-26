@@ -1,4 +1,5 @@
-module caiman.data.logging;
+/// Logging utilities, including simple pretty print, exception raising with highlighting, and ANSI color interface
+module caiman.logging;
 
 import std.string;
 import std.algorithm;

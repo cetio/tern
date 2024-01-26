@@ -1,5 +1,5 @@
-/// Largely fills in any gaps of std.traits, while also providing some unique reflection.
-module caiman.traits;
+/// Provides many useful traits templates, aimed to fill in what std.traits lacks
+module caiman.meta.traits;
 
 import std.string;
 import std.algorithm;
@@ -32,10 +32,14 @@ public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
 /// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`
 public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
 /// True if `A` has any parents, otherwise, false.
-public alias hasParents(alias A) = Alias!(__traits(compiles, __traits(parent, A)));
+public alias hasParents(alias A) = Alias!(!isType!A || !isIntrinsicType!A);
+/// True if `A` is a basic type, built-in type, or array, otherwise, false.
+public alias isIntrinsicType(T) = Alias!(isBasicType!T || isBuiltinType!T || isArray!T);
 /// True if `A` has any children, otherwise, false.
-public alias hasChildren(alias A) = Alias!(__traits(allMembers, A).length != 0);
-
+public alias hasChildren(alias A) = Alias!(!__traits(compiles, __traits(allMembers, A)) || __traits(allMembers, A).length != 0);
+/// True if `A` is not mutable (const, immutable, enum, etc.), otherwise, false.
+public alias isImmutable(alias A) = Alias!(!isMutable!A || (isField!A && __traits(compiles, { enum _ = mixin(A.stringof); })));
+ 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
 {
@@ -45,13 +49,14 @@ public template wrapsIndirection(T)
         enum wrapsIndirection = isArray!T;
 }
 
-/// Gets the element type of T, if applicable.
-public template elementType(T) 
+/// Gets the element type of `T`, if applicable. \
+/// Returns the type of enum values if `T` is an enum.
+public template ElementType(T) 
 {
-    static if (is(T == U[], U))
-        alias elementType = elementType!U;
+    static if (is(T == U[], U) || is(T == U*, U))
+        alias ElementType = ElementType!U;
     else
-        alias elementType = T;
+        alias ElementType = OriginalType!T;
 }
 
 /**
@@ -60,7 +65,7 @@ public template elementType(T)
     This is functionally very similar to `InterfacesTuple(T)` from `std.traits`, but is more advanced and \
     includes *all* implements, including class inherits and alias this.
 */
-public template getImplements(T)
+public template ImplementNames(T)
 {
     /* private template Flatten(H, T...)
     {
@@ -82,71 +87,75 @@ public template getImplements(T)
     static if (is(T S == super) && S.length)
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias getImplements = AliasSeq!(S, typeof(__traits(getMember, T, __traits(getAliasThis, T))), getImplements!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+            alias ImplementNames = AliasSeq!(S, typeof(__traits(getMember, T, __traits(getAliasThis, T))), ImplementNames!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
         else
-            alias getImplements = S;
+            alias ImplementNames = S;
     }
     else
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias getImplements = AliasSeq!(typeof(__traits(getMember, T, __traits(getAliasThis, T))), getImplements!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+            alias ImplementNames = AliasSeq!(typeof(__traits(getMember, T, __traits(getAliasThis, T))), ImplementNames!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
         else
-            alias getImplements = AliasSeq!();
+            alias ImplementNames = AliasSeq!();
     }  
 }
 
 /// Gets an AliasSeq of all fields in `A`
-public template getFields(alias A)
+public template FieldNames(alias A)
 {
-    alias getFields = AliasSeq!();
+    alias FieldNames = AliasSeq!();
 
+    static if (hasChildren!A)
     static foreach (member; __traits(allMembers, A))
     {
         static if (isField!(__traits(getMember, A, member)))
-            getFields = AliasSeq!(getFields, member);
+            FieldNames = AliasSeq!(FieldNames, member);
     }
 }
 
 /// Gets an AliasSeq of all functions in `A`
-public template getFunctions(alias A)
+public template FunctionNames(alias A)
 {
-    alias getFunctions = AliasSeq!();
+    alias FunctionNames = AliasSeq!();
 
+    static if (hasChildren!A)
     static foreach (member; __traits(allMembers, A))
     {
         static if (isFunction!(__traits(getMember, A, member)))
-            getFunctions = AliasSeq!(getFunctions, member);
+            FunctionNames = AliasSeq!(FunctionNames, member);
     }
 }
 
 /// Gets an AliasSeq of all types in `A`
-public template getTypes(alias A)
+public template TypeNames(alias A)
 {
-    alias getTypes = AliasSeq!();
+    alias TypeNames = AliasSeq!();
 
+    static if (hasChildren!A)
     static foreach (member; __traits(allMembers, A))
     {
         static if (isType!(__traits(getMember, A, member)))
-            getTypes = AliasSeq!(getTypes, member);
+            TypeNames = AliasSeq!(TypeNames, member);
     }
 }
 
 /// Gets an AliasSeq of all templates in `A`
-public template getTemplates(alias A)
+public template TemplateNames(alias A)
 {
-    alias getTemplates = AliasSeq!();
+    alias TemplateNames = AliasSeq!();
 
+    static if (hasChildren!A)
     static foreach (member; __traits(allMembers, A))
     {
         static if (isTemplate!(__traits(getMember, A, member)))
-            getTemplates = AliasSeq!(getTemplates, member);
+            TemplateNames = AliasSeq!(TemplateNames, member);
     }
 }
 
 /// Gets an `AliasSeq` of all modules publicly imported by `mod`
-public template getImports(alias M)
+public template Imports(alias M)
 {
-    private pure string[] _getImports()
+    private pure string[] _Imports()
     {
         string[] imports;
         foreach (line; import(__traits(identifier, M)~".d").splitter('\n'))
@@ -162,8 +171,8 @@ public template getImports(alias M)
         return imports;
     }
 
-    mixin("alias getImports = AliasSeq!("~ 
-        _getImports.join(", ")~ 
+    mixin("alias Imports = AliasSeq!("~ 
+        _Imports.join(", ")~ 
     ");");
 }
 
@@ -203,7 +212,7 @@ pure string pragmatize(string str)
 //       Flag get/sets from pre-existing get/sets (see methodtable.d relatedTypeKind)
 //       Auto import types (generics!!)
 //       Allow for indiv. get/sets without needing both declared
-//       Exports for flags!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//       Clean up with caiman.meta.algorithm
 /// Does not support multiple fields with the same enum type!
 public template accessors()
 {

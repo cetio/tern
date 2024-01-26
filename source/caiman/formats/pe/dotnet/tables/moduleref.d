@@ -4,5 +4,5 @@ public struct ModuleRef
 {
 public:
 final:
-    uint name;
+    ubyte[] name;
 }

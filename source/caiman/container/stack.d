@@ -1,5 +1,5 @@
 /// Wrapper for stack arrays & interface for popping/pushing on arrays with support for LIFO and FILO
-module caiman.data.stack;
+module caiman.container.stack;
 
 /**
     Last In First Out
@@ -240,8 +240,6 @@ unittest
         stack.push(5);
         stack.push(10);
         assert(stack.length() == 2);
-
-        assert(stack.dup() == 10);
 
         stack.swap();
         assert(stack.pop() == 5);

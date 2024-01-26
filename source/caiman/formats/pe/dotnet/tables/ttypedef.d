@@ -5,8 +5,8 @@ public struct TypeDef
 public:
 final:
     uint flags;
-    uint name;
-    uint namespace;
+    ubyte[] name;
+    ubyte[] namespace;
     uint extends;
     uint fieldList;
     uint methodList;

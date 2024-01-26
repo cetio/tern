@@ -6,6 +6,6 @@ public:
 final:
     uint offset;
     uint flags;
-    uint name;
+    ubyte[] name;
     uint implementation;
 }

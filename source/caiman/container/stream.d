@@ -1,11 +1,11 @@
 /// Very advanced data stream support, with optional reading, file access, endianness support, and much more.
-module caiman.data.stream;
+module caiman.container.stream;
 
 import std.file;
 import std.conv;
 import std.algorithm.mutation;
+import caiman.meta.traits;
 import std.traits;
-import caiman.traits;
 
 public enum Endianness
 {
@@ -24,7 +24,8 @@ public enum Seek
 public enum ReadKind
 {
     Prefix,
-    Field
+    Field,
+    Fixed
 }
 
 /**
@@ -98,7 +99,7 @@ public:
         
         Returns:
             True if there are at least size elements left to read from the current position. 
-    */
+     */
     @nogc bool mayRead()(int size = 1)
     {
         return position + size - 1 < data.length;
@@ -112,30 +113,30 @@ public:
         
         Returns:
             True if there are at least `T.sizeof` bytes left to read from the current position. 
-    */
+     */
     @nogc bool mayRead(T)()
     {
         return position + T.sizeof - 1 < data.length;
     }
 
     /**
-    * Moves the position in the stream by the size of type T.
-    *
-    * Params:
-    *   - `T`: The size of type to move the position by.
-    */
+     * Moves the position in the stream by the size of type T.
+     *
+     * Params:
+     *   - `T`: The size of type to move the position by.
+     */
     @nogc void step(T)()
     {
         position += T.sizeof;
     }
 
     /**
-    * Moves the position in the stream by the size of type T * elements.
-    *
-    * Params:
-    *   - `T`: The size of type to move the position by.
-    *   - `count`: The number of elements.
-    */
+     * Moves the position in the stream by the size of type T * elements.
+     *
+     * Params:
+     *   - `T`: The size of type to move the position by.
+     *   - `count`: The number of elements.
+     */
     @nogc void step(T)(int count)
     {
         position += T.sizeof * count;
@@ -148,7 +149,7 @@ public:
     {
         static if (is(T == string))
         {
-            while (peekString!(elementType!T) != val)
+            while (peekString!(ElementType!T) != val)
                 position++;
         }
         else
@@ -159,13 +160,13 @@ public:
     }
 
     /**
-    * Seeks to a new position in the stream based on the provided offset and seek direction.
-    * Does not work like a conventional seek, and will read type T from the stream, using that as the seek offset.
-    *
-    * Params:
-    *   - `T`: The offset value for seeking.
-    *   - `SEEK`: The direction of the seek operation (Start, Current, or End).
-    */
+     * Seeks to a new position in the stream based on the provided offset and seek direction.
+     * Does not work like a conventional seek, and will read type T from the stream, using that as the seek offset.
+     *
+     * Params:
+     *   - `T`: The offset value for seeking.
+     *   - `SEEK`: The direction of the seek operation (Start, Current, or End).
+     */
     @nogc void seek(T, Seek SEEK)()
         if (isIntegral!T)
     {
@@ -184,14 +185,14 @@ public:
     }
 
     /**
-    * Reads the next value from the stream of type T.
-    *
-    * Params:
-    *   - `T`: The type of data to be read.
-    *
-    * Returns:
-    *   The value read from the stream.
-    */
+     * Reads the next value from the stream of type T.
+     *
+     * Params:
+     *   - `T`: The type of data to be read.
+     *
+     * Returns:
+     *   The value read from the stream.
+     */
     @nogc T read(T)()
         if (!isArray!T || isStaticArray!T)
     {
@@ -471,10 +472,87 @@ public:
         }
     }
 
+    /**
+    * Commits the results of multiple functions to a byte stream and returns the combined result.
+    *
+    * Params:
+    *   - `T`: The type representing the return value.
+    *   - `FUNCS`: Variadic template parameter representing the functions to be executed.
+    *
+    * Returns:
+    *   Returns the combined result of executing the provided functions as a byte stream.
+    */
+    T commit(T, FUNCS...)()
+    {
+        ubyte[] bytes;
+        foreach (FUNC; FUNCS)
+        {
+            auto ret = FUNC();
+            bytes ~= (cast(ubyte*)&ret)[0..ReturnType!(FUNC).sizeof];
+        }
+        return *cast(T*)&bytes[0];
+    }
+
+    /// ditto
+    T[] commit(T, FUNCS...)(ptrdiff_t count)
+    {
+        T[] items;
+        foreach (i; 0..count)
+            items ~= commit!(T, FUNCS);
+        return items;
+    }
+
+    /**
+    * Commits the results of multiple functions to the stream and writes it to the stream.
+    *
+    * Params:
+    * - `T`: The type representing the return value.
+    * - `FUNCS`: Variadic template parameter representing the functions to be executed.
+    */
+    void commitWrite(T, FUNCS...)()
+    {
+        ubyte[] bytes;
+        foreach (FUNC; FUNCS)
+        {
+            auto ret = FUNC();
+            bytes ~= (cast(ubyte*)&ret)[0..ReturnType!(FUNC).sizeof];
+        }
+        write!byte(bytes, true);
+    }
+
+    /**
+    * Commits the results of multiple functions the stream and writes it to the stream without advancing the stream position.
+    *
+    * Params:
+    * - `T`: The type representing the return value.
+    * - `FUNCS`: Variadic template parameter representing the functions to be executed.
+    */
+    void commitPut(T, FUNCS...)()
+    {
+        ubyte[] bytes;
+        foreach (FUNC; FUNCS)
+        {
+            auto ret = FUNC();
+            bytes ~= (cast(ubyte*)&ret)[0..ReturnType!(FUNC).sizeof];
+        }
+        put!byte(bytes, true);
+    }
+
+    /**
+    * Reads data from a byte stream into a structured type based on specified field names and read kinds. \
+    * Designed specifically for better control reading string and array fields.
+    *
+    * Params:
+    * - `T`: The type representing the structure to read into.
+    * - `ARGS`: Variadic template parameter representing field names and read kinds.
+    *
+    * Returns:
+    *   Returns an instance of type T with fields populated based on the specified read operations.
+    */
     T read(T, ARGS...)()
     {
         T val;
-        foreach (field; getFields!T)
+        foreach (field; FieldNames!T)
         {
             alias M = typeof(__traits(getMember, val, field));
             bool cread;
@@ -492,7 +570,7 @@ public:
                 }
                 else
                 {
-                    static if (field == ARGS[i - 2])
+                    static if (field == ARGS[i - 2] || ARGS[i - 2] == "")
                     {
                         static if (!isStaticArray!M && is(M == string))
                         {
@@ -500,6 +578,10 @@ public:
                             static if (ARGS[i - 1] == ReadKind.Field)
                             {
                                 __traits(getMember, val, field) = read!char(__traits(getMember, val, ARG)).to!string;
+                            }
+                            else static if  (ARGS[i - 1] == ReadKind.Fixed)
+                            {
+                                __traits(getMember, val, field) =  read!char(ARG).to!string;
                             }
                             else
                             {
@@ -513,6 +595,10 @@ public:
                             {
                                 __traits(getMember, val, field) = read!wchar(__traits(getMember, val, ARG)).to!string;
                             }
+                            else static if  (ARGS[i - 1] == ReadKind.Fixed)
+                            {
+                                __traits(getMember, val, field) =  read!wchar(ARG).to!string;
+                            }
                             else
                             {
                                 __traits(getMember, val, field) = readString!(wchar, ARG);
@@ -525,6 +611,10 @@ public:
                             {
                                 __traits(getMember, val, field) = read!dchar(__traits(getMember, val, ARG)).to!string;
                             }
+                            else static if  (ARGS[i - 1] == ReadKind.Fixed)
+                            {
+                                __traits(getMember, val, field) =  read!dchar(ARG).to!string;
+                            }
                             else
                             {
                                 __traits(getMember, val, field) = readString!(dchar, ARG);
@@ -535,7 +625,11 @@ public:
                             cread = true;
                             static if (ARGS[i - 1] == ReadKind.Field)
                             {
-                                __traits(getMember, val, field) = read!(elementType!M)(__traits(getMember, val, ARG));
+                                __traits(getMember, val, field) = read!(ElementType!M)(__traits(getMember, val, ARG));
+                            }
+                            else static if  (ARGS[i - 1] == ReadKind.Fixed)
+                            {
+                                __traits(getMember, val, field) = read!(ElementType!M)(ARG);
                             }
                             else
                             {
@@ -549,6 +643,15 @@ public:
                 __traits(getMember, val, field) = read!M;
         }
         return val;
+    }
+
+    /// ditto
+    T[] read(T, ARGS...)(ptrdiff_t count)
+    {
+        T[] items;
+        foreach (i; 0..count)
+            items ~= read!(T, ARGS);
+        return items;
     }
 
     /**
@@ -565,7 +668,7 @@ public:
         if (ARGS.length % 3 == 0)
     {
         T val;
-        foreach (field; getFields!T)
+        foreach (field; FieldNames!T)
         {
             bool cread = true;
             static foreach (i, ARG; ARGS)

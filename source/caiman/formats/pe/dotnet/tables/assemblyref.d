@@ -10,7 +10,7 @@ final:
     ushort revisionNumber;
     uint flags;
     uint publicKeyOrToken;
-    uint name;
+    ubyte[] name;
     uint culture;
     uint hashValue;
 }

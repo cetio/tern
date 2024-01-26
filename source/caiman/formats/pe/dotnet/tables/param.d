@@ -6,5 +6,5 @@ public:
 final:
     ushort flags;
     ushort sequence;
-    uint name;
+    ubyte[] name;
 }

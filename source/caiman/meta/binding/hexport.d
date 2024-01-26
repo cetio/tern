@@ -1,29 +1,26 @@
-module caiman.make;
+module caiman.meta.binding.hexport;
+
+/+ module caiman.meta.make;
 
 import std.string;
-import caiman.traits;
+import caiman.meta;
 import std.file;
 import std.algorithm;
-import std.stdio : writeln;
 import std.traits;
 import std.conv;
 import std.meta;
-import std.array;
 import caiman.regex;
 
 /// Used internally for generating C# conventions conforming names.
 private static pure string toPascalCase(string input) 
 {
-    auto words = input.split(".");
-    auto result = appender!string;
-
-    foreach (word; words) 
+    string ret;
+    foreach (word; input.split(".")) 
     {
         if (!word.empty)
-            result.put(toUpper(word[0]).to!string~word[1..$]~".");
+            ret ~= (toUpper(word[0]).to!string~word[1..$]~".");
     }
-
-    return result.data[0..$-1];
+    return ret[0..$-1];
 }
 
 /**
@@ -123,4 +120,4 @@ public template make(alias root, string dest)
                 prev.append("\n}");
         }
     }
-}
+} +/

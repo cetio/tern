@@ -4,5 +4,5 @@ public struct TypeSpec
 {
 public:
 final:
-    uint signature;
+    ubyte[] signature;
 }

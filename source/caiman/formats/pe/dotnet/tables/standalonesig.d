@@ -4,5 +4,5 @@ public struct StandAloneSig
 {
 public:
 final:
-    uint signature;
+    ubyte[] signature;
 }

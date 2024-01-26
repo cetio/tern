@@ -11,12 +11,12 @@ final:
     uint timeStamp;
     ushort majorVersion;
     ushort minorVersion;
-    uint nameRVA;
+    ubyte[] nameRVA;
     uint ordinalBase;
     uint numAddresses;
     uint numNames;
     uint addressTableRVA;
-    uint namePointerRVA;
+    ubyte[] namePointerRVA;
     uint ordinalTableRVA;
 }
 
@@ -27,7 +27,7 @@ final:
     uint importLookupTableRVA;
     uint timeStamp;
     uint forwarderChain;
-    uint nameRVA;
+    ubyte[] nameRVA;
     uint importAddressTableRVA;
 }
 

@@ -1,8 +1,8 @@
-/// Provides advanced shallow and deep cloning support
-module caiman.experimental.ddup;
+/// Provides fast, advanced memory operations capabilities
+module caiman.memory.ops;
 
 import std.traits;
-import std.meta;
+import core.simd;
 
 public:
 static:
@@ -120,4 +120,66 @@ pure @trusted A ddupa(A, T)(T val)
         }
     }
     return ret;
+}
+
+uint drip(ubyte[] bytes) 
+{
+    uint ret = 0;
+    foreach_reverse (ubyte b; bytes)
+        ret = (ret << 8) | b;
+    return ret;
+}
+
+void copy(void* src, void* dest, ptrdiff_t length)
+{
+    switch (length & 15)
+    {
+        case 0:
+            foreach_reverse (j; 0..(length / 16))
+                (cast(ulong2*)dest)[j] = (cast(ulong2*)src)[j];
+            break;
+        case 8:
+            foreach_reverse (j; 0..(length / 8))
+                (cast(ulong*)dest)[j] = (cast(ulong*)src)[j];
+            break;
+        case 4:
+            foreach_reverse (j; 0..(length / 4))
+                (cast(uint*)dest)[j] = (cast(uint*)src)[j];
+            break;
+        case 2:
+            foreach_reverse (j; 0..(length / 2))
+                (cast(ushort*)dest)[j] = (cast(ushort*)src)[j];
+            break;
+        default:
+            foreach_reverse (j; 0..length)
+                (cast(ubyte*)dest)[j] = (cast(ubyte*)src)[j];
+            break;
+    }
+}
+
+void memset(void* dest, ptrdiff_t length, ubyte val)
+{
+    switch (length & 15)
+    {
+        case 0:
+            foreach_reverse (j; 0..(length / 16))
+                (cast(ulong2*)dest)[j] = cast(ulong2)val;
+            break;
+        case 8:
+            foreach_reverse (j; 0..(length / 8))
+                (cast(ulong*)dest)[j] = cast(ulong)val;
+            break;
+        case 4:
+            foreach_reverse (j; 0..(length / 4))
+                (cast(uint*)dest)[j] = cast(uint)val;
+            break;
+        case 2:
+            foreach_reverse (j; 0..(length / 2))
+                (cast(ushort*)dest)[j] = cast(ushort)val;
+            break;
+        default:
+            foreach_reverse (j; 0..length)
+                (cast(ubyte*)dest)[j] = cast(ubyte)val;
+            break;
+    }
 }

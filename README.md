@@ -15,7 +15,7 @@ Currently only contains support for reading PE files, but is intended to add sup
     - Optional headers
     - Standard headers
 
-Depends on `caiman.experimental.stream`.
+Depends on `caiman.memory.stream`.
 
 ## Mem
 
@@ -44,7 +44,7 @@ For example, this makes it possible to use a string as an `inout` parameter desp
     - `REFERENCE` (`struct byte[33]`)
     - `INOUT`
 
-Depends on `caiman.experimental.ddup` and `caiman.traits`.
+Depends on `caiman.memory.ddup` and `caiman.traits`.
 
 ### DDUP
 
@@ -126,7 +126,7 @@ Largely fills in any gaps of std.traits, while also providing some unique reflec
     - `hasParents(T)`
     - `wrapsIndirection(T)`
 - Templates for getting data from types and modules.
-    - `elementType(T)`
+    - `ElementType(T)`
     - `getImplements(T)`
     - `getFields(alias)`
     - `getFunctions(alias)`

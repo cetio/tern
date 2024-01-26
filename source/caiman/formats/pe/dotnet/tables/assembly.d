@@ -11,6 +11,6 @@ final:
     ushort revisionNumber;
     uint flags;
     uint publicKey;
-    uint name;
+    ubyte[] name;
     uint culture;
 }

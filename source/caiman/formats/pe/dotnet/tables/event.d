@@ -5,6 +5,6 @@ public struct Event
 public:
 final:
     ushort eventFlags;
-    uint name;
+    ubyte[] name;
     uint eventType;
 }

@@ -7,5 +7,5 @@ final:
     ushort number;
     ushort flags;
     uint owner;
-    uint name;
+    ubyte[] name;
 }

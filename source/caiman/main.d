@@ -19,29 +19,47 @@ void printHex(ubyte[] arr) {
         mov [1], rax
     ").printHex; */
 
-struct test
+struct A
 {
-    struct test2
+    int b;
+
+    int x() => b;
+}
+
+interface B
+{
+    string y();
+}
+
+struct D
+{
+    void print()
     {
-        short[2] a;
+        writeln(this);
     }
+}
 
-    int a;
-    double b;
-    float c;
-    void[16] d;
+@inherit!A @inherit!B @inherit!D struct C
+{
+    mixin liberty;
 
-    void fun()
-    {
-
-    }
+    string y() => "yohoho!";
 }
 
 void main()
 {
-    //PE pe = PE.read(r"C:\Users\stake\Documents\source\repos\Squire-Obfuscator\bin\x64\Release\net6.0-windows10.0.22621.0\Core.dll");
-    //PE pe = PE.read(r"C:\Users\stake\source\repos\godwit\Tests\bin\Debug\net6.0\Tests.dll");
-    //writeln(pe.clrMetadata.mmodule);
-    Caimallocator.deallocate(Caimallocator.malloc(65536)).writeln;
-    Caimallocator.totalAlloc.writeln;
+    /* C c;
+    c.b = 2;
+    c.print();
+    c.x().writeln;
+    c.y().writeln; */
+    ubyte16 vec;
+    vec = vec + cast(ubyte)1;
+    vec.writeln;
 }
+
+
+    //PE pe = PE.read(r"C:\Users\stake\Documents\source\repos\Squire-Obfuscator\bin\x64\Release\net6.0-windows10.0.22621.0\Core.dll");
+    /* PE pe = PE.read(r"C:\Users\stake\source\repos\godwit\Tests\bin\Debug\net6.0\Tests.dll");
+    writeln(pe.clrMetadata.mmodule);
+    writeln(pe.clrMetadata.mmodule[0].mvid.drip.to!string(16)); */

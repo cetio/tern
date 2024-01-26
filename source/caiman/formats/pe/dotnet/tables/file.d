@@ -5,6 +5,6 @@ public struct File
 public:
 final:
     uint flags;
-    uint name;
+    ubyte[] name;
     uint hashValue;
 }

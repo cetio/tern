@@ -5,6 +5,6 @@ public struct Property
 public:
 final:
     ushort flags;
-    uint name;
+    ubyte[] name;
     uint type;
 }

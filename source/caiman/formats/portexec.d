@@ -2,8 +2,11 @@
 // TODO: ELF
 module caiman.formats.portexec;
 
-import caiman;
-import std.traits;
+import caiman.container.stream;
+import caiman.memory.ops;
+import caiman.state;
+import caiman.formats.pe;
+import caiman.meta.traits;
 import std.string;
 
 public struct ClrMetadata
@@ -30,7 +33,7 @@ public struct ClrMetadata
     Event[] event;
     EventMap[] eventMap;
     ExportedType[] exportedType;
-    Field[] field;
+    FieldDef[] fieldDef;
     FieldLayout[] fieldLayout;
     FieldMarshal[] fieldMarshal;
     FieldRVA[] fieldRVA;
@@ -41,10 +44,10 @@ public struct ClrMetadata
     InterfaceImpl[] interfaceImpl;
     ManifestResource[] manifestResource;
     MemberRef[] memberRef;
-    Method[] method;
+    MethodDef[] methodDef;
     MethodImpl[] methodImpl;
     MethodSemantics[] methodSemantics;
-    Module[] mmodule;
+    ModuleDef[] moduleDef;
     ModuleRef[] moduleRef;
     NestedClass[] nestedClass;
     Param[] param;
@@ -142,6 +145,9 @@ final:
                 stream.position = getOffset(cor20Header.metadata.rva) + ss.offset;
                 position = stream.position;
                 clrMetadata.tablesStream = stream.read!TablesStream;
+
+                if (clrMetadata.tablesStream.heapFlags.hasFlag(HeapFlags.ExtraData))
+                    stream.step!uint;
             }
             else if (ss.name == "#Strings")
             {
@@ -166,21 +172,21 @@ final:
         }
         stream.position = position + TablesStream.sizeof;
 
-        foreach (member; getFields!TableTokens)
+        foreach (member; FieldNames!TableTokens)
         {
             if (!clrMetadata.tablesStream.tokens.hasFlag(__traits(getMember, TableTokens, member)))
                 continue;
 
             if (member == "Module")
-                clrMetadata.mmodule = new Module[stream.read!uint];
+                clrMetadata.moduleDef = new ModuleDef[stream.read!uint];
             else if (member == "TypeRef")
                 clrMetadata.typeRef = new TypeRef[stream.read!uint];
             else if (member == "TypeDef")
                 clrMetadata.typeDef = new TypeDef[stream.read!uint];
             else if (member == "Field")
-                clrMetadata.field = new Field[stream.read!uint];
+                clrMetadata.fieldDef = new FieldDef[stream.read!uint];
             else if (member == "MethodDef")
-                clrMetadata.method = new Method[stream.read!uint];
+                clrMetadata.methodDef = new MethodDef[stream.read!uint];
             else if (member == "Param")
                 clrMetadata.param = new Param[stream.read!uint];
             else if (member == "InterfaceImpl")
@@ -248,15 +254,14 @@ final:
             else if (member == "GenericParamConstraint")
                 clrMetadata.genericParamConstraint = new GenericParamConstraint[stream.read!uint];
         }
-import std.stdio;
-        import std.conv;
-        writeln(stream.position.to!string(16));
-        foreach (member; getFields!TableTokens)
+
+        foreach (member; FieldNames!TableTokens)
         {
             if (member == "Module")
-                clrMetadata.mmodule = stream.read!Module(clrMetadata.mmodule.length);
+                clrMetadata.moduleDef = stream.read!(ModuleDef, 
+                    "", ReadKind.Fixed, 2)
+                (clrMetadata.moduleDef.length);
         }
-        
     }
 
 public:

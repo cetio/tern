@@ -1,8 +1,8 @@
-/// Provides interface for enums and HResult.
+/// Provides capabilities for interacting with flags enums and HResult
 module caiman.state;
 
 import std.traits;
-import caiman.traits : exempt;
+import caiman.meta.traits;
 
 public:
 static:

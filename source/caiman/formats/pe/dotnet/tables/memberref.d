@@ -5,6 +5,6 @@ public struct MemberRef
 public:
 final:
     uint _class;
-    uint name;
-    uint signature;
+    ubyte[] name;
+    ubyte[] signature;
 }
