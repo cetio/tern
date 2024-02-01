@@ -38,14 +38,24 @@ public alias isImmutable(alias A) = Alias!(!isMutable!A || (isField!A && __trait
 public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateType!T);
 /// True if 'T' does not have any modifiers and is not an intrinsic type, otherwise, false.
 public alias isOrganic(T) = Alias!(!hasModifiers!T && !isIntrinsicType!T);
- 
+
 /// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
 {
-    static if (__traits(compiles, __traits(allMembers, T)))
+    static if (hasChildren!T)
         enum wrapsIndirection = hasIndirections!T && __traits(allMembers, T).length <= 2;
     else
         enum wrapsIndirection = isArray!T;
+}
+
+/// Gets the type of member `MEMBER` in `A` \
+/// This will return a function alias if `MEMBER` refers to a function, and do god knows what if `MEMBER` is a package or module.
+public template TypeOf(alias A, string MEMBER)
+{
+    static if (isType!(__traits(getMember, A, MEMBER)) || isTemplate!(__traits(getMember, A, MEMBER)) || isFunction!(__traits(getMember, A, MEMBER)))
+        alias TypeOf = __traits(getMember, A, MEMBER);
+    else
+        alias TypeOf = typeof(__traits(getMember, A, MEMBER));
 }
 
 /// Gets the element type of `T`, if applicable. \

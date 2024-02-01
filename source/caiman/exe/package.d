@@ -3,8 +3,8 @@
 module caiman.exe;
 
 import caiman.memory.stream;
-import caiman.memory.op;
 import caiman.meta.traits;
+import caiman.conv;
 import caiman.state;
 import std.string;
 public import caiman.exe.pe;
