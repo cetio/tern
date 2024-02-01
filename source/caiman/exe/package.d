@@ -281,10 +281,10 @@ public:
     * Reads a PE file from the specified file path.
     *
     * Params:
-    *    filePath = The path to the PE file to be read.
+    *   filePath = The path to the PE file to be read.
     *
     * Returns:
-    *   A PE object containing the parsed data from the file.
+    *  A PE object containing the parsed data from the file.
     */
     static PE read(string filePath)
     {

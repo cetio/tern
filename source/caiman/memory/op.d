@@ -125,29 +125,15 @@ pure:
 }
 
 /** 
- * Extracts a `uint` from an arbitrarily sized byte array.
- *
- * Params:
- *   bytes = The bytes to extract a `uint` from.
- *
- * Returns: A uint derived from `bytes`
- */
- // TODO: Remove this?
-@trusted uint drip(ubyte[] bytes) 
-{
-    uint ret = 0;
-    foreach_reverse (ubyte b; bytes)
-        ret = (ret << 8) | b;
-    return ret;
-}
-
-/** 
  * Copies all data from `src` to `dest` within range `0..length`
  *
  * Params:
- *   src = Data source pointer.
- *   dest = Data destination pointer.
- *   length = Length of data to be copied.
+ *  src = Data source pointer.
+ *  dest = Data destination pointer.
+ *  length = Length of data to be copied.
+ * 
+ * Remarks:
+ *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
 @trusted void copy(void* src, void* dest, ptrdiff_t length)
 {
@@ -180,9 +166,12 @@ pure:
  * Sets all bytes at `dest` to `val` within range `0..length`
  *
  * Params:
- *   dest = Data destination pointer.
- *   length = Length of data to be copied.
- *   val = Value to set all bytes to.
+ *  dest = Data destination pointer.
+ *  length = Length of data to be copied.
+ *  val = Value to set all bytes to.
+ * 
+ * Remarks:
+ *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
 @trusted void memset(void* dest, ptrdiff_t length, ubyte val)
 {
@@ -210,3 +199,15 @@ pure:
             break;
     }
 }
+
+/** 
+ * Zeros all bytes at `ptr` within range `0..length`
+ *
+ * Params:
+ *  ptr = Data destination pointer.
+ *  length = Length of data to be copied.
+ * 
+ * Remarks:
+ *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
+ */
+@trusted void zeroSecureMemory(void* ptr, ptrdiff_t length) => memset(ptr, length, 0);

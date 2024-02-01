@@ -31,7 +31,7 @@ public alias hasParents(alias A) = Alias!(!isType!A || !isIntrinsicType!A);
 /// True if `T` is a basic type, built-in type, or array, otherwise, false.
 public alias isIntrinsicType(T) = Alias!(isBasicType!T || isBuiltinType!T || isArray!T);
 /// True if `A` has any children, otherwise, false.
-public alias hasChildren(alias A) = Alias!(!__traits(compiles, __traits(allMembers, A)) || __traits(allMembers, A).length != 0);
+public alias hasChildren(alias A) = Alias!(!isType!A || isOrganic!A);
 /// True if `A` is not mutable (const, immutable, enum, etc.), otherwise, false.
 public alias isImmutable(alias A) = Alias!(!isMutable!A || (isField!A && __traits(compiles, { enum _ = mixin(A.stringof); })));
 /// True if `T` is an enum, array, or pointer, otherwise, false.

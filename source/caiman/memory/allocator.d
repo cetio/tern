@@ -13,7 +13,6 @@ private static immutable MmapAllocator os;
 private shared static Mutex mutex;
 private static SList!Slab slabs;
 
-@trusted:
 shared static this()
 {
     slabs.insertFront(Slab(os.allocate(SLAB_SIZE).ptr, SLAB_SIZE));
@@ -85,7 +84,7 @@ final:
 @nogc:
 static:
 pragma(inline)
-void* malloc(bool threadSafe = false)(ptrdiff_t size)
+@trusted void* malloc(bool threadSafe = false)(ptrdiff_t size)
 {
     static if (threadSafe)
     {
@@ -141,7 +140,7 @@ void* malloc(bool threadSafe = false)(ptrdiff_t size)
 }
 
 pragma(inline)
-void* calloc(bool threadSafe = false)(ptrdiff_t size)
+@trusted void* calloc(bool threadSafe = false)(ptrdiff_t size)
 {
     static if (threadSafe)
     {
@@ -161,7 +160,7 @@ void* calloc(bool threadSafe = false)(ptrdiff_t size)
 }
 
 pragma(inline)
-void* realloc(bool threadSafe = false)(void* ptr, ptrdiff_t size)
+@trusted void* realloc(bool threadSafe = false)(void* ptr, ptrdiff_t size)
 {
     static if (threadSafe)
     {
@@ -229,7 +228,7 @@ void* realloc(bool threadSafe = false)(void* ptr, ptrdiff_t size)
 }
 
 pragma(inline)
-bool free(bool threadSafe = false)(void* ptr)
+@trusted bool free(bool threadSafe = false)(void* ptr)
 {
     static if (threadSafe)
     {
@@ -255,7 +254,7 @@ bool free(bool threadSafe = false)(void* ptr)
 }
 
 pragma(inline)
-bool deallocate(bool threadSafe = false)(void* ptr)
+@trusted bool deallocate(bool threadSafe = false)(void* ptr)
 {
     static if (threadSafe)
     {

@@ -25,7 +25,7 @@ enum FILO;
  *  Wrapper class for explicitly declaring a stack.
  * 
  *  Remarks:
- *      Defaults to `LIFO`
+ *     Defaults to `LIFO`
  */
 public struct Stack(T, O = LIFO)
 {

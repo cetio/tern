@@ -61,9 +61,9 @@ static:
  * Highlights `matchOf` in `matchTo` with `color`
  *
  * Params:
- *   color = The color to highlight using.
- *   matchTo = The string being highlighted.
- *   matchOf = The string to highlight.
+ *  color = The color to highlight using.
+ *  matchTo = The string being highlighted.
+ *  matchOf = The string to highlight.
  *
  * Returns: `matchTo` with the color and reset inserted as to highlight `matchOf`
  */
@@ -79,10 +79,10 @@ pure string highlight(AnsiColor color, string matchTo, string matchOf)
  * Highlights the string between `matchStart` and `matchEnd` in `matchTo` with `color`
  *
  * Params:
- *   color = The color to highlight using.
- *   matchTo = The string being highlighted.
- *   matchStart = The start index of the string to highlight.
- *   matchEnd = The end index of the string to highlight.
+ *  color = The color to highlight using.
+ *  matchTo = The string being highlighted.
+ *  matchStart = The start index of the string to highlight.
+ *  matchEnd = The end index of the string to highlight.
  *
  * Returns: `matchTo` with the color and reset inserted as to highlight the specified string.
  */
@@ -98,9 +98,9 @@ pure string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptr
  * Raises an exception using optional highlighting.
  *
  * Params:
- *   exception = The exception to be raised.
- *   matchTo = String to use for syntax/error highlighting.
- *   matchOf = String to use to search for and highlight in `matchTo`
+ *  exception = The exception to be raised.
+ *  matchTo = String to use for syntax/error highlighting.
+ *  matchOf = String to use to search for and highlight in `matchTo`
  */
 pure void raise(string exception, string matchTo = null, string matchOf = null)
 {
@@ -114,10 +114,10 @@ pure void raise(string exception, string matchTo = null, string matchOf = null)
  * Raises an exception using optional highlighting.
  *
  * Params:
- *   exception = The exception to be raised.
- *   matchTo = String to use for syntax/error highlighting.
- *   matchStart = Start index of the string to use to search for and highlight in `matchTo`
- *   matchEnd = End index of the string to use to search for and highlight in `matchTo`
+ *  exception = The exception to be raised.
+ *  matchTo = String to use for syntax/error highlighting.
+ *  matchStart = Start index of the string to use to search for and highlight in `matchTo`
+ *  matchEnd = End index of the string to use to search for and highlight in `matchTo`
  */
 pure void raise(string exception, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {

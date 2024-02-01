@@ -61,9 +61,9 @@ public static pure string pragmatize(string str)
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *    mixin liberty;
+ *   mixin liberty;
  *
- *    string y() => "yohoho!";
+ *   string y() => "yohoho!";
  *  }
  *  ```
  */
@@ -85,9 +85,9 @@ public template inherit(T)
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *    mixin liberty;
+ *   mixin liberty;
  *
- *    string y() => "yohoho!";
+ *   string y() => "yohoho!";
  *  }
  *  ```
  */
