@@ -1,12 +1,11 @@
+/// Fast slab-entry based memory allocator with simple defragmentation
 module caiman.memory.allocator;
 
 import std.experimental.allocator.mmap_allocator;
 import core.sync.mutex;
 import tanya.container.list;
 import tanya.container.hashtable;
-import caiman.memory.ops;
-debug import std.stdio;
-debug import std.conv;
+import caiman.memory.op;
 
 private enum SLAB_SIZE = 1048576;
 private enum ALIGN = ptrdiff_t.sizeof * 4;
@@ -14,6 +13,7 @@ private static immutable MmapAllocator os;
 private shared static Mutex mutex;
 private static SList!Slab slabs;
 
+@trusted:
 shared static this()
 {
     slabs.insertFront(Slab(os.allocate(SLAB_SIZE).ptr, SLAB_SIZE));
@@ -272,7 +272,7 @@ bool deallocate(bool threadSafe = false)(void* ptr)
                     if (!os.deallocate(arr))
                         return false;
 
-                    debug writeln("Deallocated block, size: ", block.size);
+                    slab.size = 0;
                     return true;
                 }
             }
@@ -292,7 +292,7 @@ bool deallocate(bool threadSafe = false)(void* ptr)
                 if (!os.deallocate(arr))
                     return false;
 
-                debug writeln("Deallocated block, size: ", block.size);
+                slab.size = 0;
                 return true;
             }
         }

@@ -1,4 +1,4 @@
-/// Provides compile-time random number generation, supports all integral types, floats, and boolean
+/// Comptime random number generation, supports all integral types, floats, and boolean
 module caiman.meta.random;
 
 import std.traits;

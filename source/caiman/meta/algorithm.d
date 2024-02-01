@@ -1,8 +1,8 @@
+/// Comptime algorithm templates for working with AliasSeq
 module caiman.meta.algorithm;
 
 import std.meta;
 import std.traits;
-import caiman.meta;
 
 /**
  * Checks if an `AliasSeq` contains an alias.
@@ -180,6 +180,7 @@ unittest
  * static assert(isSame!(A, B));
  * ```
  */
+ // Ripped from `std.meta`
 public template isSame(alias a, alias b)
 {
     static if (!is(typeof(&a && &b)) // at least one is an rvalue

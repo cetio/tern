@@ -1,7 +1,8 @@
+/// SIMD (non-intrinsics) optimized for data encryption/copies
 module caiman.simd;
 
 import std.traits;
-import caiman.memory.ops;
+import caiman.memory.op;
 import core.simd;
 
 public alias byte16 = Vector128!byte;
@@ -29,18 +30,6 @@ final:
     else
         T[16] data;
     alias data this;
-
-    void clear()
-    {
-        void* arr = data.ptr;
-        asm
-        {
-            mov R10, arr;
-            movdqa XMM0, [R10];
-            xorpd XMM0, XMM0;
-            movdqa [R10], XMM0;
-        }
-    }
 
     Vector128!T opBinary(string op, V)(V val)
     {
@@ -144,9 +133,17 @@ final:
                 }
             }
         }
+        else static if (op == "^")
+        {
+            // XORPD
+        }
         else static if (op == "<<")
         {
             // PSLLQ
+        }
+        else static if (op == ">>")
+        {
+            // PSRLQ
         }
         return vec;
     }
