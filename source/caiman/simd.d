@@ -4,6 +4,7 @@ module caiman.simd;
 import std.traits;
 import caiman.memory.op;
 import core.simd;
+// TODO: Finish
 
 public alias byte16 = Vector128!byte;
 public alias ubyte16 = Vector128!ubyte;

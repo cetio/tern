@@ -100,7 +100,7 @@ final:
         }
         else if (type == ImageType.PE32)
         {
-            optionalImage = stream.read!PE32Image.ddupa!OptionalImage;
+            optionalImage = stream.read!PE32Image.to!OptionalImage;
         }
         else if (type == ImageType.PE64)
         {

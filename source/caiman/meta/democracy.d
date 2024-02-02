@@ -19,7 +19,7 @@
               jgs  `'. '
                      `'.
  */
-module caiman.meta.liberty;
+module caiman.meta.democracy;
 
 import std.traits;
 import std.string;
@@ -61,7 +61,7 @@ public static pure string pragmatize(string str)
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *   mixin liberty;
+ *   mixin transparens;
  *
  *   string y() => "yohoho!";
  *  }
@@ -85,7 +85,7 @@ public template inherit(T)
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *   mixin liberty;
+ *   mixin transparens;
  *
  *   string y() => "yohoho!";
  *  }
@@ -94,7 +94,7 @@ public template inherit(T)
 // TODO: Use opDispatch to allow for multiple class/struct inherits
 //       Find a faster way to do this, do not regenerate every call
 //       Apply changes on parent to self
-public template liberty(bool ignoreConflicts = false)
+public template transparens(bool ignoreConflicts = false)
 {
     static foreach (i, A; seqFilter!(isType, __traits(getAttributes, typeof(this))))
     {
@@ -102,14 +102,14 @@ public template liberty(bool ignoreConflicts = false)
 
         static foreach (field; FieldNames!A)
         {
-            static if (hasParents!(typeof(__traits(getMember, A, field))))
-                mixin("import "~moduleName!(typeof(__traits(getMember, A, field)))~";");
+            static if (hasParents!(TypeOf!(A, field)))
+                mixin("import "~moduleName!(TypeOf!(A, field))~";");
 
             static if (!seqContains!(field, FieldNames!(typeof(this))))
-                mixin(fullyQualifiedName!(typeof(__traits(getMember, A, field)))~" "~field~";");
+                mixin(fullyQualifiedName!(TypeOf!(A, field))~" "~field~";");
             else static if (!ignoreConflicts)
-                static assert(is(typeof(__traits(getMember, typeof(this), field)) == typeof(__traits(getMember, A, field))), 
-                    "Expected type of '"~typeof(__traits(getMember, A, field)).stringof~"' for inherited field '"~field~"' but got '"~typeof(__traits(getMember, typeof(this), field)).stringof~"'");
+                static assert(is(TypeOf!(typeof(this), field)) == TypeOf!(A, field), 
+                    "Expected type of '"~TypeOf!(A, field).stringof~"' for inherited field '"~field~"' but got '"~TypeOf!(typeof(this), field).stringof~"'");
         }
 
         static foreach (func; FunctionNames!A)
@@ -170,16 +170,16 @@ public template liberty(bool ignoreConflicts = false)
 
     /* static foreach (C; seqFilter!("X.stringof.length > 9 && X.stringof[0..9] == \"coalesced\"", __traits(getAttributes, typeof(this))))
     {
-        static foreach (field; FieldNames!(typeof(__traits(getMember, C, "dummy"))))
+        static foreach (field; FieldNames!(TypeOf!(C, "dummy"))))
         {
-            static if (hasParents!(typeof(__traits(getMember, (typeof(__traits(getMember, C, "dummy"))), field))))
-                mixin("import "~moduleName!(typeof(__traits(getMember, (typeof(__traits(getMember, C, "dummy"))), field)))~";");
+            static if (hasParents!(TypeOf!((TypeOf!(C, "dummy"))), field))))
+                mixin("import "~moduleName!(TypeOf!((TypeOf!(C, "dummy"))), field)))~";");
 
             static if (!seqContains!(field, FieldNames!(typeof(this))))
-                mixin(fullyQualifiedName!(typeof(__traits(getMember, (typeof(__traits(getMember, C, "dummy"))), field)))~" "~field~";");
+                mixin(fullyQualifiedName!(TypeOf!((TypeOf!(C, "dummy"))), field)))~" "~field~";");
             else static if (!ignoreConflicts)
-                static assert(is(typeof(__traits(getMember, typeof(this), field)) == typeof(__traits(getMember, (typeof(__traits(getMember, C, "dummy"))), field))), 
-                    "Expected type of '"~typeof(__traits(getMember, (typeof(__traits(getMember, C, "dummy"))), field)).stringof~"' for coalesced field '"~field~"' but got '"~typeof(__traits(getMember, typeof(this), field)).stringof~"'");
+                static assert(is(TypeOf!(typeof(this), field)) == TypeOf!((TypeOf!(C, "dummy"))), field))), 
+                    "Expected type of '"~TypeOf!((TypeOf!(C, "dummy"))), field)).stringof~"' for coalesced field '"~field~"' but got '"~TypeOf!(typeof(this), field)).stringof~"'");
         }
     } */
 }
@@ -195,7 +195,8 @@ public template liberty(bool ignoreConflicts = false)
 //       Allow for indiv. get/sets without needing both declared
 //       Clean up with caiman.core.algorithm
 /// Does not support multiple fields with the same enum type!
-public template accessors()
+// TODO: REWORK ASAP!!
+/* public template accessors()
 {
     import std.traits;
     import std.string;
@@ -204,36 +205,36 @@ public template accessors()
     static foreach (string member; __traits(allMembers, typeof(this)))
     {
         static if (member.startsWith("m_") && !__traits(compiles, { enum _ = mixin(member); }) &&
-            isMutable!(typeof(__traits(getMember, typeof(this), member))) &&
+            isMutable!(TypeOf!(typeof(this), member)) &&
             (isFunction!(__traits(getMember, typeof(this), member)) || staticIndexOf!(exempt, __traits(getAttributes, __traits(getMember, typeof(this), member))) == -1))
         {
             static if (!__traits(hasMember, typeof(this), member[2..$]))
             {
                 static if (!__traits(hasMember, typeof(this), member[2..$]))
                 {
-                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_"~member[2..$]~"_get\") extern (C) export final @property "~fullyQualifiedName!(typeof(__traits(getMember, typeof(this), member)))~" "~member[2..$]~"() { return "~member~"; }");
-                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_"~member[2..$]~"_set\") extern (C) export final @property "~fullyQualifiedName!(typeof(__traits(getMember, typeof(this), member)))~" "~member[2..$]~"("~fullyQualifiedName!(typeof(__traits(getMember, typeof(this), member)))~" val) { "~member~" = val; return "~member~"; }");
+                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_"~member[2..$]~"_get\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"() { return "~member~"; }");
+                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_"~member[2..$]~"_set\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"("~fullyQualifiedName!(TypeOf!(typeof(this), member))~" val) { "~member~" = val; return "~member~"; }");
                 }
 
                 // Flags
-                static if (is(typeof(__traits(getMember, typeof(this), member)) == enum) &&
-                    staticIndexOf!(exempt, __traits(getAttributes, typeof(__traits(getMember, typeof(this), member)))) == -1 &&
-                    staticIndexOf!(flags, __traits(getAttributes, typeof(__traits(getMember, typeof(this), member)))) != -1)
+                static if (is(TypeOf!(typeof(this), member)) == enum) &&
+                    staticIndexOf!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) == -1 &&
+                    staticIndexOf!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))) != -1)
                 {
-                    static foreach (string flag; __traits(allMembers, typeof(__traits(getMember, this, member))))
+                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
                     {
                         static if (flag.startsWith('k'))
                         {
-                            static foreach_reverse (string mask; __traits(allMembers, typeof(__traits(getMember, this, member)))[0..(staticIndexOf!(flag, __traits(allMembers, typeof(__traits(getMember, this, member)))))])
+                            static foreach_reverse (string mask; __traits(allMembers, TypeOf!(this, member)))[0..(staticIndexOf!(flag, __traits(allMembers, TypeOf!(this, member)))])
                             {
                                 static if (mask.endsWith("Mask") || mask.endsWith("MASK"))
                                 {
                                     static if (!__traits(hasMember, typeof(this), "is"~flag[1..$]))
                                     {
                                         // @property bool isEastern()...
-                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"_get\") extern (C) export final @property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"_get\") extern (C) export final @property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
                                         // @property bool isEastern(bool state)...
-                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"get\") extern (C) export final @property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") | "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~mask~") & ~"~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~")) == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"get\") extern (C) export final @property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~")) == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
                                     }
                                 }
 
@@ -244,34 +245,34 @@ public template accessors()
                             static if (!__traits(hasMember, typeof(this), "is"~flag))
                             {
                                 // @property bool isEastern()...
-                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") != 0; }");
+                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member)))~"."~flag~") != 0; }");
                                 // @property bool isEastern(bool state)...
-                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"))) != 0; }");
+                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member)))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(TypeOf!(this, member)))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(TypeOf!(this, member)))~"."~flag~"))) != 0; }");
                             }
                         }
                     }
                 }
 
                 // Non-flags
-                static if (is(typeof(__traits(getMember, typeof(this), member)) == enum) &&
-                    staticIndexOf!(exempt, __traits(getAttributes, typeof(__traits(getMember, typeof(this), member)))) == -1 &&
-                    staticIndexOf!(flags, __traits(getAttributes, typeof(__traits(getMember, typeof(this), member)))) == -1)
+                static if (is(TypeOf!(typeof(this), member)) == enum) &&
+                    staticIndexOf!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member)))) == -1 &&
+                    staticIndexOf!(flags, __traits(getAttributes, TypeOf!(typeof(this), member)))) == -1)
                 {
-                    static foreach (string flag; __traits(allMembers, typeof(__traits(getMember, this, member))))
+                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member))))
                     {
                         static if (!__traits(hasMember, typeof(this), "is"~flag))
                         {
                             // @property bool Eastern()...
-                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(TypeOf!(this, member)))~"."~flag~"; }");
                             // @property bool Eastern(bool state)...
-                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~") == "~fullyQualifiedName!(typeof(__traits(getMember, this, member)))~"."~flag~"; }");
+                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(TypeOf!(this, member)))~"."~flag~") == "~fullyQualifiedName!(TypeOf!(this, member)))~"."~flag~"; }");
                         }
                     }
                 }
             }
         }
     }
-}
+} */
 
 unittest
 {
@@ -289,7 +290,7 @@ unittest
 
     @inherit!A @inherit!B struct C
     {
-        mixin liberty;
+        mixin transparens;
 
         string y() => "yohoho!";
     }
@@ -382,11 +383,11 @@ public struct Kin(T, ARGS...)
             } */
         }
 
-        static if (hasParents!(typeof(__traits(getMember, T, field))))
-            mixin("import "~moduleName!(typeof(__traits(getMember, T, field)))~";");
+        static if (hasParents!(TypeOf!(T, field)))
+            mixin("import "~moduleName!(TypeOf!(T, field))~";");
 
         static if (!seqContains!(field, ARGS))
-            mixin(fullyQualifiedName!(typeof(__traits(getMember, T, field)))~" "~field~";");
+            mixin(fullyQualifiedName!(TypeOf!(T, field))~" "~field~";");
     }
 
     // Define all of the optional fields
@@ -445,7 +446,7 @@ public struct Kin(T, ARGS...)
         static if (hasChildren!T)
         static foreach (field; FieldNames!T)
         {
-            __traits(getMember, val, field) = cast(typeof(__traits(getMember, val, field)))mixin(field);
+            __traits(getMember, val, field) = cast(TypeOf!(val, field))mixin(field);
         }
         return val;
         /* ubyte[] bytes;
@@ -458,12 +459,12 @@ public struct Kin(T, ARGS...)
                 // (8 - 4) - 2 = 2 (padded by 2)
                 bytes ~= new ubyte[
                     (__traits(getMember, T, field).offsetof - __traits(getMember, T, FieldNames!T[staticIndexOf!(field, FieldNames!T) - 1]).offsetof)
-                     - typeof(__traits(getMember, T, FieldNames!T[staticIndexOf!(field, FieldNames!T) - 1])).sizeof];
+                     - TypeOf!(T, FieldNames!T[staticIndexOf!(field, FieldNames!T) - 1])).sizeof];
             }
 
             {
-                auto val = cast(typeof(__traits(getMember, T, field)))__traits(getMember, this, field);
-                bytes ~= (cast(ubyte*)&val)[0..typeof(__traits(getMember, T, field)).sizeof];
+                auto val = cast(TypeOf!(T, field)))__traits(getMember, this, field);
+                bytes ~= (cast(ubyte*)&val)[0..TypeOf!(T, field)).sizeof];
             }
         }
         return *cast(T*)bytes.ptr; */

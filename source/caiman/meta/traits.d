@@ -12,7 +12,7 @@ static:
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);
 /// True if `T` is an indirection, otherwise, false.
-public alias isReference(T) = isIndirection!T;
+public alias isReferenceType(T) = isIndirection!T;
 /// True if `T` is not an indirection, otherwise, false.
 public alias isValueType(T) = Alias!(!isIndirection!T);
 /// True if `F` is exported, otherwise, false.
@@ -62,10 +62,76 @@ public template TypeOf(alias A, string MEMBER)
 /// Returns the type of enum values if `T` is an enum.
 public template ElementType(T) 
 {
-    static if (is(T == U[], U) || is(T == U*, U))
+    static if (is(T == U[], U) || is(T == U*, U) || is(T U == U[L], ptrdiff_t L))
         alias ElementType = ElementType!U;
     else
         alias ElementType = OriginalType!T;
+}
+
+/** 
+ * Gets the signature of `F` as a string. \
+ * This includes all attributes, templates (must be already initialized, names are lost,) and parameters.
+ *
+ * Params:
+ *  F = Function to get the signature of.
+ */
+public template FunctionSignature(alias F)
+    if (isFunction!F)
+{
+    enum FunctionSignature = 
+    {
+        string paramSig = "(";
+        static if (__traits(compiles, { alias _ = TemplateArgsOf!F; }))
+        {
+            static foreach (i, A; TemplateArgsOf!F)
+            {
+                static if (__traits(compiles, { enum _ = B; }))
+                    paramSig ~= typeof(B)~" T"~i.stringof[0..$-2];
+                else
+                    paramSig ~= "alias T"~i.stringof[0..$-2];
+            }
+            paramSig ~= ")(";
+        }
+        
+        foreach (i, P; Parameters!F)
+            paramSig ~= P.stringof~" "~ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
+        paramSig ~= ')';
+
+        return seqStringOf!(__traits(getFunctionAttributes, F))~" "~ReturnType!F.stringof~" "~__traits(identifier, F)~paramSig;
+    }();
+}
+
+/** 
+ * Gets the signature of `F` as a string without any types present.
+ *
+ * Params:
+ *  F = Function to get the signature of.
+ */
+// Uses a lot of redundant code but that's fine
+public template FunctionCallableSignature(alias F)
+    if (isFunction!F)
+{
+    enum FunctionCallableSignature = 
+    {
+        string paramSig = "(";
+        static if (__traits(compiles, { alias _ = TemplateArgsOf!F; }))
+        {
+            static foreach (i, A; TemplateArgsOf!F)
+            {
+                static if (__traits(compiles, { enum _ = B; }))
+                    paramSig ~= "T"~i.stringof[0..$-2];
+                else
+                    paramSig ~= "T"~i.stringof[0..$-2];
+            }
+            paramSig ~= ")(";
+        }
+        
+        foreach (i, P; Parameters!F)
+            paramSig ~= ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
+        paramSig ~= ')';
+
+        return __traits(identifier, F)~paramSig;
+    }();
 }
 
 /**
@@ -96,14 +162,14 @@ public template ImplementNames(T)
     static if (is(T S == super) && S.length)
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias ImplementNames = AliasSeq!(S, typeof(__traits(getMember, T, __traits(getAliasThis, T))), ImplementNames!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+            alias ImplementNames = AliasSeq!(S, TypeOf!(T, __traits(getAliasThis, T)), ImplementNames!(TypeOf!(T, __traits(getAliasThis, T))));
         else
             alias ImplementNames = S;
     }
     else
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias ImplementNames = AliasSeq!(typeof(__traits(getMember, T, __traits(getAliasThis, T))), ImplementNames!(typeof(__traits(getMember, T, __traits(getAliasThis, T)))));
+            alias ImplementNames = AliasSeq!(TypeOf!(T, __traits(getAliasThis, T)), ImplementNames!(TypeOf!(T, __traits(getAliasThis, T))));
         else
             alias ImplementNames = AliasSeq!();
     }  

@@ -72,7 +72,7 @@ public template seqFilter(string F, A...)
 {
     alias seqFilter = AliasSeq!();
     
-    private template filter(alias X) 
+    private template filter(ptrdiff_t I, alias X) 
     { 
         static if (mixin(F)) 
             alias filter = X; 
@@ -80,8 +80,8 @@ public template seqFilter(string F, A...)
             alias filter = AliasSeq!();
     }
 
-    static foreach (B; A)
-        seqFilter = AliasSeq!(seqFilter, filter!B);
+    static foreach (i, B; A)
+        seqFilter = AliasSeq!(seqFilter, filter!(i, B));
 }
 
 unittest
@@ -129,13 +129,16 @@ public template seqMap(string F, A...)
 {
     alias seqMap = AliasSeq!();
 
-    private template map(alias X) 
+    private template map(ptrdiff_t I, alias X) 
     { 
-        alias map = mixin(F);
+        static if (__traits(compiles, { alias map = mixin(F); }))
+            alias map = mixin(F);
+        else
+            enum map = mixin(F);
     }
 
-    static foreach (B; A)
-        seqMap = AliasSeq!(seqMap, map!B);
+    static foreach (i, B; A)
+        seqMap = AliasSeq!(seqMap, map!(i, B));
 }
 
 unittest
@@ -170,6 +173,27 @@ unittest
 {
     alias Seq = AliasSeq!(int, float, string);
     static assert(seqIndexOf!(string, Seq) == 2);
+}
+
+/** 
+ * Creates a string representing `A` using the given separator. \
+ * Avoids weird behavior with `stringof` by not using `stringof` for values.
+ */
+// TODO: Use enum format in traits too
+public template seqStringOf(string SEPARATOR, A...)
+{
+    enum seqStringOf =
+    {
+        string ret;
+        foreach (i, B; A)
+        {
+            static if (__traits(compiles, { enum _ = B; }))
+                ret ~= B~(i == A.length - 1 ? null : SEPARATOR~" ");
+            else
+                ret ~= B.stringof~(i == A.length - 1 ? null : SEPARATOR~" ");
+        }
+        return ret;
+    }();
 }
 
 /**

@@ -1,8 +1,8 @@
 module caiman.hresult;
 
-import caiman.meta.liberty;
+import caiman.meta.democracy;
 
-/// Enumeration of HResult values for handling error codes.
+/// HResult values for handling error codes.
 public @exempt enum HResult
 {
     S_OK = 0x00000000,

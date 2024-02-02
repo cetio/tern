@@ -108,7 +108,7 @@ version (Windows)
 else
 {
     /// True if `T` is a floating point to the ABI, otherwise, false.
-    alias isFloat(T) = Alias!(__traits(isFloating, T) || is(T == string) || is(T == char[]));
+    alias isFloat(T) = Alias!(__traits(isFloating, T) || isSomeString!T);
     /// True if `T` is a native structure to the ABI, otherwise, false.
     alias isNative(T) = Alias!(__traits(isScalar, T) || ((is(T == struct) || is(T == union) || is(T == enum)) && (T.sizeof <= 8)));
     /// True if `T` would be paired into multiple registers, otherwise, false.
@@ -356,9 +356,9 @@ public template mov(uint ID, T, T val, AS = void, uint _LINE = __LINE__)
     immutable string LINE = _LINE.to!string;
     pure string mov()
     {
-        static if (is(T == string))
+        static if (isSomeString!T)
             const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = \""~val.to!string~"\";";
-        else static if (is(T == char))
+        else static if (isSomeChar!T)
             const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = '"~val.to!string~"';";
         else
             const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = "~val.to!string~";";

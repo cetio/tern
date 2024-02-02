@@ -149,7 +149,7 @@ public:
      */
     @nogc void stepUntil(T)(T val)
     {
-        static if (is(T == string))
+        static if (isSomeString!T)
         {
             while (peekString!(ElementType!T) != val)
                 position++;
@@ -556,7 +556,7 @@ public:
         T val;
         foreach (field; FieldNames!T)
         {
-            alias M = typeof(__traits(getMember, val, field));
+            alias M = TypeOf!(val, field);
             bool cread;
             static foreach (i, ARG; ARGS)
             {
@@ -692,7 +692,7 @@ public:
                 }
             }
             if (cread)
-                __traits(getMember, val, field) = read!(typeof(__traits(getMember, val, field)));
+                __traits(getMember, val, field) = read!(TypeOf!(val, field));
         }
         return val;
     }

@@ -3,22 +3,22 @@
 module caiman.stack;
 
 /**
-    Last In First Out
-
-    ```d
-    [] -> push(1) push(2) -> [1, 2] // Order doesn't change between LIFO vs FILO
-    [1, 2] -> pop() -> [1] // Value pushed last gets popped
-    ```
-*/
+ * Last In First Out
+ *
+ * ```d
+ * [] -> push(1) push(2) -> [1, 2] // Order doesn't change between LIFO vs FILO
+ * [1, 2] -> pop() -> [1] // Value pushed last gets popped
+ * ```
+ */
 enum LIFO;
 /**
-    First In Last Out
-
-    ```d
-    [] -> push(1) push(2) -> [1, 2] // Order doesn't change between LIFO vs FILO
-    [1, 2] -> pop() -> [2] // Value pushed first gets popped
-    ```
-*/
+ * First In Last Out
+ *
+ * ```d
+ * [] -> push(1) push(2) -> [1, 2] // Order doesn't change between LIFO vs FILO
+ * [1, 2] -> pop() -> [2] // Value pushed first gets popped
+ * ```
+ */
 enum FILO;
 
 /** 
@@ -35,8 +35,8 @@ final:
     
 public:
     /** 
-        Returns:
-            The length of the stack.
+     * Returns:
+     *  The length of the stack.
      */
     ulong length()
     {
@@ -44,41 +44,41 @@ public:
     }
 
     /** 
-        Pops a value off of the stack.
-
-        Returns:
-            The value that was popped off of the stack.
-    */
+     * Pops a value off of the stack.
+     *
+     * Returns:
+     *  The value that was popped off of the stack.
+     */
     T pop()
     {
         return arr.pop!O();
     }
 
     /** 
-        Pops a value off of the stack without modifying the stack.
-
-        Returns:
-            The value that was popped off of the stack.
-    */
+     * Pops a value off of the stack without modifying the stack.
+     *
+     * Returns:
+     *  The value that was popped off of the stack.
+     */
     T peek()
     {
         return arr.peek!O();
     }
 
     /** 
-        Swaps the two top values of the stack.
-    */
+     * Swaps the two top values of the stack.
+     */
     void swap()
     {
         return arr.swap!O();
     }
 
     /** 
-        Pushes a value onto the stack.
-        
-        Params:
-           val = The value to push onto the stack.
-    */
+     * Pushes a value onto the stack.
+     *
+     * Params:
+     *  val = The value to push onto the stack.
+     */
     void push(T val)
     {
         return arr.push(val);
@@ -88,19 +88,19 @@ public:
 public:
 static:
 /**
-    Pops a value off of the array
-
-    Params:
-       O = Stack order to pop the value using.
-       T = Array type being popped from.
-       arr = The array being popped from.
-
-    Returns: 
-        The value that was popped off the stack.
-
-    Remarks:
-        Defaults to `LIFO`
-*/
+ * Pops a value off of the array
+ *
+ * Params:
+ *  O = Stack order to pop the value using.
+ *  T = Array type being popped from.
+ *  arr = The array being popped from.
+ *
+ * Returns: 
+ *  The value that was popped off the stack.
+ *
+ * Remarks:
+ *  Defaults to `LIFO`
+ */
 pure U pop(O = LIFO, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
 {
@@ -119,19 +119,19 @@ pure U pop(O = LIFO, T : U[], U)(ref T arr)
 }
 
 /**
-    Duplicates the top value of the array without modifying the stack.
-
-    Params:
-       O = Stack order to duplicate the value using.
-       T = Array type.
-       arr = The array.
-
-    Returns: 
-        The duplicated value from the top of the stack.
-
-    Remarks:
-        Defaults to `LIFO`
-*/
+ * Duplicates the top value of the array without modifying the stack.
+ *
+ * Params:
+ *  O = Stack order to duplicate the value using.
+ *  T = Array type.
+ *  arr = The array.
+ *
+ * Returns: 
+ *  The duplicated value from the top of the stack.
+ *
+ * Remarks:
+ *  Defaults to `LIFO`
+ */
 pure U peek(O, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
 {
@@ -148,16 +148,16 @@ pure U peek(O, T : U[], U)(ref T arr)
 }
 
 /**
-    Swaps the top two values on the stack.
-
-    Params:
-       O = Stack order to perform the swap on.
-       T = Array type.
-       arr = The array.
-
-    Remarks:
-        Defaults to `LIFO`
-*/
+ * Swaps the top two values on the stack.
+ *
+ * Params:
+ *  O = Stack order to perform the swap on.
+ *  T = Array type.
+ *  arr = The array.
+ *
+ * Remarks:
+ *  Defaults to `LIFO`
+ */
 pure void swap(O = LIFO, T : U[], U)(ref T arr)
     if (is(O == LIFO) || is(O == FILO))
 {
@@ -178,13 +178,13 @@ pure void swap(O = LIFO, T : U[], U)(ref T arr)
 }
 
 /**
-    Pushes a value onto the array.
-
-    Params:
-       T = Array type being pushed to.
-       arr = The array being pushed to.
-       val = The value to push onto the array.
-*/
+ * Pushes a value onto the array.
+ * 
+ * Params:
+ *  T = Array type being pushed to.
+ *  arr = The array being pushed to.
+ *  val = The value to push onto the array.
+ */
 pure nothrow void push(T : U[], U)(ref T arr, U val)
 {
     arr ~= val;
