@@ -3,7 +3,6 @@ module caiman.main;
 import caiman;
 import std;
 
-alias ElementType = caiman.meta.traits.ElementType;
 alias to = caiman.conv.to;
 
 void main()

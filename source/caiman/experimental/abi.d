@@ -1,5 +1,5 @@
 /// Provides interface to MSABI/SystemV ABI as well as generic register shenanigans
-module caiman.lang.msabi;
+module caiman.experimental.abi;
 
 import std.conv;
 import std.traits;

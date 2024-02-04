@@ -1,4 +1,4 @@
-module caiman.lang.regex.builder;
+module caiman.regex.builder;
 
 import std.string;
 import std.conv;

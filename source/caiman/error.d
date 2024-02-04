@@ -57,6 +57,7 @@ private enum AnsiColor
 
 public:
 static:
+pure:
 /** 
  * Highlights `matchOf` in `matchTo` with `color`
  *
@@ -67,7 +68,7 @@ static:
  *
  * Returns: `matchTo` with the color and reset inserted as to highlight `matchOf`
  */
-pure string highlight(AnsiColor color, string matchTo, string matchOf)
+string highlight(AnsiColor color, string matchTo, string matchOf)
 {
     if (!matchTo.canFind(matchOf)) 
         throw new Throwable("Matching substring not found in the input string");
@@ -86,7 +87,7 @@ pure string highlight(AnsiColor color, string matchTo, string matchOf)
  *
  * Returns: `matchTo` with the color and reset inserted as to highlight the specified string.
  */
-pure string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
+string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
     if (!matchStart >= 0 && matchEnd >= matchStart && matchEnd <= matchTo.length)
         throw new Throwable("Invalid matchStart or matchEnd values");
@@ -102,7 +103,7 @@ pure string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptr
  *  matchTo = String to use for syntax/error highlighting.
  *  matchOf = String to use to search for and highlight in `matchTo`
  */
-pure void raise(string exception, string matchTo = null, string matchOf = null)
+void raise(string exception, string matchTo = null, string matchOf = null)
 {
     if (matchTo == null)
         throw new Throwable(exception);
@@ -119,7 +120,7 @@ pure void raise(string exception, string matchTo = null, string matchOf = null)
  *  matchStart = Start index of the string to use to search for and highlight in `matchTo`
  *  matchEnd = End index of the string to use to search for and highlight in `matchTo`
  */
-pure void raise(string exception, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
+void raise(string exception, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchStart, matchEnd));
 }

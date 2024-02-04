@@ -1,6 +1,6 @@
 /// Wrapper for stack arrays and popping/pushing on arrays with support for LIFO and FILO
 // TODO: caiman.memory.op makeArray for @nogc
-module caiman.stack;
+module caiman.array;
 
 /**
  * Last In First Out
@@ -20,70 +20,6 @@ enum LIFO;
  * ```
  */
 enum FILO;
-
-/** 
- *  Wrapper class for explicitly declaring a stack.
- * 
- *  Remarks:
- *     Defaults to `LIFO`
- */
-public struct Stack(T, O = LIFO)
-{
-private:
-final:
-    T[] arr;
-    
-public:
-    /** 
-     * Returns:
-     *  The length of the stack.
-     */
-    ulong length()
-    {
-        return arr.length;
-    }
-
-    /** 
-     * Pops a value off of the stack.
-     *
-     * Returns:
-     *  The value that was popped off of the stack.
-     */
-    T pop()
-    {
-        return arr.pop!O();
-    }
-
-    /** 
-     * Pops a value off of the stack without modifying the stack.
-     *
-     * Returns:
-     *  The value that was popped off of the stack.
-     */
-    T peek()
-    {
-        return arr.peek!O();
-    }
-
-    /** 
-     * Swaps the two top values of the stack.
-     */
-    void swap()
-    {
-        return arr.swap!O();
-    }
-
-    /** 
-     * Pushes a value onto the stack.
-     *
-     * Params:
-     *  val = The value to push onto the stack.
-     */
-    void push(T val)
-    {
-        return arr.push(val);
-    }
-}
 
 public:
 static:

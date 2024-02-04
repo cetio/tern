@@ -1,5 +1,5 @@
 /// Traits templates intended to fill the gaps in `std.meta`
-module caiman.meta.traits;
+module caiman.traits;
 
 import std.string;
 import std.algorithm;

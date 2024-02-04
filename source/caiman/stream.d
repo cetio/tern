@@ -1,7 +1,7 @@
 /// Advanced data stream support, with optional reading, file access, endianness support, and much more.
 // TODO: Refactor
 //       AOB/pattern scan
-module caiman.memory.stream;
+module caiman.stream;
 
 import std.file;
 import std.conv;

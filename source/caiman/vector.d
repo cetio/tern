@@ -1,5 +1,5 @@
 /// SIMD (non-intrinsics) optimized for data encryption/copies
-module caiman.simd;
+module caiman.vector;
 
 import std.traits;
 import caiman.memory.op;

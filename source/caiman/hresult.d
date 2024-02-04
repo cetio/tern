@@ -1,6 +1,6 @@
 module caiman.hresult;
 
-import caiman.meta.democracy;
+import caiman.democracy;
 
 /// HResult values for handling error codes.
 public @exempt enum HResult

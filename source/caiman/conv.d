@@ -1,7 +1,7 @@
 module caiman.conv;
 
-import caiman.meta.traits;
-import caiman.meta.algorithm;
+import caiman.traits;
+import caiman.meta;
 import std.traits;
 import std.conv;
 

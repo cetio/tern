@@ -1,5 +1,5 @@
 /// Lightning fast and easy hardware-accelerated memory operations
-module caiman.memory.op;
+module caiman.memory;
 
 import std.traits;
 import core.simd;

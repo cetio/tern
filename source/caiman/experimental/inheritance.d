@@ -19,15 +19,15 @@
               jgs  `'. '
                      `'.
  */
-module caiman.meta.democracy;
+module caiman.experimental.inheritance;
 
 import std.traits;
 import std.string;
 import std.array;
 import std.ascii;
 import std.algorithm;
-import caiman.meta.traits;
-import caiman.meta.algorithm;
+import caiman.traits;
+import caiman.meta;
 
 /// Attribute signifying an enum uses flags
 enum flags;

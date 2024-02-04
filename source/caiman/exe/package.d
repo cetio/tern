@@ -3,7 +3,7 @@
 module caiman.exe;
 
 import caiman.memory.stream;
-import caiman.meta.traits;
+import caiman.traits;
 import caiman.conv;
 import caiman.state;
 import std.string;

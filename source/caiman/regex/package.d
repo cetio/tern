@@ -1,7 +1,7 @@
-module caiman.lang.regex;
+module caiman.regex;
 
-import caiman.lang.regex.builder;
-import caiman.lang.regex.matcher;
+import caiman.regex.builder;
+import caiman.regex.matcher;
 
 package static string[string] lookups;
 static this()

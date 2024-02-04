@@ -1,5 +1,5 @@
 /// Comptime algorithm templates for working with AliasSeq
-module caiman.meta.algorithm;
+module caiman.meta;
 
 import std.meta;
 import std.traits;

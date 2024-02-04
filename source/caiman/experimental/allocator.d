@@ -1,5 +1,6 @@
-/// Fast slab-entry based memory allocator with simple defragmentation
-module caiman.memory.allocator;
+/// Fast slab-entry based memory allocator with simple defragmentation \
+/// Recommended to use `caiman.memory.pool` instead if you want thread-safety
+module caiman.experimental.allocator;
 
 import std.experimental.allocator.mmap_allocator;
 import core.sync.mutex;
@@ -83,6 +84,16 @@ public:
 final:
 @nogc:
 static:
+/**
+ * Allocates an entry of `size` 
+ *
+ * Params:
+ *  threadSafe = Should this operation be thread safe? Default false.
+ *  size = Size to be allocated.
+ *
+ * Returns:
+ *  Pointer to the allocated entry.
+ */
 pragma(inline)
 @trusted void* malloc(bool threadSafe = false)(ptrdiff_t size)
 {
@@ -139,6 +150,16 @@ pragma(inline)
     }
 }
 
+/**
+ * Allocates an entry of `size` and clears the entry.
+ *
+ * Params:
+ *  threadSafe = Should this operation be thread safe? Default false.
+ *  size = Size of the new entry.
+ *
+ * Returns:
+ *  Pointer to the allocated entry.
+ */
 pragma(inline)
 @trusted void* calloc(bool threadSafe = false)(ptrdiff_t size)
 {
@@ -159,8 +180,17 @@ pragma(inline)
     }
 }
 
+/**
+ * Reallocates `ptr` with `size` \
+ * Tries to avoid actually doing a new allocation if possible.
+ *
+ * Params:
+ *  threadSafe = Should this operation be thread safe? Default false.
+ *  ptr = Pointer to entry to be reallocated.
+ *  size = Size of the new entry.
+ */
 pragma(inline)
-@trusted void* realloc(bool threadSafe = false)(void* ptr, ptrdiff_t size)
+@trusted void realloc(bool threadSafe = false)(ref void* ptr, ptrdiff_t size)
 {
     static if (threadSafe)
     {
@@ -171,16 +201,16 @@ pragma(inline)
                 if (ptr >= slab.baseAddress && ptr < slab.baseAddress + slab.offset)
                 {
                     if (ptr !in slab.entries)
-                        return null;
+                        return;
 
                     Entry entry = slab.entries[ptr];
                     if (entry.size >= size || (cast(ptrdiff_t)entry.ptr + size < slab.offset + slab.size && entry.ptr + entry.size !in slab.entries))
-                        return ptr;
+                        return;
 
                     foreach (_entry; slab.available)
                     {
                         if (_entry.ptr == entry.ptr + entry.size)
-                            return ptr;
+                            return;
                     }
 
                     if (entry.ptr == ptr)
@@ -188,11 +218,10 @@ pragma(inline)
                         void* dest = malloc(size);
                         copy(ptr, dest, entry.size);
                         slab.free(ptr);
-                        return dest;
+                        ptr = dest;
                     }
                 }
             }
-            return ptr;
         }
     }
     else
@@ -202,16 +231,16 @@ pragma(inline)
             if (ptr >= slab.baseAddress && ptr < slab.baseAddress + slab.offset)
             {
                 if (ptr !in slab.entries)
-                    return null;
+                    return;
 
                 Entry entry = slab.entries[ptr];
                 if (entry.size >= size || (cast(ptrdiff_t)entry.ptr + size < slab.offset + slab.size && entry.ptr + entry.size !in slab.entries))
-                    return ptr;
+                    return;
 
                 foreach (_entry; slab.available)
                 {
                     if (_entry.ptr == entry.ptr + entry.size)
-                        return ptr;
+                        return;
                 }
 
                 if (entry.ptr == ptr)
@@ -219,14 +248,66 @@ pragma(inline)
                     void* dest = malloc(size);
                     copy(ptr, dest, entry.size);
                     slab.free(ptr);
-                    return dest;
+                    ptr = dest;
                 }
             }
         }
-        return ptr;
     }
 }
 
+/**
+ * Zeroes the entry pointed to by `ptr`
+ *
+ * Params:
+ *  threadSafe = Should this operation be thread safe? Default false.
+ *  ptr = Pointer to entry to be zeroed.
+ */
+pragma(inline)
+@trusted void wake(bool threadSafe = false)(void* ptr)
+{
+    static if (threadSafe)
+    {
+        synchronized (mutex)
+        {
+            foreach (ref slab; slabs)
+            {
+                if (ptr >= slab.baseAddress && ptr < slab.baseAddress + slab.offset)
+                {
+                    if (ptr !in slab.entries)
+                        return;
+
+                    Entry entry = slab.entries[ptr];
+                    memset(ptr, entry.size, 0);
+                }
+            }
+        }
+    }
+    else
+    {
+        foreach (ref slab; slabs)
+        {
+            if (ptr >= slab.baseAddress && ptr < slab.baseAddress + slab.offset)
+            {
+                if (ptr !in slab.entries)
+                    return;
+
+                Entry entry = slab.entries[ptr];
+                memset(ptr, entry.size, 0);
+            }
+        }
+    }
+}
+
+/**
+ * Frees `ptr`, self explanatory.
+ *
+ * Params:
+ *  threadSafe = Should this operation be thread safe? Default false.
+ *  ptr = Pointer to entry to be freed.
+ *
+ * Returns:
+ *  True if this succeeded, otherwise false.
+ */
 pragma(inline)
 @trusted bool free(bool threadSafe = false)(void* ptr)
 {
