@@ -6,7 +6,7 @@ import std.experimental.allocator.mmap_allocator;
 import core.sync.mutex;
 import tanya.container.list;
 import tanya.container.hashtable;
-import caiman.memory.op;
+import caiman.memory;
 
 private enum SLAB_SIZE = 1048576;
 private enum ALIGN = ptrdiff_t.sizeof * 4;

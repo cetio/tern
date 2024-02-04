@@ -2,7 +2,7 @@
 // TODO: ELF
 module caiman.exe;
 
-import caiman.memory.stream;
+import caiman.stream;
 import caiman.traits;
 import caiman.conv;
 import caiman.state;

@@ -6,7 +6,7 @@ module caiman.stream;
 import std.file;
 import std.conv;
 import std.algorithm.mutation;
-import caiman.meta.traits;
+import caiman.traits;
 import std.traits;
 
 public enum Endianness

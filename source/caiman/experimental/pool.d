@@ -1,5 +1,5 @@
 /// Thread safe abstraction of `camain.memory.allocator`
-module caiman.experimental.allocpool;
+module caiman.experimental.pool;
 
 import caiman.experimental.allocator;
 
@@ -16,7 +16,7 @@ static:
  * Returns:
  *  Pointer to the allocated entry.
  */
-@trusted void* malloc(ptrdiff_t size) => caiman.memory.allocator.malloc!true(size);
+@trusted void* malloc(ptrdiff_t size) => caiman.experimental.allocator.malloc!true(size);
 
 /**
  * Allocates an entry of `size` and clears the entry.
@@ -28,7 +28,7 @@ static:
  * Returns:
  *  Pointer to the allocated entry.
  */
-@trusted void* calloc(ptrdiff_t size) => caiman.memory.allocator.calloc!true(size);
+@trusted void* calloc(ptrdiff_t size) => caiman.experimental.allocator.calloc!true(size);
 
 /**
  * Reallocates `ptr` with `size` \
@@ -39,7 +39,7 @@ static:
  *  ptr = Pointer to entry to be reallocated.
  *  size = Size of the new entry.
  */
-@trusted void realloc(ref void* ptr, ptrdiff_t size) => caiman.memory.allocator.realloc!true(ptr, size);
+@trusted void realloc(ref void* ptr, ptrdiff_t size) => caiman.experimental.allocator.realloc!true(ptr, size);
 
 /**
  * Zeroes the entry pointed to by `ptr`
@@ -48,7 +48,7 @@ static:
  *  threadSafe = Should this operation be thread safe? Default false.
  *  ptr = Pointer to entry to be zeroed.
  */
-@trusted void wake(void* ptr) => caiman.memory.allocator.wake!true(ptr);
+@trusted void wake(void* ptr) => caiman.experimental.allocator.wake!true(ptr);
 
 /**
  * Frees `ptr`, self explanatory.
@@ -60,7 +60,7 @@ static:
  * Returns:
  *  True if this succeeded, otherwise false.
  */
-@trusted bool free(void* ptr) => caiman.memory.allocator.free!true(ptr);
+@trusted bool free(void* ptr) => caiman.experimental.allocator.free!true(ptr);
 
 /**
  * Clears and then frees `ptr` before allocating `ptr` as a new entry with `calloc`
@@ -70,7 +70,7 @@ static:
  *  ptr = Pointer to entry to be exchanged.
  *  size = New size of `ptr`
  */
-@trusted void exchange(ref void* ptr, ptrdiff_t size)
+@trusted bool exchange(ref void* ptr, ptrdiff_t size)
 {
     wake(ptr);
     bool ret = free(ptr);

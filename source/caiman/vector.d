@@ -2,7 +2,7 @@
 module caiman.vector;
 
 import std.traits;
-import caiman.memory.op;
+import caiman.memory;
 import core.simd;
 // TODO: Finish
 
