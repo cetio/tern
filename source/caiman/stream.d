@@ -4,17 +4,10 @@
 module caiman.stream;
 
 import std.file;
-import std.conv;
+import caiman.conv;
 import std.algorithm.mutation;
-import caiman.meta.traits;
+import caiman.traits;
 import std.traits;
-
-public enum Endianness
-{
-    Native,
-    LittleEndian,
-    BigEndian
-}
 
 public enum Seek
 {
@@ -28,39 +21,6 @@ public enum ReadKind
     Prefix,
     Field,
     Fixed
-}
-
-/**
-* Swaps the endianness of the provided value, if applicable.
-*
-* Params:
-*     val = The value to swap endianness.
-*
-* Returns:
-*   The value with swapped endianness.
-*/
-private static @nogc T makeEndian(T)(T val, Endianness endianness)
-{
-    version (LittleEndian)
-    {
-        if (endianness == Endianness.BigEndian)
-        {
-            ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
-            bytes = bytes.reverse();
-            val = *cast(T*)&bytes[0];
-        }
-    }
-    else version (BigEndian)
-    {
-        if (endianness == Endianness.LittleEndian)
-        {
-            ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
-            bytes = bytes.reverse();
-            val = *cast(T*)&bytes[0];
-        }
-    }
-
-    return val;
 }
 
 public class Stream

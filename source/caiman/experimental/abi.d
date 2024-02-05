@@ -6,7 +6,7 @@ import std.traits;
 import std.meta;
 import std.string;
 import caiman.meta;
-public import caiman.memory.op;
+public import caiman.memory;
 
 public:
 static:

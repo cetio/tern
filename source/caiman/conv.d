@@ -4,7 +4,18 @@ import caiman.traits;
 import caiman.meta;
 import std.traits;
 import std.conv;
+import std.algorithm;
 
+public enum Endianness
+{
+    Native,
+    LittleEndian,
+    BigEndian
+}
+
+public:
+static:
+pure:
 /**
  * Shallow clones a value.
  *
@@ -141,6 +152,8 @@ pragma(inline)
         return std.conv.to!string(val);
     else static if (isSomeString!F)
         return std.conv.to!F(val);
+    else static if (!canConv!(F, T) && is(T == ubyte[]))
+        return (cast(ubyte*)&val)[0..F.sizeof];
     else static if (canConv!(F, T, true))
         return val.reinterpret!T;
     else static if (canConv!(F, T))
@@ -207,7 +220,7 @@ pragma(inline)
     static foreach (field; FieldNames!F)
     {
         static if (hasMember!(T, field))
-            __traits(getMember, ret, field) = __traits(getMember, val, field);
+            __traits(getMember, ret, field) = cast(TypeOf!(F, field))__traits(getMember, val, field);
     }
     return ret;
 }
@@ -224,4 +237,38 @@ pragma(inline)
     foreach (i, u; val)
         ret[i] = u.to!U;
     return ret;
+}
+
+/**
+* Swaps the endianness of the provided value, if applicable.
+*
+* Params:
+*     val = The value to swap endianness.
+*     endianness = The desired endianness.
+*
+* Returns:
+*   The value with swapped endianness.
+*/
+@trusted T makeEndian(T)(T val, Endianness endianness)
+{
+    version (LittleEndian)
+    {
+        if (endianness == Endianness.BigEndian)
+        {
+            ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
+            bytes = bytes.reverse();
+            val = *cast(T*)&bytes[0];
+        }
+    }
+    else version (BigEndian)
+    {
+        if (endianness == Endianness.LittleEndian)
+        {
+            ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
+            bytes = bytes.reverse();
+            val = *cast(T*)&bytes[0];
+        }
+    }
+
+    return val;
 }

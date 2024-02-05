@@ -5,7 +5,7 @@ import std.conv;
 import std.algorithm;
 import std.stdio;
 import caiman.state;
-import caiman.lang.regex.builder;
+import caiman.regex.builder;
 
 package class State
 {

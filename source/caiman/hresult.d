@@ -1,6 +1,6 @@
 module caiman.hresult;
 
-import caiman.democracy;
+import caiman.experimental.inheritance;
 
 /// HResult values for handling error codes.
 public @exempt enum HResult
