@@ -3,8 +3,8 @@ module caiman.main;
 import caiman;
 import std.stdio;
 import std.meta;
-
-alias to = caiman.conv.to;
+import std.algorithm;
+import std.traits;
 
 public abstract class A
 {
@@ -12,7 +12,22 @@ public abstract class A
     abstract int b();
 }
 
+public class B
+{
+    int a;
+    ushort b;
+    int c;
+}
+
+public class C
+{
+    int a;
+    ushort b;
+    int c;
+}
+
 void main()
 {
-    writeln(new WhiteHole!A().b);
+    B a = stackNew!B;
+    writeln(a); // caiman.main.B
 }

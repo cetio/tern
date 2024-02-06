@@ -133,26 +133,6 @@ public struct REFERENCE { ubyte[33] bytes; }
 /// Struct to act as an inout, reference with special treatment by `mov`
 public struct INOUT { ubyte[33] bytes; }
 
-pure string stackPush(T)(T val)
-{
-
-}
-
-pure string stackPop(T)(T val)
-{
-
-}
-
-pure string stackNew(T)(ptrdiff_t length)
-{
-
-}
-
-pure string stackNew(T, ARGS...)(ARGS args)
-{
-
-}
-
 pure string pack(T)(T val)
 {
 
