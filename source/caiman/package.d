@@ -17,4 +17,5 @@ public import caiman.random;
 public import caiman.state;
 public import caiman.stream;
 public import caiman.traits;
+public import caiman.typecons;
 public import caiman.vector;

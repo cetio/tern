@@ -1,4 +1,41 @@
-module caiman.experimental.typing;
+module caiman.typecons;
+
+import caiman.conv;
+import caiman.traits;
+import std.traits;
+
+public class BlackHole(T)
+    if (isAbstractClass!T)
+{
+    mixin(fullyQualifiedName!T~" val;
+    alias val this;");
+    static foreach (func; FunctionNames!T[0..$-5])
+    {
+        static if (isAbstractFunction!(__traits(getMember, T, func)))
+        {
+            static if (!is(ReturnType!(__traits(getMember, T, func)) == void))
+            {
+                static if (isReferenceType!(ReturnType!(__traits(getMember, T, func))))
+                    mixin(FunctionSignature!(__traits(getMember, T, func))~" { return new "~fullyQualifiedName!(ReturnType!(__traits(getMember, T, func)))~"(); }");
+                else 
+                    mixin(FunctionSignature!(__traits(getMember, T, func))~" { "~fullyQualifiedName!(ReturnType!(__traits(getMember, T, func)))~" ret; return ret; }");
+            }
+            else
+                mixin(FunctionSignature!(__traits(getMember, T, func))~" { }");
+        }
+    }
+}
+
+public class WhiteHole(T)
+{
+    mixin(fullyQualifiedName!T~" val;
+    alias val this;");
+    static foreach (func; FunctionNames!T[0..$-5])
+    {
+        static if (isAbstractFunction!(__traits(getMember, T, func)))
+            mixin(FunctionSignature!(__traits(getMember, T, func))~" { assert(0); }");
+    }
+}
 
 /** 
  * Wraps a type with modified or optional fields.
@@ -136,41 +173,7 @@ public struct Kin(T, ARGS...)
      * Returns:
      * Contents of this Kin as `T` in its original layout.
      */
-    T asOriginal()
-    {
-        static if (is(T == class) || is(T == interface))
-            T val = new T();
-        else 
-            T val;
-        static if (hasChildren!T)
-        static foreach (field; FieldNames!T)
-        {
-            __traits(getMember, val, field) = cast(TypeOf!(val, field))mixin(field);
-        }
-        return val;
-        /* ubyte[] bytes;
-        static foreach (field; FieldNames!T)
-        {
-            static if (staticIndexOf!(field, FieldNames!T) > 0)
-            {
-                // Account for alignment, this is a huge block of code but it really is just
-                // (last offset - current offset) - last sizeof
-                // (8 - 4) - 2 = 2 (padded by 2)
-                bytes ~= new ubyte[
-                    (__traits(getMember, T, field).offsetof - __traits(getMember, T, FieldNames!T[staticIndexOf!(field, FieldNames!T) - 1]).offsetof)
-                     - TypeOf!(T, FieldNames!T[staticIndexOf!(field, FieldNames!T) - 1])).sizeof];
-            }
-
-            {
-                auto val = cast(TypeOf!(T, field)))__traits(getMember, this, field);
-                bytes ~= (cast(ubyte*)&val)[0..TypeOf!(T, field)).sizeof];
-            }
-        }
-        return *cast(T*)bytes.ptr; */
-    }
-
-    // Define the original type as an alias so operators & function calls work like normal
-    alias asOriginal this;
+    T asOriginal() => this.conv!T;
 }
 
 unittest

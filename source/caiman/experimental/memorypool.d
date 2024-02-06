@@ -1,5 +1,4 @@
-/// Thread safe abstraction of `camain.experimental.allocator`
-module caiman.experimental.pool;
+module caiman.experimental.memorypool;
 
 import caiman.experimental.allocator;
 

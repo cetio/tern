@@ -3,6 +3,7 @@ module caiman.meta;
 
 import std.meta;
 import std.traits;
+import std.conv;
 
 /**
  * Checks if an `AliasSeq` contains an alias.
@@ -188,11 +189,11 @@ public template seqStringOf(string SEPARATOR, A...)
         foreach (i, B; A)
         {
             static if (__traits(compiles, { enum _ = B; }))
-                ret ~= B~(i == A.length - 1 ? null : SEPARATOR~" ");
+                ret ~= B.to!string~(i == A.length - 1 ? null : SEPARATOR);
             else
-                ret ~= B.stringof~(i == A.length - 1 ? null : SEPARATOR~" ");
+                ret ~= B.stringof~(i == A.length - 1 ? null : SEPARATOR);
         }
-        return ret;
+        return ret[0..$];
     }();
 }
 

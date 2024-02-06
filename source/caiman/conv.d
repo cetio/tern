@@ -146,14 +146,27 @@ public template canConv(F, T, bool EXPLICIT = false)
  *  val = Value to convert/cast.
  */
 pragma(inline)
+@trusted auto ref T to(T, F)(ref F val)
+{
+    static if (isSomeString!T)
+        return std.conv.to!string(val);
+    else static if (isSomeString!F)
+        return std.conv.to!F(val);
+    else static if (canConv!(F, T, true))
+        return val.reinterpret!T;
+    else static if (canConv!(F, T))
+        return val.conv!T;
+    else
+        throw new Throwable("Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
+}
+
+pragma(inline)
 @trusted auto ref T to(T, F)(F val)
 {
     static if (isSomeString!T)
         return std.conv.to!string(val);
     else static if (isSomeString!F)
         return std.conv.to!F(val);
-    else static if (!canConv!(F, T) && is(T == ubyte[]))
-        return (cast(ubyte*)&val)[0..F.sizeof];
     else static if (canConv!(F, T, true))
         return val.reinterpret!T;
     else static if (canConv!(F, T))
@@ -257,7 +270,7 @@ pragma(inline)
         {
             ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
             bytes = bytes.reverse();
-            val = *cast(T*)&bytes[0];
+            val = *cast(T*)bytes.ptr;
         }
     }
     else version (BigEndian)
@@ -266,9 +279,8 @@ pragma(inline)
         {
             ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
             bytes = bytes.reverse();
-            val = *cast(T*)&bytes[0];
+            val = *cast(T*)bytes.ptr;
         }
     }
-
     return val;
 }

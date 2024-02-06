@@ -1,5 +1,5 @@
 /// Provides interface to MSABI/SystemV ABI as well as generic register shenanigans
-module caiman.experimental.abi;
+module caiman.experimental.assembly;
 
 import std.conv;
 import std.traits;
@@ -118,6 +118,9 @@ else
     /// True if `T` would be split into several XMM registers, otherwise, false.
     alias isSplit(T) = Alias!(isFloat!T && T.sizeof > 8);
 }
+alias supportsSIMD128 = Alias!(__traits(compiles, { asm { vxorps XMM0, XMM0, XMM0; } }));
+alias supportsSIMD256 = Alias!(__traits(compiles, { asm { vxorps YMM0, YMM0, YMM0; } }));
+alias supportsSIMD512 = Alias!(__traits(compiles, { asm { vxorps ZMM0, ZMM0, ZMM0; } }));
 
 /// Alias type to act as a floating point (`float`)
 alias FLOAT = float;
@@ -129,6 +132,31 @@ alias ARRAY = void[];
 public struct REFERENCE { ubyte[33] bytes; }
 /// Struct to act as an inout, reference with special treatment by `mov`
 public struct INOUT { ubyte[33] bytes; }
+
+pure string stackPush(T)(T val)
+{
+
+}
+
+pure string stackPop(T)(T val)
+{
+
+}
+
+pure string stackNew(T)(ptrdiff_t length)
+{
+
+}
+
+pure string stackNew(T, ARGS...)(ARGS args)
+{
+
+}
+
+pure string pack(T)(T val)
+{
+
+}
 
 /** 
     Creates a mixin for preparing the stack for `COUNT` arguments.

@@ -6,6 +6,7 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import std.traits;
+import caiman.meta;
 
 public:
 static:
@@ -86,7 +87,7 @@ public template FunctionSignature(alias F)
             static foreach (i, A; TemplateArgsOf!F)
             {
                 static if (__traits(compiles, { enum _ = B; }))
-                    paramSig ~= typeof(B)~" T"~i.stringof[0..$-2];
+                    paramSig ~= fullyQualifiedName!(typeof(B))~" T"~i.stringof[0..$-2];
                 else
                     paramSig ~= "alias T"~i.stringof[0..$-2];
             }
@@ -94,10 +95,10 @@ public template FunctionSignature(alias F)
         }
         
         foreach (i, P; Parameters!F)
-            paramSig ~= P.stringof~" "~ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
+            paramSig ~= fullyQualifiedName!P~" "~ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
         paramSig ~= ')';
 
-        return seqStringOf!(__traits(getFunctionAttributes, F))~" "~ReturnType!F.stringof~" "~__traits(identifier, F)~paramSig;
+        return seqStringOf!(" ", __traits(getFunctionAttributes, F))~" "~fullyQualifiedName!(ReturnType!F)~" "~__traits(identifier, F)~paramSig;
     }();
 }
 
