@@ -45,4 +45,10 @@ void main()
     debug writeln(arr);
     foreach_reverse (u; arr)
         debug writeln(u, " elem");
+
+    B b = stackNew!B();
+    writeln(b.a); // 17
+    writeln(b.__monitor); // null
+    b.createMonitor();
+    writeln(b.__monitor); // valid monitor pointer (trust me)
 }

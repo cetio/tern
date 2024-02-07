@@ -111,6 +111,9 @@ public template canConv(F, T, bool EXPLICIT = false)
 {
     enum canConv = 
     {
+        static if (implements!(F, T))
+            return true;
+
         static if (isArray!F || isArray!T)
         {
             static if (isAssociativeArray!F || isAssociativeArray!T)
@@ -127,7 +130,7 @@ public template canConv(F, T, bool EXPLICIT = false)
         static if (isOrganic!F && isOrganic!T)
         static foreach (i, field; FieldNames!F)
         {
-            static if (FieldNames!T[i] != field && EXPLICIT)
+            static if ((FieldNames!T.length <= i || FieldNames!T[i] != field || !is(TypeOf!(F, field) == TypeOf!(T, field))) && EXPLICIT)
                 return false;
             else static if (!seqContains!(field, FieldNames!T) && !EXPLICIT)
                 return false;
@@ -233,7 +236,7 @@ pragma(inline)
     static foreach (field; FieldNames!F)
     {
         static if (hasMember!(T, field))
-            __traits(getMember, ret, field) = cast(TypeOf!(F, field))__traits(getMember, val, field);
+            __traits(getMember, ret, field) = cast(TypeOf!(T, field))__traits(getMember, val, field);
     }
     return ret;
 }

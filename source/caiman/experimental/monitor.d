@@ -78,7 +78,7 @@ public:
 static:
 @nogc:
 bool createMonitor(T)(ref T val)
-    if (inherits!(T, Object))
+    if (canCastTo!(T, Object))
 {
     if (auto m = val.getMonitor() !is null)
         return m;
@@ -108,19 +108,19 @@ void destroyMonitor(Monitor* m)
 
 pure:
 @property ref shared(Monitor*) monitor(T)(return scope T val)
-    if (inherits!(T, Object))
+    if (canCastTo!(T, Object))
 {
     return *cast(shared Monitor**)&val.__monitor;
 }
 
 shared(Monitor)* getMonitor(T)(T val)
-    if (inherits!(T, Object))
+    if (canCastTo!(T, Object))
 {
     return atomicLoad!(MemoryOrder.acq)(val.monitor);
 }
 
 void setMonitor(T)(T val, shared(Monitor)* m)
-    if (inherits!(T, Object))
+    if (canCastTo!(T, Object))
 {
     atomicStore!(MemoryOrder.rel)(val.monitor, m);
 }

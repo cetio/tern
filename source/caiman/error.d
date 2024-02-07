@@ -70,9 +70,6 @@ pure:
  */
 string highlight(AnsiColor color, string matchTo, string matchOf)
 {
-    if (!matchTo.canFind(matchOf)) 
-        throw new Throwable("Matching substring not found in the input string");
-        
     return matchTo.replace(matchOf, color~matchOf~AnsiColor.Reset);
 }
 
@@ -89,9 +86,6 @@ string highlight(AnsiColor color, string matchTo, string matchOf)
  */
 string highlight(AnsiColor color, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
-    if (!matchStart >= 0 && matchEnd >= matchStart && matchEnd <= matchTo.length)
-        throw new Throwable("Invalid matchStart or matchEnd values");
-    
     return matchTo[0..matchStart]~color~matchTo[matchStart..matchEnd]~AnsiColor.Reset~matchTo[matchEnd..$];
 }
 
@@ -111,6 +105,18 @@ void raise(string exception, string matchTo = null, string matchOf = null)
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchOf));
 }
 
+unittest
+{
+    try
+    {
+        raise("Test exception", "This is a test string", "test");
+    }
+    catch (Throwable e)
+    {
+        assert(e.msg == "Test exception\n                      This is a \x1B[31;4mtest\x1B[0m string");
+    }
+}
+
 /** 
  * Raises an exception using optional highlighting.
  *
@@ -123,4 +129,16 @@ void raise(string exception, string matchTo = null, string matchOf = null)
 void raise(string exception, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchStart, matchEnd));
+}
+
+unittest
+{
+    try
+    {
+        raise("Test exception", "This is a test string", 10, 14);
+    }
+    catch (Throwable e)
+    {
+        assert(e.msg == "Test exception\n                      This is a \x1B[31;4mtest\x1B[0m string");
+    }
 }

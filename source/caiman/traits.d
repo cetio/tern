@@ -7,6 +7,7 @@ import std.array;
 import std.meta;
 import std.traits;
 import caiman.meta;
+import caiman.conv;
 
 public:
 static:
@@ -41,17 +42,32 @@ public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateTy
 public alias isOrganic(T) = Alias!(!hasModifiers!T && !isIntrinsicType!T);
 /// True if `T` has any member "__ctor", otherwise, false.
 public alias hasCtor(T) = Alias!(hasMember!(T, "__ctor"));
-/// True if `A` inherits `B`, otherwise, false. \
-/// If you mean to get all inherits of `A`, use `Implements(T)`
-public alias inherits(A, B) = Alias!(seqContains!(B, Implements!A));
+/// True if `A` implements `B`, otherwise, false. \
+/// If you want to get all implements of 'A', see `Implements(T)`
+public alias implements(A, B) = Alias!(seqContains!(B, Implements!A));
+/// True if `A` can cast to `B`, otherwise, false.
+public alias canCastTo(A, B) = Alias!(canConv!(A, B, true));
 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
 {
     static if (hasChildren!T)
-        enum wrapsIndirection = hasIndirections!T && __traits(allMembers, T).length <= 2;
+    // We don't want a type with an array field to count
+        enum wrapsIndirection = hasIndirections!T && __traits(allMembers, T).length <= 2 && !isArray!(typeof(__traits(allMembers, T)[0])) && !isArray!(typeof(__traits(allMembers, T)[1]));
     else
         enum wrapsIndirection = isArray!T;
+}
+
+/// Gets a `void*[]` of all indirections contained in `T val`
+pure void*[] indirections(T)(T val)
+{
+    void*[] ptrs;
+    static foreach (field; getFields!T)
+    {
+        static if (isIndirection!T)
+            ptrs ~= cast(void*)&__traits(getMember, val, field);
+    }
+    return ptrs;
 }
 
 /// Gets the type of member `MEMBER` in `A` \
@@ -255,16 +271,4 @@ public template Imports(alias M)
     mixin("alias Imports = AliasSeq!("~ 
         _Imports.join(", ")~ 
     ");");
-}
-
-/// Gets a `void*[]` of all indirections contained in `T val`
-pure void*[] indirections(T)(T val)
-{
-    void*[] ptrs;
-    static foreach (field; getFields!T)
-    {
-        static if (isIndirection!T)
-            ptrs ~= cast(void*)&__traits(getMember, val, field);
-    }
-    return ptrs;
 }

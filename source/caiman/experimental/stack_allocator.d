@@ -58,7 +58,6 @@ T stackNew(T : U[], U)(ptrdiff_t length)
  */
 void stackResize(T : U[], U)(ref T arr, ptrdiff_t length)
 {
-
     const ptrdiff_t size = U.sizeof * length;
     const ptrdiff_t curSize = *cast(ptrdiff_t*)(cast(void*)arr.ptr - ptrdiff_t.sizeof);
     if (curSize >= size)
@@ -91,9 +90,9 @@ void stackResize(T : U[], U)(ref T arr, ptrdiff_t length)
 void stackResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
 {
     enum elem = cast(ptrdiff_t)(U.sizeof * 1.5) + (cast(ptrdiff_t)(U.sizeof * 1.5) == ptrdiff_t.sizeof ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof)));
-    const ptrdiff_t size = elem * length + ptrdiff_t.sizeof;
+    const ptrdiff_t size = U.sizeof * length;
     const ptrdiff_t curSize = *cast(ptrdiff_t*)(cast(void*)arr.ptr - ptrdiff_t.sizeof);
-    const ptrdiff_t offset = cast(ptrdiff_t)((U.sizeof * ((curSize - ptrdiff_t.sizeof) / elem) - (cast(ptrdiff_t)(U.sizeof * 1.5) == 8 ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof)))) / 1.5);
+    const ptrdiff_t offset = U.sizeof * cast(ptrdiff_t)((curSize - (curSize - (cast(ptrdiff_t)(U.sizeof * 1.5) == ptrdiff_t.sizeof ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof))))) / 1.5);
     if (curSize >= size)
     {
         (cast(ptrdiff_t*)&arr)[0] = length;

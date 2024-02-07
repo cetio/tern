@@ -3,6 +3,7 @@ module caiman.typecons;
 import caiman.conv;
 import caiman.traits;
 import std.traits;
+import caiman.meta;
 
 public class BlackHole(T)
     if (isAbstractClass!T)

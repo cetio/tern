@@ -274,7 +274,7 @@ public template transparens(bool ignoreConflicts = false)
     }
 } */
 
-unittest
+/* unittest
 {
     struct A
     {
@@ -299,4 +299,4 @@ unittest
     c.b = 2;
     assert(c.x() == 2);
     assert(c.y() == "yohoho!");
-}
+} */

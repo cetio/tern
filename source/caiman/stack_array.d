@@ -1,8 +1,16 @@
+/**
+ * Thin wrapper around `caiman.experimental.stack_allocator` that allows for allocating a dynamic array on the stack. \
+ * Provides all normal behavior of dynamic arrays.
+ */
 module caiman.stack_array;
 
 import caiman.experimental.stack_allocator;
 import std.conv;
 
+/**
+ * Thin wrapper around `caiman.experimental.stack_allocator` that allows for allocating a dynamic array on the stack. \
+ * Provides all normal behavior of dynamic arrays.
+ */
 public struct StackArray(T)
 {
 private:
@@ -107,4 +115,29 @@ public:
     {
         destroy(arr);
     }
+}
+
+unittest 
+{
+    auto stackArray = StackArray!int(5);
+
+    assert(stackArray.length == 5);
+    assert(!stackArray.empty);
+
+    stackArray[0] = 1;
+    stackArray[1] = 2;
+    assert(stackArray[0] == 1);
+    assert(stackArray[1] == 2);
+
+    assert(stackArray.front == 1);
+    assert(stackArray.back == 0);
+
+    stackArray.popFront();
+    assert(stackArray.front == 2);
+    stackArray.popBack();
+
+    stackArray ~= 1;
+    stackArray ~= 2;
+    assert(stackArray.length == 5);
+    assert(stackArray[$-1] == 2);
 }
