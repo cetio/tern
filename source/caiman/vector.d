@@ -20,8 +20,6 @@ public alias double2 = Vector128!double;
 public struct Vector128(T)
     if ((isIntegral!T || isFloatingPoint!T) && T.sizeof <= 8)
 {
-public:
-final:
     static if (T.sizeof % 8 == 0)
         T[2] data;
     else static if (T.sizeof % 4 == 0)
@@ -32,6 +30,8 @@ final:
         T[16] data;
     alias data this;
 
+public:
+final:
     Vector128!T opBinary(string op, V)(V val)
     {
         Vector128!T vec = this.ddup;
@@ -173,4 +173,6 @@ public struct Vector256(T)
     else
         T[32] data;
     alias data this;
+public:
+final:
 }

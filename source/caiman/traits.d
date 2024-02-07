@@ -39,6 +39,11 @@ public alias isImmutable(alias A) = Alias!(!isMutable!A || (isField!A && __trait
 public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateType!T);
 /// True if 'T' does not have any modifiers and is not an intrinsic type, otherwise, false.
 public alias isOrganic(T) = Alias!(!hasModifiers!T && !isIntrinsicType!T);
+/// True if `T` has any member "__ctor", otherwise, false.
+public alias hasCtor(T) = Alias!(hasMember!(T, "__ctor"));
+/// True if `A` inherits `B`, otherwise, false. \
+/// If you mean to get all inherits of `A`, use `Implements(T)`
+public alias inherits(A, B) = Alias!(seqContains!(B, Implements!A));
 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
 public template wrapsIndirection(T)
@@ -141,7 +146,7 @@ public template FunctionCallableSignature(alias F)
     This is functionally very similar to `InterfacesTuple(T)` from `std.traits`, but is more advanced and \
     includes *all* implements, including class inherits and alias this.
 */
-public template ImplementNames(T)
+public template Implements(T)
 {
     /* private template Flatten(H, T...)
     {
@@ -163,16 +168,16 @@ public template ImplementNames(T)
     static if (is(T S == super) && S.length)
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias ImplementNames = AliasSeq!(S, TypeOf!(T, __traits(getAliasThis, T)), ImplementNames!(TypeOf!(T, __traits(getAliasThis, T))));
+            alias Implements = AliasSeq!(S, TypeOf!(T, __traits(getAliasThis, T)), Implements!(TypeOf!(T, __traits(getAliasThis, T))));
         else
-            alias ImplementNames = S;
+            alias Implements = S;
     }
     else
     {
         static if (__traits(getAliasThis, T).length != 0)
-            alias ImplementNames = AliasSeq!(TypeOf!(T, __traits(getAliasThis, T)), ImplementNames!(TypeOf!(T, __traits(getAliasThis, T))));
+            alias Implements = AliasSeq!(TypeOf!(T, __traits(getAliasThis, T)), Implements!(TypeOf!(T, __traits(getAliasThis, T))));
         else
-            alias ImplementNames = AliasSeq!();
+            alias Implements = AliasSeq!();
     }  
 }
 

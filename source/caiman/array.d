@@ -1,5 +1,4 @@
-/// Wrapper for stack arrays and popping/pushing on arrays with support for LIFO and FILO
-// TODO: caiman.memory.op makeArray for @nogc
+/+ /// Wrapper for stack arrays and popping/pushing on arrays with support for LIFO and FILO
 module caiman.array;
 
 /**
@@ -166,4 +165,4 @@ unittest
         assert(stack.pop() == 5);
         assert(stack.pop() == 10);
     }
-}
+} +/

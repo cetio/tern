@@ -1,6 +1,6 @@
 /// Fast slab-entry based memory allocator with simple defragmentation \
 /// Recommended to use `caiman.memory.pool` instead if you want thread-safety
-module caiman.experimental.allocator;
+module caiman.experimental.heap_allocator;
 
 import std.experimental.allocator.mmap_allocator;
 import core.sync.mutex;

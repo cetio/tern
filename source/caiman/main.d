@@ -6,28 +6,43 @@ import std.meta;
 import std.algorithm;
 import std.traits;
 
-public abstract class A
+public interface A
 {
-    abstract void a();
-    abstract int b();
+
 }
 
-public class B
+public class B : A
 {
     int a;
     ushort b;
     int c;
-}
 
-public class C
-{
-    int a;
-    ushort b;
-    int c;
+    @nogc this()
+    {
+        a = 17;
+    }
+
+    @nogc this(int a, ushort b, int c)
+    {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
 }
 
 void main()
 {
-    B a = stackNew!B;
-    writeln(a); // caiman.main.B
+    StackArray!int arr;
+    assert(arr.ptr is null);
+    arr ~= 1;
+    debug writeln(arr);
+    arr ~= 2;
+    arr.popBack();
+    arr ~= 3;
+    arr ~= 4;
+    arr.popFront();
+    arr[0..2] = [1, 2];
+    debug writeln(arr);
+    foreach_reverse (u; arr)
+        debug writeln(u, " elem");
 }

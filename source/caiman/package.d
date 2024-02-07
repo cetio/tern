@@ -7,13 +7,15 @@ public import caiman.exe;
 /// Experimental: ABI, allocator, duck-typing, inheritance, pool, stack
 public import caiman.experimental;
 public import caiman.regex;
-public import caiman.array;
 public import caiman.conv;
 public import caiman.error;
 public import caiman.hresult;
+public import caiman.math;
+public import caiman.matrix;
 public import caiman.memory;
 public import caiman.meta;
 public import caiman.random;
+public import caiman.stack_array;
 public import caiman.state;
 public import caiman.stream;
 public import caiman.traits;

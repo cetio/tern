@@ -135,7 +135,9 @@ public struct INOUT { ubyte[33] bytes; }
 
 pure string pack(T)(T val)
 {
+    return "asm {
 
+    }";
 }
 
 /** 
