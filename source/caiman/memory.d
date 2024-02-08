@@ -152,3 +152,10 @@ pure:
  *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
 @trusted void zeroSecureMemory(void* ptr, ptrdiff_t length) => memset(ptr, length, 0);
+
+@trusted bool isStackAllocated(T)(auto ref T val)
+{
+    ubyte[1] dummy;
+    // This will *probably* be accurate.
+    return cast(ptrdiff_t)&val < 0x14FA000 && cast(ptrdiff_t)&val > cast(ptrdiff_t)&dummy;
+}

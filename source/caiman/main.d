@@ -22,33 +22,28 @@ public class B : A
         a = 17;
     }
 
-    @nogc this(int a, ushort b, int c)
+    void test()
     {
-        this.a = a;
-        this.b = b;
-        this.c = c;
+        writeln(a);
+        a = 3;
     }
 }
 
 void main()
 {
-    StackArray!int arr;
-    assert(arr.ptr is null);
-    arr ~= 1;
-    debug writeln(arr);
-    arr ~= 2;
-    arr.popBack();
-    arr ~= 3;
-    arr ~= 4;
-    arr.popFront();
-    arr[0..2] = [1, 2];
-    debug writeln(arr);
-    foreach_reverse (u; arr)
-        debug writeln(u, " elem");
-
-    B b = stackNew!B();
-    writeln(b.a); // 17
-    writeln(b.__monitor); // null
-    b.createMonitor();
-    writeln(b.__monitor); // valid monitor pointer (trust me)
+    /* import std.datetime : Clock, SysTime;
+    mixin("writeln("~Clock.currStdTime().to!string~");");
+    writeln(stackNew!(int[])(1).ptr); writeln(stackNew!(int[])(1).ptr);
+    
+    auto a = stackNew!B(); 
+    auto b = stackNew!B();
+    writeln(&a);
+    writeln(&b); */  
+    Kin!(B, uint, "a") a;
+    B b = a.asOriginal;
+    a.test(); 
+    writeln(isStackAllocated(a.asOriginal));
+    a = a.makeEndian(Endianness.BigEndian);
+    b = a.asOriginal;
+    b.a.writeln;
 }

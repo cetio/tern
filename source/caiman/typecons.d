@@ -53,8 +53,6 @@ public class WhiteHole(T)
  * Kin!(A, long, "a", true, int, "b") k2; // a is now a long and a field b has been added
  * ```
  */
-// TODO: Find a faster way to do this, do not regenerate every call
-//       Apply changes on parent to self
 public struct Kin(T, ARGS...)
     if (isOrganic!T)
 {
@@ -174,7 +172,15 @@ public struct Kin(T, ARGS...)
      * Returns:
      * Contents of this Kin as `T` in its original layout.
      */
-    T asOriginal() => this.conv!T;
+    auto ref T asOriginal() const => this.conv!T;
+
+    auto opDispatch(string member, ARGS...)(ARGS args)
+    {
+        static if (seqContains!(member, FunctionNames!T) && is(Parameters!(TypeOf!(T, member)) == ARGS))
+            mixin("T orig = asOriginal;
+            orig."~member~"(args);
+            this = orig.conv!(typeof(this));");
+    }
 }
 
 unittest

@@ -14,7 +14,7 @@ static:
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);
 /// True if `T` is an indirection, otherwise, false.
-public alias isReferenceType(T) = isIndirection!T;
+public alias isReferenceType(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || isArray!T);
 /// True if `T` is not an indirection, otherwise, false.
 public alias isValueType(T) = Alias!(!isIndirection!T);
 /// True if `F` is exported, otherwise, false.

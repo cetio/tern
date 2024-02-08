@@ -1,17 +1,17 @@
 /**
- * Thin wrapper around `caiman.experimental.stack_allocator` that allows for allocating a dynamic array on the stack. \
+ * Thin wrapper around `caiman.experimental.ds_allocator` that allows for allocating a dynamic array in the data segment. \
  * Provides all normal behavior of dynamic arrays.
  */
-module caiman.stack_array;
+module caiman.ds_array;
 
-import caiman.experimental.stack_allocator;
+import caiman.experimental.ds_allocator;
 import std.conv;
 
 /**
- * Thin wrapper around `caiman.experimental.stack_allocator` that allows for allocating a dynamic array on the stack. \
+ * Thin wrapper around `caiman.experimental.ds_allocator` that allows for allocating a dynamic array in the data segment. \
  * Provides all normal behavior of dynamic arrays.
  */
-public struct StackArray(T)
+public struct DSArray(T)
 {
 private:
 final:
@@ -24,9 +24,9 @@ public:
     }
 
 @nogc:
-    this(ptrdiff_t length)
+    this(ptrdiff_t length, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)
     {
-        arr = stackNew!(T[])(length);
+        arr = dsNew!(T[])(length, r0, r1, r2, r3);
     }
 
     size_t length() const => arr.length;
@@ -91,22 +91,22 @@ public:
     void popFront()
     {
         if (arr.length != 0)
-            stackResizeBeneath(arr, arr.length - 1);
+            dsResizeBeneath(arr, arr.length - 1);
     }
 
     void popBack()
     {
         if (arr.length != 0)
-            stackResize(arr, arr.length - 1);
+            dsResize(arr, arr.length - 1);
     }
 
-    T opOpAssign(string op)(T val) 
+    T opOpAssign(string op, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)(T val) 
         if (op == "~") 
     {
         if (arr is null)
-            arr = stackNew!(T[])(1);
+            arr = dsNew!(T[])(1, r0, r1, r2, r3);
         else
-            stackResize(arr, arr.length + 1);
+            dsResize(arr, arr.length + 1);
         arr[$-1] = val;
         return val;
     }
@@ -119,25 +119,25 @@ public:
 
 unittest 
 {
-    auto stackArray = StackArray!int(5);
+    auto dsArray = DsArray!int(5);
 
-    assert(stackArray.length == 5);
-    assert(!stackArray.empty);
+    assert(dsArray.length == 5);
+    assert(!dsArray.empty);
 
-    stackArray[0] = 1;
-    stackArray[1] = 2;
-    assert(stackArray[0] == 1);
-    assert(stackArray[1] == 2);
+    dsArray[0] = 1;
+    dsArray[1] = 2;
+    assert(dsArray[0] == 1);
+    assert(dsArray[1] == 2);
 
-    assert(stackArray.front == 1);
-    assert(stackArray.back == 0);
+    assert(dsArray.front == 1);
+    assert(dsArray.back == 0);
 
-    stackArray.popFront();
-    assert(stackArray.front == 2);
-    stackArray.popBack();
+    dsArray.popFront();
+    assert(dsArray.front == 2);
+    dsArray.popBack();
 
-    stackArray ~= 1;
-    stackArray ~= 2;
-    assert(stackArray.length == 5);
-    assert(stackArray[$-1] == 2);
+    dsArray ~= 1;
+    dsArray ~= 2;
+    assert(dsArray.length == 5);
+    assert(dsArray[$-1] == 2);
 }

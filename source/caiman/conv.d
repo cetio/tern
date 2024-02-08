@@ -5,6 +5,7 @@ import caiman.meta;
 import std.traits;
 import std.conv;
 import std.algorithm;
+import caiman.memory;
 
 public enum Endianness
 {
@@ -15,7 +16,6 @@ public enum Endianness
 
 public:
 static:
-pure:
 /**
  * Shallow clones a value.
  *
@@ -271,18 +271,20 @@ pragma(inline)
     {
         if (endianness == Endianness.BigEndian)
         {
-            ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
-            bytes = bytes.reverse();
-            val = *cast(T*)bytes.ptr;
+            static if (is(T == class))
+                (*cast(ubyte**)&val)[0..__traits(classInstanceSize, T)].reverse();
+            else
+                (cast(ubyte*)&val)[0..T.sizeof].reverse();
         }
     }
     else version (BigEndian)
     {
         if (endianness == Endianness.LittleEndian)
         {
-            ubyte[] bytes = (cast(ubyte*)&val)[0..T.sizeof];
-            bytes = bytes.reverse();
-            val = *cast(T*)bytes.ptr;
+            static if (is(T == class))
+                (*cast(ubyte**)&val)[0..__traits(classInstanceSize, T)].reverse();
+            else
+                (cast(ubyte*)&val)[0..T.sizeof].reverse();
         }
     }
     return val;

@@ -1,5 +1,5 @@
-/// A collection of very unsafe but very powerful stack allocators
-module caiman.experimental.stack_allocator;
+/// A collection of very unsafe but very powerful ds allocators
+module caiman.experimental.ds_allocator;
 
 import caiman.traits;
 import std.traits;
@@ -7,18 +7,19 @@ import std.range;
 import std.conv;
 import caiman.memory;
 import caiman.experimental.monitor;
+import caiman.random;
 
-private pure string generateCases()
+private pure string generateCases(ptrdiff_t r)()
 {
     string str = "switch (size) {";
     static foreach (i; iota(0, 10_000, ptrdiff_t.sizeof))
     {
         str ~= "case "~i.to!string~":
-        static ubyte["~i.to!string~"] data;
-        *cast(ptrdiff_t*)&data = size;
-        static T arr;
+        static ubyte["~i.to!string~"] data"~r.to!string~";
+        *cast(ptrdiff_t*)&data"~r.to!string~" = size;
+        T arr;
         (cast(ptrdiff_t*)&arr)[0] = length;
-        (cast(void**)&arr)[1] = cast(void*)&data + ptrdiff_t.sizeof;
+        (cast(void**)&arr)[1] = cast(void*)&data"~r.to!string~" + ptrdiff_t.sizeof;
         return arr;";
     }
     str ~= "default: assert(0); }";
@@ -29,7 +30,7 @@ public:
 static:
 @nogc:
 /**
- * Creates an array of type `T` on the stack with a specified initial length.
+ * Creates an array of type `T` on the ds with a specified initial length.
  * 
  * Params:
  *  T = The element type of the array.
@@ -38,15 +39,15 @@ static:
  * Returns:
  *  A new array of type `T`
  */
-T stackNew(T : U[], U)(ptrdiff_t length)
+T dsNew(T : U[], U, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)(ptrdiff_t length)
 {
     enum elem = cast(ptrdiff_t)(U.sizeof * 1.5) + (cast(ptrdiff_t)(U.sizeof * 1.5) == 8 ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof)));
     const ptrdiff_t size = elem * length + ptrdiff_t.sizeof;
-    mixin(generateCases);
+    mixin(generateCases!(random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3)));
 }
 
 /**
- * Resizes a previously allocated array on the stack to the specified length.
+ * Resizes a previously allocated array in the data segment to the specified length.
  * 
  * Params:
  *  T = The array type.
@@ -54,9 +55,9 @@ T stackNew(T : U[], U)(ptrdiff_t length)
  *  length = The new length of the array.
  *
  * Remarks:
- *  No validation is done that `arr` was previously allocated with `stackNew`, stay vigilant.
+ *  No validation is done that `arr` was previously allocated with `dsNew`, stay vigilant.
  */
-void stackResize(T : U[], U)(ref T arr, ptrdiff_t length)
+void dsResize(T : U[], U)(ref T arr, ptrdiff_t length)
 {
     const ptrdiff_t size = U.sizeof * length;
     const ptrdiff_t curSize = *cast(ptrdiff_t*)(cast(void*)arr.ptr - ptrdiff_t.sizeof);
@@ -68,7 +69,7 @@ void stackResize(T : U[], U)(ref T arr, ptrdiff_t length)
     }
     else
     {
-        T tarr = stackNew!T(length);
+        T tarr = dsNew!T(length);
         copy(arr.ptr, tarr.ptr, size);
         (cast(ptrdiff_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)tarr.ptr;
@@ -76,7 +77,7 @@ void stackResize(T : U[], U)(ref T arr, ptrdiff_t length)
 }
 
 /**
- * Resizes a previously allocated array on the stack to the specified length from beneath.
+ * Resizes a previously allocated array in the data segment to the specified length from beneath.
  * New elements will become [0..length] (or removed.)
  * 
  * Params:
@@ -85,11 +86,10 @@ void stackResize(T : U[], U)(ref T arr, ptrdiff_t length)
  *  length = The new length of the array.
  *
  * Remarks:
- *  No validation is done that `arr` was previously allocated with `stackNew`, stay vigilant.
+ *  No validation is done that `arr` was previously allocated with `dsNew`, stay vigilant.
  */
-void stackResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
+void dsResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
 {
-    enum elem = cast(ptrdiff_t)(U.sizeof * 1.5) + (cast(ptrdiff_t)(U.sizeof * 1.5) == ptrdiff_t.sizeof ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof)));
     const ptrdiff_t size = U.sizeof * length;
     const ptrdiff_t curSize = *cast(ptrdiff_t*)(cast(void*)arr.ptr - ptrdiff_t.sizeof);
     const ptrdiff_t offset = U.sizeof * cast(ptrdiff_t)((curSize - (curSize - (cast(ptrdiff_t)(U.sizeof * 1.5) == ptrdiff_t.sizeof ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof))))) / 1.5);
@@ -101,7 +101,7 @@ void stackResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
     }
     else
     {
-        T tarr = stackNew!T(length);
+        T tarr = dsNew!T(length);
         copy(cast(void*)arr.ptr + offset, tarr.ptr, size);
         (cast(ptrdiff_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)tarr.ptr;
@@ -109,24 +109,24 @@ void stackResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
 }
 
 /**
- * Allocates `T` on the stack, this will just create `T` normally for value types.
+ * Allocates `T` in the data segment, this will just create `T` normally for value types.
  *
  * Params:
  *   T = The type to be allocated.
  *
  * Returns:
- *   A new instance of `T` allocated on the stack.
+ *   A new instance of `T` allocated in the data segment.
  *
  * Example:
  *   ```d
- *   B a = stackNew!B;
+ *   B a = dsNew!B;
  *   writeln(a); // caiman.main.B
  *   ```
  */
-T stackNew(T, ARGS...)(ARGS args)
+T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)()
     if (!is(T : U[], U))
 {
-    static if (isValueType!T)
+    static if (!is(T == class))
     {
         static if (hasCtor!T)
             T ret = T(args);
@@ -136,17 +136,18 @@ T stackNew(T, ARGS...)(ARGS args)
     }
     else
     {
-        static ubyte[__traits(classInstanceSize, T)] bytes;
+        enum rand = random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3).to!string;
+        mixin("static ubyte[__traits(classInstanceSize, T)] bytes"~rand~";");
         foreach (field; FieldNames!T)
         {
             auto init = __traits(getMember, T, field).init;
             ptrdiff_t offset = __traits(getMember, T, field).offsetof;
-            bytes[offset..(offset + TypeOf!(T, field).sizeof)] = (cast(ubyte*)&init)[0..TypeOf!(T, field).sizeof];
+            mixin("bytes"~rand~"[offset..(offset + TypeOf!(T, field).sizeof)] = (cast(ubyte*)&init)[0..TypeOf!(T, field).sizeof];");
         }
         // 8 bytes after this are __monitor, but we don't need to create one 
-        (cast(void**)bytes.ptr)[0] = T.classinfo.vtbl.ptr;
-        T ret = cast(T)bytes.ptr;
-        ret.__ctor(args);
+        mixin("(cast(void**)bytes"~rand~".ptr)[0] = T.classinfo.vtbl.ptr;");
+        mixin("T ret = cast(T)bytes"~rand~".ptr;");
+        ret.__ctor();
         return ret;
     }
 }

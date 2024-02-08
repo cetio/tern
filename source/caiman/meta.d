@@ -17,6 +17,7 @@ public template seqContains(A...)
 {
     enum seqContains =
     {
+        static if (A.length != 0)
         static foreach (C; A[1..$])
         {
             static if (isSame!(C, A[0]))
@@ -46,6 +47,7 @@ public template seqFilter(A...)
     alias seqFilter = AliasSeq!();
     alias F = A[0];
 
+    static if (A.length != 0)
     static foreach (B; A[1..$])
     {
         static if (F!B)
@@ -106,6 +108,7 @@ public template seqMap(A...)
     alias seqMap = AliasSeq!();
     alias F = A[0];
 
+    static if (A.length != 0)
     static foreach (B; A[1..$])
         seqMap = AliasSeq!(seqMap, F!B);
 }
@@ -161,6 +164,7 @@ public template seqIndexOf(A...)
 {
     enum seqIndexOf =
     {
+        static if (A.length != 0)
         static foreach (i, C; A[1..$])
         {
             static if (isSame!(C, A[0]))
