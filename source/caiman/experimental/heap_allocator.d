@@ -8,7 +8,7 @@ import tanya.container.list;
 import tanya.container.hashtable;
 import caiman.memory;
 
-private enum SLAB_SIZE = 1048576;
+private enum SLAB_SIZE = 1_048_576;
 private enum ALIGN = ptrdiff_t.sizeof * 4;
 private static immutable MmapAllocator os;
 private shared static Mutex mutex;

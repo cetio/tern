@@ -133,13 +133,6 @@ public struct REFERENCE { ubyte[33] bytes; }
 /// Struct to act as an inout, reference with special treatment by `mov`
 public struct INOUT { ubyte[33] bytes; }
 
-pure string pack(T)(T val)
-{
-    return "asm {
-
-    }";
-}
-
 /** 
     Creates a mixin for preparing the stack for `COUNT` arguments.
 

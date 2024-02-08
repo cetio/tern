@@ -31,19 +31,14 @@ public class B : A
 
 void main()
 {
-    /* import std.datetime : Clock, SysTime;
-    mixin("writeln("~Clock.currStdTime().to!string~");");
-    writeln(stackNew!(int[])(1).ptr); writeln(stackNew!(int[])(1).ptr);
-    
-    auto a = stackNew!B(); 
-    auto b = stackNew!B();
-    writeln(&a);
-    writeln(&b); */  
-    Kin!(B, uint, "a") a;
-    B b = a.asOriginal;
-    a.test(); 
-    writeln(isStackAllocated(a.asOriginal));
-    a = a.makeEndian(Endianness.BigEndian);
-    b = a.asOriginal;
-    b.a.writeln;
+    struct TEST { }
+    B[] a;
+    foreach (i; 0..10)
+    {
+        auto _a = dsNew!B();
+        _a.b = cast(ushort)a.length;
+        a ~= _a;
+    }
+    foreach (_a; a)
+        writeln(_a.b);
 }

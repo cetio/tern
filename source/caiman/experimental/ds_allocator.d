@@ -1,4 +1,5 @@
-/// A collection of very unsafe but very powerful ds allocators
+/// Very fast fixed data segment allocators \
+/// NOT thread safe.
 module caiman.experimental.ds_allocator;
 
 import caiman.traits;
@@ -6,13 +7,14 @@ import std.traits;
 import std.range;
 import std.conv;
 import caiman.memory;
-import caiman.experimental.monitor;
 import caiman.random;
+
+alias ElementType = caiman.traits.ElementType;
 
 private pure string generateCases(ptrdiff_t r)()
 {
     string str = "switch (size) {";
-    static foreach (i; iota(0, 10_000, ptrdiff_t.sizeof))
+    static foreach (i; iota(0, 20_000, ptrdiff_t.sizeof))
     {
         str ~= "case "~i.to!string~":
         static ubyte["~i.to!string~"] data"~r.to!string~";
@@ -39,11 +41,12 @@ static:
  * Returns:
  *  A new array of type `T`
  */
-T dsNew(T : U[], U, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)(ptrdiff_t length)
+T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(ptrdiff_t length)
+    if (isDynamicArray!T)
 {
-    enum elem = cast(ptrdiff_t)(U.sizeof * 1.5) + (cast(ptrdiff_t)(U.sizeof * 1.5) == 8 ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(U.sizeof * 1.5) % ptrdiff_t.sizeof)));
+    enum elem = cast(ptrdiff_t)(ElementType!T.sizeof * 1.5) + (cast(ptrdiff_t)(ElementType!T.sizeof * 1.5) == 8 ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(ElementType!T.sizeof * 1.5) % ptrdiff_t.sizeof)));
     const ptrdiff_t size = elem * length + ptrdiff_t.sizeof;
-    mixin(generateCases!(random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3)));
+    mixin(generateCases!(random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3, r4)));
 }
 
 /**
@@ -123,7 +126,7 @@ void dsResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
  *   writeln(a); // caiman.main.B
  *   ```
  */
-T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)()
+T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)()
     if (!is(T : U[], U))
 {
     static if (!is(T == class))
@@ -136,18 +139,56 @@ T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FUL
     }
     else
     {
-        enum rand = random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3).to!string;
+        enum rand = random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3, r4).to!string;
         mixin("static ubyte[__traits(classInstanceSize, T)] bytes"~rand~";");
         foreach (field; FieldNames!T)
         {
             auto init = __traits(getMember, T, field).init;
-            ptrdiff_t offset = __traits(getMember, T, field).offsetof;
+            enum offset = __traits(getMember, T, field).offsetof;
             mixin("bytes"~rand~"[offset..(offset + TypeOf!(T, field).sizeof)] = (cast(ubyte*)&init)[0..TypeOf!(T, field).sizeof];");
         }
         // 8 bytes after this are __monitor, but we don't need to create one 
         mixin("(cast(void**)bytes"~rand~".ptr)[0] = T.classinfo.vtbl.ptr;");
         mixin("T ret = cast(T)bytes"~rand~".ptr;");
         ret.__ctor();
+        return ret;
+    }
+}
+
+// TODO: Arrays
+T dsbNew(T, bool ctor = true)()
+    if (!is(T : U[], U))
+{
+    static if (!is(T == class))
+    {
+        static if (hasCtor!T)
+            T ret = T(args);
+        else
+            T ret;
+        return ret;
+    }
+    else
+    {
+        enum capacity = 100_194_304 - __traits(classInstanceSize, T);
+        static ptrdiff_t offset;
+        static ubyte[100_194_304] data;
+        //assert(offset < capacity, "DSB allocator ran out of available memory!");
+
+        static foreach (field; FieldNames!T)
+        {
+            {
+                auto init = __traits(getMember, T, field).init;
+                ptrdiff_t _offset = __traits(getMember, T, field).offsetof + offset;
+                data[_offset..(_offset + TypeOf!(T, field).sizeof)] = (cast(ubyte*)&init)[0..TypeOf!(T, field).sizeof];
+            }
+        }
+
+        // 8 bytes after this are __monitor, but we don't need to create one 
+        (cast(void**)(cast(ubyte*)&data + offset))[0] = T.classinfo.vtbl.ptr;
+        T ret = cast(T)(cast(ubyte*)&data + offset);
+        static if (ctor)
+            ret.__ctor();
+        offset += __traits(classInstanceSize, T);
         return ret;
     }
 }

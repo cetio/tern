@@ -24,9 +24,12 @@ public:
     }
 
 @nogc:
-    this(ptrdiff_t length, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)
+    void reserve(uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(ptrdiff_t length)
     {
-        arr = dsNew!(T[])(length, r0, r1, r2, r3);
+        if (arr is null)
+            arr = dsNew!(T[], r0, r1, r2, r3, r4)(1);
+        else
+            dsResize(arr, length);
     }
 
     size_t length() const => arr.length;
@@ -100,11 +103,11 @@ public:
             dsResize(arr, arr.length - 1);
     }
 
-    T opOpAssign(string op, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__)(T val) 
+    T opOpAssign(string op, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(T val) 
         if (op == "~") 
     {
         if (arr is null)
-            arr = dsNew!(T[])(1, r0, r1, r2, r3);
+            arr = dsNew!(T[], r0, r1, r2, r3, r4)(1);
         else
             dsResize(arr, arr.length + 1);
         arr[$-1] = val;
