@@ -121,13 +121,13 @@ public template canConv(F, T, bool EXPLICIT = false)
             else static if (isStaticArray!F == isStaticArray!T)
                 return !EXPLICIT && (isArray!F == isArray!T) && canConv!(ElementType!F, ElementType!T, EXPLICIT);
             else static if ((isStaticArray!F && (!is(ElementType!F == ubyte) && !is(ElementType!F == byte) && !isSomeChar(ElementType!F))))
-                throw new Throwable("Casts from a static array to a non static array type must be from a byte type or char type, not "~F.stringof~"!");
+                static assert(0, "Casts from a static array to a non static array type must be from a byte type or char type, not "~F.stringof~"!");
         }
 
         static if (FieldNames!F.length > FieldNames!T.length)
             return false;
 
-        static if (isOrganic!F && isOrganic!T)
+        static if (!isIntrinsicType!F && !isIntrinsicType!T)
         static foreach (i, field; FieldNames!F)
         {
             static if ((FieldNames!T.length <= i || FieldNames!T[i] != field || !is(TypeOf!(F, field) == TypeOf!(T, field))) && EXPLICIT)
@@ -160,7 +160,7 @@ pragma(inline)
     else static if (canConv!(F, T))
         return val.conv!T;
     else
-        throw new Throwable("Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
+        static assert(0, "Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
 }
 
 pragma(inline)
@@ -175,7 +175,8 @@ pragma(inline)
     else static if (canConv!(F, T))
         return val.conv!T;
     else
-        throw new Throwable("Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
+    // TODO: Switch back to 0
+        static assert(1, "Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
 }
 
 /// ditto
@@ -191,7 +192,7 @@ pragma(inline)
     else static if (canConv!(F, T))
         return val.conv!T;
     else
-        throw new Throwable("Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
+        static assert(0, "Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
 }
 
 /** 

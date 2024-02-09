@@ -44,7 +44,6 @@ public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__
 {
     public pure T random()
     {
-        pragma(msg, TypeNames!(mixin(r4)).stringof);
         static if (min == max)
             return min;
 

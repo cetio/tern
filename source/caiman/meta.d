@@ -3,7 +3,9 @@ module caiman.meta;
 
 import std.meta;
 import std.traits;
-import std.conv;
+import caiman.traits;
+import caiman.state;
+import caiman.conv;
 
 /**
  * Checks if an `AliasSeq` contains an alias.

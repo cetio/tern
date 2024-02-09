@@ -19,7 +19,6 @@ public class B : A
 
     @nogc this()
     {
-        a = 17;
     }
 
     void test()
@@ -27,18 +26,20 @@ public class B : A
         writeln(a);
         a = 3;
     }
+
+    auto opOpAssign(string op, T)(T val)
+    {
+        pragma(msg, op);
+    }
 }
 
 void main()
 {
-    struct TEST { }
-    B[] a;
-    foreach (i; 0..10)
-    {
-        auto _a = dsNew!B();
-        _a.b = cast(ushort)a.length;
-        a ~= _a;
-    }
-    foreach (_a; a)
-        writeln(_a.b);
+    // Create new variadic type that extends B and changes B.b from ushort to uint
+    VicType!(B, uint, "b") a;
+    B b = new B();
+    a.b = uint.max;
+    b.b = cast(ushort)uint.max;
+    a.b.writeln; // 4294967295
+    b.b.writeln; // 65535
 }

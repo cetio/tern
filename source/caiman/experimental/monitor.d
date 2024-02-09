@@ -2,7 +2,7 @@ module caiman.experimental.monitor;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string;
 import core.sync.mutex;
-import caiman.traits;
+import std.traits;
 version (Windows)
 {
     version (CRuntime_DigitalMars)
@@ -78,13 +78,12 @@ public:
 static:
 @nogc:
 bool createMonitor(T)(ref T val)
-    if (canCastTo!(T, Object))
+    if (isAssignable!(T, Object))
 {
     if (auto m = val.getMonitor() !is null)
         return m;
 
-    static ubyte[Monitor.sizeof] bm;
-    Monitor* m = cast(Monitor*)&bm;
+    Monitor* m = cast(Monitor*)calloc(Monitor.sizeof, 1);
     initMutex(&m.mtx);
 
     synchronized (mutex)
@@ -108,19 +107,19 @@ void destroyMonitor(Monitor* m)
 
 pure:
 @property ref shared(Monitor*) monitor(T)(return scope T val)
-    if (canCastTo!(T, Object))
+    if (isAssignable!(T, Object))
 {
     return *cast(shared Monitor**)&val.__monitor;
 }
 
 shared(Monitor)* getMonitor(T)(T val)
-    if (canCastTo!(T, Object))
+    if (isAssignable!(T, Object))
 {
     return atomicLoad!(MemoryOrder.acq)(val.monitor);
 }
 
 void setMonitor(T)(T val, shared(Monitor)* m)
-    if (canCastTo!(T, Object))
+    if (isAssignable!(T, Object))
 {
     atomicStore!(MemoryOrder.rel)(val.monitor, m);
 }

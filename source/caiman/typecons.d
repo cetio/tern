@@ -1,9 +1,31 @@
 module caiman.typecons;
 
-import caiman.conv;
-import caiman.traits;
 import std.traits;
+import std.string;
+import std.array;
+import std.ascii;
+import caiman.conv;
+import std.algorithm;
+import caiman.traits;
 import caiman.meta;
+
+/// Attribute signifying an enum uses flags
+public enum flags;
+/// Attribute signifying an enum should not have properties made
+public enum exempt;
+
+public static pure string pragmatize(string str) 
+{
+    size_t idx = str.lastIndexOf('.');
+    if (idx != -1)
+        str = str[(idx + 1)..$];
+    str = str.replace("*", "PTR")
+        .replace("[", "OPBRK")
+        .replace("]", "CLBRK")
+        .replace(",", "COMMA")
+        .replace("!", "EXCLM");
+    return str.filter!(c => isAlphaNum(c) || c == '_').array.to!string;
+}
 
 public class BlackHole(T)
     if (isAbstractClass!T)
@@ -39,22 +61,341 @@ public class WhiteHole(T)
 }
 
 /** 
- * Wraps a type with modified or optional fields.
+ * Generates a mixin for implementing all possible functions of `T`
+ * 
+ * Remarks:
+ *  Any function that returns true for `isDImplDefined` is discarded. \
+ *  `nothrow`, `pure`, and `const` attributes are discarded. \
+ *  `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
+ */
+public template functionMap(T, bool mapOperators = false)
+{
+    enum functionMap =
+    {
+        string str;
+        static foreach (func; FunctionNames!T)
+        {
+            static if (!isDImplDefined!(TypeOf!(T, func)))
+            {
+                static if (is(ReturnType!(TypeOf!(T, func)) == void))
+                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
+                        import caiman.conv;
+                        auto orig = asOriginal; 
+                        scope (exit) this = orig.conv!(typeof(this));
+                        orig."~FunctionCallableSignature!(TypeOf!(T, func))~";  }\n");
+                else
+                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
+                        import caiman.conv;
+                        auto orig = asOriginal; 
+                        scope (exit) this = orig.conv!(typeof(this)); 
+                        return orig."~FunctionCallableSignature!(TypeOf!(T, func))~"; }\n");
+            }
+        }
+        static if (mapOperators)
+            str ~= "public auto opOpAssign(string op, ORASS)(ORASS rhs)
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opOpAssign!op(rhs);
+                }
+
+                public auto opBinary(string op, ORASS)(const ORASS rhs)
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opBinary!op(rhs);
+                }
+
+                public auto opBinaryRight(string op, OLASS)(const OLASS lhs)
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opBinaryRight!op(lhs);
+                }
+                
+                public int opCmp(ORCMP)(const ORCMP other)
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opCmp(other);
+                }
+
+                public int opCmp(Object other)
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opCmp(other);
+                }
+
+                public bool opEquals(OREQ)(const OREQ other)
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opEquals(other);
+                }
+
+                public bool opEquals(Object other) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opEquals(other);
+                }
+
+                public auto opIndexAssign(OTIASS)(OTIASS value, size_t index) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opIndexAssign(value, index);
+                }
+
+                public auto opIndexOpAssign(string op, OTIASS)(OTIASS value, size_t index) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opIndexOpAssign!op(value, index);
+                }
+
+                public auto opIndexUnary(string op)(size_t index) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opIndexUnary(index);
+                }
+
+                public auto opSliceAssign(OTSASS)(OTSASS value, size_t start, size_t end) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opSliceAssign(value, start, end);
+                }
+
+                public auto opSlice(size_t DIM = 0)(size_t start, size_t end) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opSlice!DIM(start, end);
+                }
+
+                public auto opSliceAssign(size_t dim = 0, OTSASS)(OTSASS value, size_t start, size_t end) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opSliceAssign!DIM(value, start, end);
+                }
+
+                public auto opSliceOpAssign(string op, OTSASS)(OTSASS value, size_t start, size_t end) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opSliceAssign!op(value, start, end);
+                }
+
+                public auto opSliceUnary(string op)(size_t start, size_t end) 
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opSliceUnary!op(start, end);
+                }
+
+                public auto opUnary(string op)()
+                {
+                    auto orig = asOriginal;
+                    scope (exit) this = orig.conv!(typeof(this));
+                    return orig.opUnary!op();
+                }";
+        return str;
+    }();
+}
+
+/** 
+ * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type. \
+ * This is an attribute and should be used like `@inherit!T`
+ *
+ *  Example:
+ *  ```d
+ *  struct A {int b; int x() => b; }
+ *
+ *  interface B { string y(); }
+ *
+ *  @inherit!A @inherit!B struct C 
+ *  {
+ *   mixin apply;
+ *
+ *   string y() => "yohoho!";
+ *  }
+ *  ```
+ */
+public template inherit(T)
+    if (hasChildren!T)
+{
+    alias inherit = T;
+}
+
+/** 
+ * Sets up all inherits for the type that mixes this in. \
+ * Must set inherited types by using `inherit(T)` beforehand.
+ *
+ *  Example:
+ *  ```d
+ *  struct A {int b; int x() => b; }
+ *
+ *  interface B { string y(); }
+ *
+ *  @inherit!A @inherit!B struct C 
+ *  {
+ *   mixin applyInherits;
+ *
+ *   string y() => "yohoho!";
+ *  }
+ *  ```
+ */
+// TODO: Use opDispatch to allow for multiple class/struct inherits
+//       Find a faster way to do this, do not regenerate every call
+//       Apply changes on parent to self
+public template applyInherits()
+{
+    static foreach (i, A; seqFilter!(isType, __traits(getAttributes, typeof(this))))
+    {
+        static assert(!hasModifiers!A, "Type with modifier cannot inherit from another type, must be a normal aggregate.");
+
+        
+    }
+}
+
+/* unittest
+{
+    struct A
+    {
+        int b;
+
+        int x() => b;
+    }
+
+    interface B
+    {
+        string y();
+    }
+
+    @inherit!A @inherit!B struct C
+    {
+        mixin apply;
+
+        string y() => "yohoho!";
+    }
+
+    C c;
+    c.b = 2;
+    assert(c.x() == 2);
+    assert(c.y() == "yohoho!");
+} */
+
+/// Template mixin for auto-generating properties. \
+/// Assumes standardized prefixes! (m_ for backing fields, k for masked enum values) \
+/// Assumes standardized postfixes! (MASK or Mask for masks) \
+// TODO: Overloads (allow devs to write specifically a get/set and have the counterpart auto generated)
+//       ~Bitfield exemption?~
+//       Conditional get/sets? (check flag -> return a default) (default attribute?)
+//       Flag get/sets from pre-existing get/sets (see methodtable.d relatedTypeKind)
+//       Auto import types (generics!!)
+//       Allow for indiv. get/sets without needing both declared
+//       Clean up with caiman.meta
+/// Does not support multiple fields with the same enum type!
+public template accessors()
+{
+    import std.traits;
+    import std.string;
+    import std.meta;
+
+    static foreach (string member; __traits(allMembers, typeof(this)))
+    {
+        static if (member.startsWith("m_") && !__traits(compiles, { enum _ = mixin(member); }) &&
+            isMutable!(TypeOf!(typeof(this), member)) &&
+            (isFunction!(__traits(getMember, typeof(this), member)) || staticIndexOf!(exempt, __traits(getAttributes, __traits(getMember, typeof(this), member))) == -1))
+        {
+            static if (!__traits(hasMember, typeof(this), member[2..$]))
+            {
+                static if (!__traits(hasMember, typeof(this), member[2..$]))
+                {
+                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_"~member[2..$]~"_get\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"() { return "~member~"; }");
+                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_"~member[2..$]~"_set\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"("~fullyQualifiedName!(TypeOf!(typeof(this), member))~" val) { "~member~" = val; return "~member~"; }");
+                }
+
+                // Flags
+                static if (is(TypeOf!(typeof(this), member) == enum) &&
+                    !seqContains!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) &&
+                    seqContains!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))))
+                {
+                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
+                    {
+                        static if (flag.startsWith('k'))
+                        {
+                            static foreach_reverse (string mask; __traits(allMembers, TypeOf!(this, member))[0..staticIndexOf!(flag, __traits(allMembers, TypeOf!(this, member)))])
+                            {
+                                static if (mask.endsWith("Mask") || mask.endsWith("MASK"))
+                                {
+                                    static if (!__traits(hasMember, typeof(this), "is"~flag[1..$]))
+                                    {
+                                        // @property bool isEastern()...
+                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"_get\") extern (C) export final @property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
+                                        // @property bool isEastern(bool state)...
+                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag[1..$]~"get\") extern (C) export final @property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~")) == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
+                                    }
+                                }
+
+                            }
+                        }
+                        else
+                        {  
+                            static if (!__traits(hasMember, typeof(this), "is"~flag))
+                            {
+                                // @property bool isEastern()...
+                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") != 0; }");
+                                // @property bool isEastern(bool state)...
+                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"))) != 0; }");
+                            }
+                        }
+                    }
+                }
+
+                // Non-flags
+                static if (is(TypeOf!(typeof(this), member) == enum) &&
+                    !seqContains!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) &&
+                    !seqContains!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))))
+                {
+                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
+                    {
+                        static if (!__traits(hasMember, typeof(this), "is"~flag))
+                        {
+                            // @property bool Eastern()...
+                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
+                            // @property bool Eastern(bool state)...
+                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).pragmatize()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 
+ * Wraps a type with modified or optional fields. \
+ * Short for VariadicType.
  *
  * Remarks:
  * - Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
- * - Accepts syntax `Kin!A(TYPE, NAME, CONDITION...)` or `Kin!A(TYPE, NAME...)` interchangably.
- * - Use `Kin.asOriginal()` to extract `T` in the original layout.
+ * - Accepts syntax `VicType!A(TYPE, NAME, CONDITION...)` or `VicType!A(TYPE, NAME...)` interchangably.
+ * - Use `VicType.asOriginal()` to extract `T` in the original layout.
  * 
  * Example:
  * ```d
  * struct A { int a; }
- * Kin!(A, long, "a", false, int, "b") k1; // a is still a int, but now a field b has been added
- * Kin!(A, long, "a", true, int, "b") k2; // a is now a long and a field b has been added
+ * VicType!(A, long, "a", false, int, "b") k1; // a is still a int, but now a field b has been added
+ * VicType!(A, long, "a", true, int, "b") k2; // a is now a long and a field b has been added
  * ```
  */
-public struct Kin(T, ARGS...)
-    if (isOrganic!T)
+public struct VicType(T, ARGS...)
+    if (hasChildren!T)
 {
     // Import all the types for functions so we don't have any import errors
     static foreach (func; FunctionNames!T)
@@ -63,7 +404,7 @@ public struct Kin(T, ARGS...)
             mixin("import "~moduleName!(ReturnType!(__traits(getMember, T, func)))~";");
     }
 
-    // Define overrides (ie: Kin!A(uint, "a") where "a" is already a member of A)
+    // Define overrides (ie: VicType!A(uint, "a") where "a" is already a member of A)
     static foreach (field; FieldNames!T)
     {
         static foreach (i, ARG; ARGS)
@@ -100,22 +441,7 @@ public struct Kin(T, ARGS...)
 
                     mixin(fullyQualifiedName!(ARGS[i - 2])~" "~ARGS[i - 1]~";");
                 }
-            }/* 
-            static if (i % 2 == 0)
-            {
-                static assert(isType!ARG,
-                    "Type expected, found " ~ ARG.stringof); 
             }
-            else static if (i % 2 == 1 && ARG == field)
-            {
-                static assert(is(typeof(ARG) == string),
-                    "Field name expected, found " ~ ARG.stringof); 
-
-                static if (hasParents!(ARGS[i - 1]))
-                    mixin("import "~moduleName!(ARGS[i - 1])~";");
-
-                mixin(fullyQualifiedName!(ARGS[i - 1])~" "~ARG~";");
-            } */
         }
 
         static if (hasParents!(TypeOf!(T, field)))
@@ -167,20 +493,14 @@ public struct Kin(T, ARGS...)
     }
 
     /**
-     * Extracts the content of this Kin as `T` in its original layout.
+     * Extracts the content of this VicType as `T` in its original layout.
      *
      * Returns:
-     * Contents of this Kin as `T` in its original layout.
+     * Contents of this VicType as `T` in its original layout.
      */
-    auto ref T asOriginal() const => this.conv!T;
+    T asOriginal() const => this.conv!T;
 
-    auto opDispatch(string member, ARGS...)(ARGS args)
-    {
-        static if (seqContains!(member, FunctionNames!T) && is(Parameters!(TypeOf!(T, member)) == ARGS))
-            mixin("T orig = asOriginal;
-            orig."~member~"(args);
-            this = orig.conv!(typeof(this));");
-    }
+    mixin(functionMap!(T, true));
 }
 
 unittest
@@ -191,7 +511,7 @@ unittest
         int age;
     }
 
-    Kin!(Person, long, "age", true, bool, "isStudent") modifiedPerson;
+    VicType!(Person, long, "age", true, bool, "isStudent") modifiedPerson;
 
     modifiedPerson.name = "Bob";
     modifiedPerson.age = 30;
@@ -206,4 +526,14 @@ unittest
 
     assert(originalPerson.name == "Bob");
     assert(originalPerson.age == 30);
+}
+
+public struct SumType(ARGS...)
+{
+
+}
+
+public struct UnionType(ARGS...)
+{
+
 }

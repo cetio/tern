@@ -13,54 +13,80 @@ public:
 static:
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);
-/// True if `T` is an indirection, otherwise, false.
+/// True if `T` is an indirection.
 public alias isReferenceType(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || isArray!T);
-/// True if `T` is not an indirection, otherwise, false.
+/// True if `T` is not an indirection.
 public alias isValueType(T) = Alias!(!isIndirection!T);
-/// True if `F` is exported, otherwise, false.
+/// True if `F` is exported.
 public alias isExport(alias F) = Alias!(__traits(getVisibility, func) == "export");
-/// True if `A` is a template, otherwise, false.
+/// True if `A` is a template.
 public alias isTemplate(alias A) = Alias!(__traits(isTemplate, A));
-/// True if `A` is a module, otherwise, false.
+/// True if `A` is a module.
 public alias isModule(alias A) = Alias!(__traits(isModule, A));
-/// True if `A` is a package, otherwise, false.
+/// True if `A` is a package.
 public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
 /// True if `A` is a field, otherwise false. \
 /// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`
 public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
-/// True if `A` has any parents, otherwise, false.
+/// True if `A` has any parents.
 public alias hasParents(alias A) = Alias!(!isType!A || !isIntrinsicType!A);
-/// True if `T` is a basic type, built-in type, or array, otherwise, false.
+/// True if `T` is a basic type, built-in type, or array.
 public alias isIntrinsicType(T) = Alias!(isBasicType!T || isBuiltinType!T || isArray!T);
-/// True if `A` has any children, otherwise, false.
+/// True if `A` has any children.
 public template hasChildren(alias A)
 {
     enum hasChildren =
     {
         static if (isModule!A || isPackage!A)
             return true;
-            
+
         static if (!isType!A)
             return false;
         else
-            return isOrganic!A;
+            return !isIntrinsicType!A && !hasModifiers!A;
     }();
 }
-/// True if `A` is not mutable (const, immutable, enum, etc.), otherwise, false.
+/// True if `A` is not mutable (const, immutable, enum, etc.).
 public alias isImmutable(alias A) = Alias!(!isMutable!A || (isField!A && __traits(compiles, { enum _ = mixin(A.stringof); })));
-/// True if `T` is an enum, array, or pointer, otherwise, false.
+/// True if `T` is an enum, array, or pointer.
 public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateType!T);
-/// True if 'T' does not have any modifiers and is not an intrinsic type, otherwise, false.
-public alias isOrganic(T) = Alias!(!hasModifiers!T && !isIntrinsicType!T);
-/// True if `T` has any member "__ctor", otherwise, false.
+/// True if `T` has any member "__ctor".
 public alias hasCtor(T) = Alias!(hasMember!(T, "__ctor"));
-/// True if `A` implements `B`, otherwise, false. \
+/// True if `A` implements `B`. \
 /// If you want to get all implements of 'A', see `Implements(T)`
-public alias implements(A, B) = Alias!(seqContains!(B, Implements!A));
-/// True if `A` can cast to `B`, otherwise, false.
-public alias canCastTo(A, B) = Alias!(canConv!(A, B, true));
+public alias isImplement(A, B) = Alias!(seqContains!(B, Implements!A));
+/// Gets an alias to the package in which `A` is defined, undefined behavior for any alias that does not have a package (any intrinsic type.)
+public alias getPackage(alias A) = Alias!(mixin(fullyQualifiedName!A.indexOf('.') == -1 ? fullyQualifiedName!A : fullyQualifiedName!A[0..fullyQualifiedName!A.indexOf('.')]));
+/// True if `A` is not D implementation defined.
+public alias isOrganic(alias A) = Alias!(isDImplDefined!A);
+/// True if `F` is a constructor;
+public alias isConstructor(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("__ctor") || __traits(identifier, F).startsWith("_staticCtor")));
+/// True if `F` is a destructor.
+public alias isDestructor(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("__dtor") || __traits(identifier, F).startsWith("__xdtor") || __traits(identifier, F).startsWith("_staticDtor")));
+/// True if `F` is `toHash` or `toString`
+public alias isDManyThing(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("toHash") || __traits(identifier, F).startsWith("toString")));
 
-/// True if `T` wraps indirection, like an array or wrapper for a pointer, otherwise, false.
+public template isDImplDefined(alias A)
+{
+    static if ((isModule!A || (isType!A && !isIntrinsicType!A)) && (getPackage!A.stringof == "package std" || getPackage!A.stringof == "package rt" || getPackage!A.stringof == "package core"))
+        enum isDImplDefined = true;
+    else static if (isPackage!A && (A.stringof == "package std" || A.stringof == "package rt" || A.stringof == "package core"))
+        enum isDImplDefined = true;
+    else static if (isType!A && isIntrinsicType!A)
+        enum isDImplDefined = true;
+    else static if (isFunction!A && 
+    // Not exactly accurate but good enough
+        (__traits(identifier, A).startsWith("_d_") || __traits(identifier, A).startsWith("rt_") || 
+        __traits(identifier, A).startsWith("factory") || __traits(identifier, A).startsWith("__") ||
+        __traits(identifier, A).startsWith("op")))
+        enum isDImplDefined = true;
+    else static if (isConstructor!A || isDestructor!A || isDManyThing!A)
+        enum isDImplDefined = true;
+    else
+        enum isDImplDefined = false;
+}
+
+/// True if `T` wraps indirection, like an array or wrapper for a pointer.
 public template wrapsIndirection(T)
 {
     static if (hasChildren!T)

@@ -1,6 +1,6 @@
 module caiman.hresult;
 
-import caiman.experimental.inheritance;
+import caiman.typecons;
 
 /// HResult values for handling error codes.
 public @exempt enum HResult

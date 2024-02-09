@@ -100,7 +100,8 @@ final:
         }
         else if (type == ImageType.PE32)
         {
-            optionalImage = stream.read!PE32Image.to!OptionalImage;
+            // TODO: Revert
+            ///optionalImage = stream.read!PE32Image.to!OptionalImage;
         }
         else if (type == ImageType.PE64)
         {
