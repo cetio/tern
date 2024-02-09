@@ -5,9 +5,9 @@ import std.string;
 import std.algorithm;
 import std.array;
 import std.meta;
-import std.traits;
 import caiman.meta;
 import caiman.conv;
+public import std.traits;
 
 public:
 static:
@@ -29,29 +29,25 @@ public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
 /// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`
 public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
 /// True if `A` has any parents.
-public alias hasParents(alias A) = Alias!(!isType!A || !isIntrinsicType!A);
+public alias hasParents(alias A) = Alias!(Derequirement!(A, false, isType, false, isIntrinsicType) && !isPackage!A);
 /// True if `T` is a basic type, built-in type, or array.
 public alias isIntrinsicType(T) = Alias!(isBasicType!T || isBuiltinType!T || isArray!T);
 /// True if `A` has any children.
-public template hasChildren(alias A)
-{
-    enum hasChildren =
-    {
-        static if (isModule!A || isPackage!A)
-            return true;
-
-        static if (!isType!A)
-            return false;
-        else
-            return !isIntrinsicType!A && !hasModifiers!A;
-    }();
-}
+public alias hasChildren(alias A) = Alias!(isModule!A || isPackage!A || Prerequirement!(A, true, isType, false, isIntrinsicType, false, hasModifiers));
 /// True if `A` is not mutable (const, immutable, enum, etc.).
-public alias isImmutable(alias A) = Alias!(!isMutable!A || (isField!A && __traits(compiles, { enum _ = mixin(A.stringof); })));
+public template isImmutable(alias A)
+{
+    static if (isType!A)
+        enum isImmutable = !isMutable!A;
+    else static if (isField!A)
+        enum isImmutable = !isMutable!(typeof(A)) || isEnum!A;
+    else
+        enum isImmutable = true;
+}
 /// True if `T` is an enum, array, or pointer.
 public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateType!T);
-/// True if `T` has any member "__ctor".
-public alias hasCtor(T) = Alias!(hasMember!(T, "__ctor"));
+/// True if `T` has any instance constructor ("__ctor").
+public alias hasConstructor(T) = Alias!(hasMember!(T, "__ctor"));
 /// True if `A` implements `B`. \
 /// If you want to get all implements of 'A', see `Implements(T)`
 public alias isImplement(A, B) = Alias!(seqContains!(B, Implements!A));
@@ -65,6 +61,10 @@ public alias isConstructor(alias F) = Alias!(isFunction!F && (__traits(identifie
 public alias isDestructor(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("__dtor") || __traits(identifier, F).startsWith("__xdtor") || __traits(identifier, F).startsWith("_staticDtor")));
 /// True if `F` is `toHash` or `toString`
 public alias isDManyThing(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("toHash") || __traits(identifier, F).startsWith("toString")));
+/// True if `F` is a static field.
+public alias isStatic(alias F) = Alias!(isField!F && !isEnum!F && __traits(compiles, { auto _ = __traits(getMember, __traits(parent, F), __traits(identifier, F)); }));
+/// True if `F` is an enum field.
+public alias isEnum(alias F) = Alias!(__traits(compiles, { enum _ = __traits(getMember, __traits(parent, F), __traits(identifier, F)); }));
 
 public template isDImplDefined(alias A)
 {
@@ -96,18 +96,6 @@ public template wrapsIndirection(T)
         enum wrapsIndirection = isArray!T;
 }
 
-/// Gets a `void*[]` of all indirections contained in `T val`
-pure void*[] indirections(T)(T val)
-{
-    void*[] ptrs;
-    static foreach (field; getFields!T)
-    {
-        static if (isIndirection!T)
-            ptrs ~= cast(void*)&__traits(getMember, val, field);
-    }
-    return ptrs;
-}
-
 /// Gets the type of member `MEMBER` in `A` \
 /// This will return a function alias if `MEMBER` refers to a function, and do god knows what if `MEMBER` is a package or module.
 public template TypeOf(alias A, string MEMBER)
@@ -130,10 +118,25 @@ public template ElementType(T)
 
 /** 
  * Gets the signature of `F` as a string. \
+ * Initializers will be lost.
+ */
+public template FieldSignature(alias F)
+    if (isField!F)
+{
+    enum FieldSignature =
+    {
+        static if (isEnum!F)
+            return "enum "~fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F)~" = "~F.stringof;
+        else static if (isStatic!F)
+            return "static "~fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F);
+        else
+            return fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F);
+    }();
+}
+
+/** 
+ * Gets the signature of `F` as a string. \
  * This includes all attributes, templates (must be already initialized, names are lost,) and parameters.
- *
- * Params:
- *  F = Function to get the signature of.
  */
 public template FunctionSignature(alias F)
     if (isFunction!F)
@@ -163,9 +166,6 @@ public template FunctionSignature(alias F)
 
 /** 
  * Gets the signature of `F` as a string without any types present.
- *
- * Params:
- *  F = Function to get the signature of.
  */
 // Uses a lot of redundant code but that's fine
 public template FunctionCallableSignature(alias F)
@@ -309,4 +309,193 @@ public template Imports(alias M)
     mixin("alias Imports = AliasSeq!("~ 
         _Imports.join(", ")~ 
     ");");
+}
+
+/// Gets a `void*[]` of all indirections contained in `T val`
+pure void*[] indirections(T)(T val)
+{
+    void*[] ptrs;
+    static foreach (field; getFields!T)
+    {
+        static if (isPointer!(TypeOf!(T, field)))
+            ptrs ~= cast(void*)__traits(getMember, val, field);
+        else static if (is(TypeOf!(T, field) == class))
+            ptrs ~= *cast(void**)&__traits(getMember, val, field);
+        else static if (isIndirection!(TypeOf!(T, field)))
+            ptrs ~= __traits(getMember, val, field).indirections;
+    }
+    return ptrs;
+}
+
+/** 
+ * Generates a mixin for implementing all possible functions of `T`
+ * 
+ * Remarks:
+ *  Any function that returns true for `isDImplDefined` is discarded. \
+ *  `nothrow`, `pure`, and `const` attributes are discarded. \
+ *  `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
+ */
+public template functionMap(T, bool mapOperators = false)
+    if (hasChildren!T)
+{
+    enum functionMap =
+    {
+        string str = "import "~moduleName!T~';';
+        static foreach (func; FunctionNames!T)
+        {
+            static if (!isDImplDefined!(TypeOf!(T, func)))
+            {
+                static if (is(ReturnType!(TypeOf!(T, func)) == void))
+                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
+                        import caiman.conv;
+                        auto orig = as!("~fullyQualifiedName!T~"); 
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        orig."~FunctionCallableSignature!(TypeOf!(T, func))~";  }\n");
+                else
+                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
+                        import caiman.conv;
+                        auto orig = as!("~fullyQualifiedName!T~"); 
+                        scope (exit) this.assign(orig.conv!(typeof(this))); 
+                        return orig."~FunctionCallableSignature!(TypeOf!(T, func))~"; }\n");
+            }
+        }
+        static if (mapOperators)
+        // TODO: Fix for classes
+            str ~= "public auto opOpAssign(string op, ORASS)(ORASS rhs)
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opOpAssign!op(rhs);
+                }
+
+                public auto opBinary(string op, ORASS)(const ORASS rhs)
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opBinary!op(rhs);
+                }
+
+                public auto opBinaryRight(string op, OLASS)(const OLASS lhs)
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opBinaryRight!op(lhs);
+                }
+                
+                static if (is(typeof(this) == class))
+                {
+                    public override int opCmp(Object other)
+                    {
+                        auto orig = as!("~fullyQualifiedName!T~");
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        return orig.opCmp(other);
+                    }
+                }
+                else
+                {
+                    public int opCmp(ORCMP)(const ORCMP other)
+                    {
+                        auto orig = as!("~fullyQualifiedName!T~");
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        return orig.opCmp(other);
+                    }
+
+                    public int opCmp(Object other)
+                    {
+                        auto orig = as!("~fullyQualifiedName!T~");
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        return orig.opCmp(other);
+                    }
+                }
+
+                static if (is(typeof(this) == class))
+                {
+                    public override bool opEquals(Object other) 
+                    {
+                        auto orig = as!("~fullyQualifiedName!T~");
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        return orig.opEquals(other);
+                    }
+                }
+                else
+                {
+                    public bool opEquals(OREQ)(const OREQ other)
+                    {
+                        auto orig = as!("~fullyQualifiedName!T~");
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        return orig.opEquals(other);
+                    }
+
+                    public bool opEquals(Object other) 
+                    {
+                        auto orig = as!("~fullyQualifiedName!T~");
+                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        return orig.opEquals(other);
+                    }
+                }
+
+                public auto opIndexAssign(OTIASS)(OTIASS value, size_t index) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opIndexAssign(value, index);
+                }
+
+                public auto opIndexOpAssign(string op, OTIASS)(OTIASS value, size_t index) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opIndexOpAssign!op(value, index);
+                }
+
+                public auto opIndexUnary(string op)(size_t index) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opIndexUnary(index);
+                }
+
+                public auto opSliceAssign(OTSASS)(OTSASS value, size_t start, size_t end) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opSliceAssign(value, start, end);
+                }
+
+                public auto opSlice(size_t DIM = 0)(size_t start, size_t end) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opSlice!DIM(start, end);
+                }
+
+                public auto opSliceAssign(size_t dim = 0, OTSASS)(OTSASS value, size_t start, size_t end) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opSliceAssign!DIM(value, start, end);
+                }
+
+                public auto opSliceOpAssign(string op, OTSASS)(OTSASS value, size_t start, size_t end) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opSliceAssign!op(value, start, end);
+                }
+
+                public auto opSliceUnary(string op)(size_t start, size_t end) 
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opSliceUnary!op(start, end);
+                }
+
+                public auto opUnary(string op)()
+                {
+                    auto orig = as!("~fullyQualifiedName!T~");
+                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    return orig.opUnary!op();
+                }";
+        return str;
+    }();
 }

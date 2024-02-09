@@ -1,6 +1,6 @@
-module caiman.exe.pe.dotnet.tables.event;
+module caiman.exe.pe.dotnet.tables.eventdef;
 
-public struct Event
+public struct EventDef
 {
 public:
 final:

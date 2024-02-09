@@ -2,10 +2,9 @@
 /// NOT thread safe.
 module caiman.experimental.ds_allocator;
 
-import caiman.traits;
-import std.traits;
 import std.range;
 import std.conv;
+import caiman.traits;
 import caiman.memory;
 import caiman.random;
 

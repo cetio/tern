@@ -10,7 +10,7 @@ public import caiman.exe.pe.dotnet.tables.classlayout;
 public import caiman.exe.pe.dotnet.tables.constant;
 public import caiman.exe.pe.dotnet.tables.customattribute;
 public import caiman.exe.pe.dotnet.tables.declsecurity;
-public import caiman.exe.pe.dotnet.tables.event;
+public import caiman.exe.pe.dotnet.tables.eventdef;
 public import caiman.exe.pe.dotnet.tables.eventmap;
 public import caiman.exe.pe.dotnet.tables.exportedtype;
 public import caiman.exe.pe.dotnet.tables.fielddef;

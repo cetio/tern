@@ -1,11 +1,10 @@
 /// Comptime algorithm templates for working with AliasSeq
 module caiman.meta;
 
-import std.meta;
-import std.traits;
 import caiman.traits;
 import caiman.state;
 import caiman.conv;
+public import std.meta;
 
 /**
  * Checks if an `AliasSeq` contains an alias.
@@ -212,17 +211,13 @@ public template seqStringOf(string SEPARATOR, A...)
  * ```
  */
  // Ripped from `std.meta`
-public template isSame(alias a, alias b)
+public template isSame(alias A, alias B)
 {
-    static if (!is(typeof(&a && &b)) // at least one is an rvalue
-            && __traits(compiles, { enum isSame = a == b; })) // c-t comparable
-    {
-        enum isSame = a == b;
-    }
+    static if (!is(typeof(&A && &B)) // at least one is an rvalue
+            && __traits(compiles, { enum isSame = A == B; })) // c-t comparable
+        enum isSame = A == B;
     else
-    {
-        enum isSame = __traits(isSame, a, b);
-    }
+        enum isSame = __traits(isSame, A, B);
 }
 
 unittest
@@ -230,4 +225,56 @@ unittest
     alias A = int;
     alias B = int;
     static assert(isSame!(A, B));
+}
+
+public template Prerequirement(A...)
+{
+    enum Prerequirement =
+    {
+        static assert(A.length >= 3, "You stupid");
+        alias L = A[0];
+        alias R = A[2];
+        static if (!__traits(compiles, { enum _ = R!L == A[1]; }))
+            return false;
+        else static if (R!L != A[1])
+            return false;
+        else
+        {
+            static if (A.length > 3)
+            foreach (i, B; A[3..$])
+            {
+                static if (!isTemplate!B)
+                    continue;
+                else static if (B!L != A[i + 3 - 1])
+                    return false;
+            }
+            return true;
+        }
+    }();
+}
+
+public template Derequirement(A...)
+{
+    enum Derequirement =
+    {
+        static assert(A.length >= 3, "You stupid");
+        alias L = A[0];
+        alias R = A[2];
+        static if (!__traits(compiles, { enum _ = R!L == A[1]; }))
+            return true;
+        else static if (R!L == A[1])
+            return true;
+        else
+        {
+            static if (A.length > 3)
+            foreach (i, B; A[3..$])
+            {
+                static if (!isTemplate!B)
+                    continue;
+                else static if (B!L != A[i + 3 - 1])
+                    return false;
+            }
+            return true;
+        }
+    }();
 }

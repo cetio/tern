@@ -2,7 +2,7 @@
  * Thin wrapper around `caiman.experimental.ds_allocator` that allows for allocating a dynamic array in the data segment. \
  * Provides all normal behavior of dynamic arrays.
  */
-module caiman.ds_array;
+module caiman.experimental.ds_array;
 
 import caiman.experimental.ds_allocator;
 import std.conv;

@@ -7,7 +7,6 @@ import std.file;
 import caiman.conv;
 import std.algorithm.mutation;
 import caiman.traits;
-import std.traits;
 
 public enum Seek
 {

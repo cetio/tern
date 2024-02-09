@@ -2,7 +2,6 @@ module caiman.conv;
 
 import caiman.traits;
 import caiman.meta;
-import std.traits;
 import std.conv;
 import std.algorithm;
 import caiman.memory;
@@ -68,10 +67,13 @@ pragma(inline)
             T ret;
         static foreach (field; FieldNames!T)
         {
-            static if (!hasIndirections!(TypeOf!(T, field)))
-                __traits(getMember, ret, field) = __traits(getMember, val, field);
-            else
-                __traits(getMember, ret, field) = __traits(getMember, val, field).ddup();
+            static if (isMutable!(TypeOf!(T, field)))
+            {
+                static if (!hasIndirections!(TypeOf!(T, field)))
+                    __traits(getMember, ret, field) = __traits(getMember, val, field);
+                else
+                    __traits(getMember, ret, field) = __traits(getMember, val, field).ddup();
+            }
         }
         return ret;
     }
@@ -236,7 +238,7 @@ pragma(inline)
         T ret;
     static foreach (field; FieldNames!F)
     {
-        static if (hasMember!(T, field))
+        static if (hasMember!(T, field) && !isImmutable!(__traits(getMember, T, field)) && !isImmutable!(__traits(getMember, F, field)))
             __traits(getMember, ret, field) = cast(TypeOf!(T, field))__traits(getMember, val, field);
     }
     return ret;
@@ -289,4 +291,13 @@ pragma(inline)
         }
     }
     return val;
+}
+
+@trusted assign(T, F)(auto ref F rhs, T lhs)
+{
+    static foreach (field; FieldNames!F)
+    {
+        static if (hasMember!(T, field) && !isImmutable!(TypeOf!(T, field)) && !isImmutable!(TypeOf!(F, field)))
+            __traits(getMember, rhs, field) = cast(TypeOf!(F, field))__traits(getMember, lhs, field);
+    }
 }

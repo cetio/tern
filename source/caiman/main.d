@@ -6,40 +6,45 @@ import std.meta;
 import std.algorithm;
 import std.traits;
 
-public interface A
-{
-
-}
-
-public class B : A
+public class A
 {
     int a;
-    ushort b;
-    int c;
 
-    @nogc this()
-    {
-    }
+    auto opOpAssign(string op, T)(T val) => writeln("A");
+}
 
-    void test()
-    {
-        writeln(a);
-        a = 3;
-    }
+public class B
+{
+    enum int a = 0;
 
-    auto opOpAssign(string op, T)(T val)
-    {
-        pragma(msg, op);
-    }
+    auto opOpAssign(string op, T)(T val) => writeln("B");
+}
+
+public @inherit!B @inherit!A class C { mixin applyInherits; }
+
+public struct D
+{
+    int a;
+
+    void test() => writeln(a);
+}
+
+void f()
+{
+    writeln("guh");
 }
 
 void main()
 {
-    // Create new variadic type that extends B and changes B.b from ushort to uint
-    VicType!(B, uint, "b") a;
-    B b = new B();
-    a.b = uint.max;
-    b.b = cast(ushort)uint.max;
-    a.b.writeln; // 4294967295
-    b.b.writeln; // 65535
+    Nullable!D a;
+    a = D.init;
+    a.a = 3;
+    a.test(); // 3
+    writeln(a); // const(D)(3)
+    Nullable!int b;
+    writeln(b == null); // true
+    b = 0;
+    b += 2;
+    writeln(b); // 2
+    writeln(b == null); // false
 }

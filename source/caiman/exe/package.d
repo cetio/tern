@@ -33,7 +33,7 @@ public struct ClrMetadata
     Constant[] constant;
     CustomAttribute[] customAttribute;
     DeclSecurity[] declSecurity;
-    Event[] event;
+    EventDef[] eventDef;
     EventMap[] eventMap;
     ExportedType[] exportedType;
     FieldDef[] fieldDef;

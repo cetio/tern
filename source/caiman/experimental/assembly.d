@@ -360,12 +360,12 @@ public template mov(uint ID, T, T val, AS = void, uint _LINE = __LINE__)
     pure string mov()
     {
         static if (isSomeString!T)
-            const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = \""~val.to!string~"\";";
+            const string mix = T.stringof~" tval"~val.to!string.mangle()~LINE~" = \""~val.to!string~"\";";
         else static if (isSomeChar!T)
-            const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = '"~val.to!string~"';";
+            const string mix = T.stringof~" tval"~val.to!string.mangle()~LINE~" = '"~val.to!string~"';";
         else
-            const string mix = T.stringof~" tval"~val.to!string.pragmatize()~LINE~" = "~val.to!string~";";
+            const string mix = T.stringof~" tval"~val.to!string.mangle()~LINE~" = "~val.to!string~";";
         mixin(mix);
-        return mix~"\n"~mov!(ID, mixin("tval"~val.to!string.pragmatize()~LINE), AS, _LINE);
+        return mix~"\n"~mov!(ID, mixin("tval"~val.to!string.mangle()~LINE), AS, _LINE);
     }
 }
