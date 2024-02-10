@@ -92,15 +92,39 @@ pure:
  * Remarks:
  *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
-@trusted void copy(void* src, void* dest, ptrdiff_t length)
+@trusted void copy(scope void* src, scope void* dest, ptrdiff_t length)
 {
     switch (length & 15)
     {
+        case 0:
+            foreach (j; 0..(length / 16))
+                (cast(ulong2*)dest)[j] = (cast(ulong2*)src)[j];
+            break;
+        case 8:
+            foreach (j; 0..(length / 8))
+                (cast(ulong*)dest)[j] = (cast(ulong*)src)[j];
+            break;
+        case 4:
+            foreach (j; 0..(length / 4))
+                (cast(uint*)dest)[j] = (cast(uint*)src)[j];
+            break;
+        case 2:
+            foreach (j; 0..(length / 2))
+                (cast(ushort*)dest)[j] = (cast(ushort*)src)[j];
+            break;
         default:
-            foreach_reverse (j; 0..length)
+            foreach (j; 0..length)
                 (cast(ubyte*)dest)[j] = (cast(ubyte*)src)[j];
             break;
     }
+}
+
+unittest
+{
+    int a = 0;
+    int b = 1;
+    copy(&b, &a, 4);
+    assert(a == b);
 }
 
 /** 
@@ -114,7 +138,7 @@ pure:
  * Remarks:
  *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
-@trusted void memset(void* dest, ptrdiff_t length, ubyte val)
+@trusted void memset(scope void* dest, ptrdiff_t length, ubyte val)
 {
     switch (length & 15)
     {

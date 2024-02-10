@@ -27,7 +27,7 @@ public:
     void reserve(uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(ptrdiff_t length)
     {
         if (arr is null)
-            arr = dsNew!(T[], r0, r1, r2, r3, r4)(1);
+            arr = dsNew!(T[], r0, r1, r2, r3, r4)(length);
         else
             dsResize(arr, length);
     }
@@ -122,7 +122,8 @@ public:
 
 unittest 
 {
-    auto dsArray = DsArray!int(5);
+    DSArray!int dsArray;
+    dsArray.reserve(5);
 
     assert(dsArray.length == 5);
     assert(!dsArray.empty);

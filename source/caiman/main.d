@@ -36,15 +36,8 @@ void f()
 
 void main()
 {
-    Nullable!D a;
-    a = D.init;
-    a.a = 3;
-    a.test(); // 3
-    writeln(a); // const(D)(3)
-    Nullable!int b;
+    Nullable!C b;
     writeln(b == null); // true
-    b = 0;
-    b += 2;
-    writeln(b); // 2
+    b = new C();
     writeln(b == null); // false
 }

@@ -260,7 +260,8 @@ public template accessors()
  * Remarks:
  * - Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
  * - Accepts syntax `VadType!A(TYPE, NAME, CONDITION...)` or `VadType!A(TYPE, NAME...)` interchangably.
- * - Use `VadType.asOriginal()` to extract `T` in the original layout.
+ * - Use `VadType.as!T` to extract `T` in the original layout.
+ * - Does not support functions for local/voldemort types.
  * 
  * Example:
  * ```d
@@ -269,7 +270,7 @@ public template accessors()
  * VadType!(A, long, "a", true, int, "b") k2; // a is now a long and a field b has been added
  * ```
  */
- // TODO: \Static fields
+ // TODO: Static fields
  //       Preserve variant fields after a call!!!!!!!!!!!!
 public struct VadType(T, ARGS...)
     if (hasChildren!T)
@@ -376,7 +377,9 @@ public struct VadType(T, ARGS...)
      *  Contents of this VadType as `X` in its original layout.
      */
     X as(X)() const => this.conv!X;
-    mixin(functionMap!(T, true));
+    // idgaf, this is just so local/voldemort types don't get pissy
+    static if (__traits(compiles, { mixin(functionMap!(T, true)); }))
+        mixin(functionMap!(T, true));
 }
 
 unittest
@@ -393,7 +396,7 @@ unittest
     modifiedPerson.age = 30;
     modifiedPerson.isStudent = false;
 
-    Person originalPerson = modifiedPerson.asOriginal();
+    Person originalPerson = modifiedPerson.as!Person();
 
     assert(modifiedPerson.name == "Bob");
     assert(modifiedPerson.age == 30);
@@ -405,11 +408,22 @@ unittest
 }
 
 /**
- * Very barebones implementation for nullable types. \
- * Does not support UFCS unfortunately.
+ * Wraps `T` to allow it to be defined as null. \
+ * This does not work for reference types, as they already have a null state.
+ *
+ * No, this is not actually an optional, it is literally backed by a pointer and thus *actually* nullable.
+ *
+ * Example:
+ * ```d
+ * Nullable!int b;
+ * writeln(b == null); // true
+ * b = 0;
+ * b += 2;
+ * writeln(b); // 2
+ * writeln(b == null); // false
+ * ```
  */
 public struct Nullable(T)
-    if (!isReferenceType!T)
 {
     T value;
     alias value this;
