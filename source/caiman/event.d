@@ -1,13 +1,17 @@
+/// Event subscription manager for arbitrary function pointers
 module caiman.event;
 
 import caiman.traits;
 import std.array;
 
+/// Event subscription manager for arbitrary function pointers
 public struct Event
 {
 public:
 final:
+    /// Current function pointer subscribed
     void* fn;
+    /// Debug only signature string
     debug string signature;
 
     auto subscribe(void* fn) => this ~= fn;

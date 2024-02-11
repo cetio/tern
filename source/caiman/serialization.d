@@ -1,3 +1,4 @@
+/// Utilities for serializing and deserializing arbitrary data types
 module caiman.serialization;
 
 public:

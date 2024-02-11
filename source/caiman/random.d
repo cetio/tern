@@ -10,8 +10,8 @@ import caiman.traits;
  * Params:
  *  max = Maximum odds, this is what the chance is out of.
  */
-public alias randomBool(uint max, uint seed = uint.max, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__) 
-    = Alias!(random!(uint, 0, max, seed, r0, r1, r2, r3, r4) == 0);
+public alias randomBool(uint max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
+    = Alias!(random!(uint, 0, max, seed, R0, R1, R2, R3) == 0);
 
 /** 
  * Generates a random floating point value.
@@ -21,12 +21,12 @@ public alias randomBool(uint max, uint seed = uint.max, uint r0 = __LINE__, stri
  *  max = Maximum value.
  *  seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
  */
-public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__) 
+public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
     if (is(T == float) || is(T == double))
 {
     public pure T random()
     {
-        return random!(ulong, cast(ulong)(min * cast(T)1000), cast(ulong)(max * cast(T)1000), seed, r0, r1, r2, r3, r4) / cast(T)1000;
+        return random!(ulong, cast(ulong)(min * cast(T)1000), cast(ulong)(max * cast(T)1000), seed, R0, R1, R2, R3) / cast(T)1000;
     }
 }
 
@@ -38,7 +38,7 @@ public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__
  *  max = Maximum value.
  *  seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
  */
-public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)
+public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
     if (isIntegral!T)
 {
     public pure T random()
@@ -46,16 +46,16 @@ public template random(T, T min, T max, uint seed = uint.max, uint r0 = __LINE__
         static if (min == max)
             return min;
 
-        ulong s0 = (seed * r0) || 1;
-        ulong s1 = (seed * r0) || 1;
-        ulong s2 = (seed * r0) || 1;
+        ulong s0 = (seed * R0) || 1;
+        ulong s1 = (seed * R0) || 1;
+        ulong s2 = (seed * R0) || 1;
         
-        static foreach (c; r1)
-            s0 *= (c * (r0 ^ seed)) || 1;
-        static foreach (c; r2)
-            s1 *= (c * (r0 - seed)) || 1;
-        static foreach (c; r3)
-            s2 *= (c * (r0 ^ seed)) || 1;
+        static foreach (c; R1)
+            s0 *= (c * (R0 ^ seed)) || 1;
+        static foreach (c; R2)
+            s1 *= (c * (R0 - seed)) || 1;
+        static foreach (c; R3)
+            s2 *= (c * (R0 ^ seed)) || 1;
         
         ulong o = s0 + s1 + s2;
         return min + (cast(T)o % (max - min));

@@ -54,7 +54,7 @@ public alias isImplement(A, B) = Alias!(seqContains!(B, Implements!A));
 /// Gets an alias to the package in which `A` is defined, undefined behavior for any alias that does not have a package (any intrinsic type.)
 public alias getPackage(alias A) = Alias!(mixin(fullyQualifiedName!A.indexOf('.') == -1 ? fullyQualifiedName!A : fullyQualifiedName!A[0..fullyQualifiedName!A.indexOf('.')]));
 /// True if `A` is not D implementation defined.
-public alias isOrganic(alias A) = Alias!(isDImplDefined!A);
+public alias isOrganic(alias A) = Alias!(!isDImplDefined!A);
 /// True if `F` is a constructor;
 public alias isConstructor(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("__ctor") || __traits(identifier, F).startsWith("_staticCtor")));
 /// True if `F` is a destructor.
@@ -94,6 +94,24 @@ public template wrapsIndirection(T)
         enum wrapsIndirection = hasIndirections!T && __traits(allMembers, T).length <= 2 && !isArray!(typeof(__traits(allMembers, T)[0])) && !isArray!(typeof(__traits(allMembers, T)[1]));
     else
         enum wrapsIndirection = isArray!T;
+}
+
+/// Gets an all default arguments for `T` as a mixin (`void[]` for types or variadic)
+public template TemplateDefaults(alias T)
+    if (isTemplate!T)
+{
+    enum TemplateDefaults =
+    {
+        string ret;
+        static foreach (arg; T.stringof[(T.stringof.indexOf('(') + 1)..T.stringof.indexOf(')')].split(", "))
+        {
+            static if (arg.split(' ').length == 1)
+                ret ~= "void[]";
+            else
+                ret ~= arg.split(' ')[0]~".init";
+        }
+        return ret;
+    }();
 }
 
 /// Gets the type of member `MEMBER` in `A` \
@@ -335,6 +353,7 @@ pure void*[] indirections(T)(T val)
  *  `nothrow`, `pure`, and `const` attributes are discarded. \
  *  `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
  */
+ // TODO: typeof(this) attributes (ie: shared)
 public template functionMap(T, bool mapOperators = false)
     if (hasChildren!T)
 {
@@ -349,13 +368,13 @@ public template functionMap(T, bool mapOperators = false)
                     str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
                         import caiman.conv;
                         auto orig = as!("~fullyQualifiedName!T~"); 
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         orig."~FunctionCallableSignature!(TypeOf!(T, func))~";  }\n");
                 else
                     str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
                         import caiman.conv;
                         auto orig = as!("~fullyQualifiedName!T~"); 
-                        scope (exit) this.assign(orig.conv!(typeof(this))); 
+                        scope (exit) this.blit(orig.conv!(typeof(this))); 
                         return orig."~FunctionCallableSignature!(TypeOf!(T, func))~"; }\n");
             }
         }
@@ -364,21 +383,21 @@ public template functionMap(T, bool mapOperators = false)
             str ~= "public auto opOpAssign(string op, ORASS)(ORASS rhs)
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opOpAssign!op(rhs);
                 }
 
                 public auto opBinary(string op, ORASS)(const ORASS rhs)
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opBinary!op(rhs);
                 }
 
                 public auto opBinaryRight(string op, OLASS)(const OLASS lhs)
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opBinaryRight!op(lhs);
                 }
                 
@@ -387,7 +406,7 @@ public template functionMap(T, bool mapOperators = false)
                     public override int opCmp(Object other)
                     {
                         auto orig = as!("~fullyQualifiedName!T~");
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         return orig.opCmp(other);
                     }
                 }
@@ -396,14 +415,14 @@ public template functionMap(T, bool mapOperators = false)
                     public int opCmp(ORCMP)(const ORCMP other)
                     {
                         auto orig = as!("~fullyQualifiedName!T~");
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         return orig.opCmp(other);
                     }
 
                     public int opCmp(Object other)
                     {
                         auto orig = as!("~fullyQualifiedName!T~");
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         return orig.opCmp(other);
                     }
                 }
@@ -413,7 +432,7 @@ public template functionMap(T, bool mapOperators = false)
                     public override bool opEquals(Object other) 
                     {
                         auto orig = as!("~fullyQualifiedName!T~");
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         return orig.opEquals(other);
                     }
                 }
@@ -422,14 +441,14 @@ public template functionMap(T, bool mapOperators = false)
                     public bool opEquals(OREQ)(const OREQ other)
                     {
                         auto orig = as!("~fullyQualifiedName!T~");
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         return orig.opEquals(other);
                     }
 
                     public bool opEquals(Object other) 
                     {
                         auto orig = as!("~fullyQualifiedName!T~");
-                        scope (exit) this.assign(orig.conv!(typeof(this)));
+                        scope (exit) this.blit(orig.conv!(typeof(this)));
                         return orig.opEquals(other);
                     }
                 }
@@ -437,63 +456,63 @@ public template functionMap(T, bool mapOperators = false)
                 public auto opIndexAssign(OTIASS)(OTIASS value, size_t index) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opIndexAssign(value, index);
                 }
 
                 public auto opIndexOpAssign(string op, OTIASS)(OTIASS value, size_t index) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opIndexOpAssign!op(value, index);
                 }
 
                 public auto opIndexUnary(string op)(size_t index) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opIndexUnary(index);
                 }
 
                 public auto opSliceAssign(OTSASS)(OTSASS value, size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opSliceAssign(value, start, end);
                 }
 
                 public auto opSlice(size_t DIM = 0)(size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opSlice!DIM(start, end);
                 }
 
                 public auto opSliceAssign(size_t dim = 0, OTSASS)(OTSASS value, size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opSliceAssign!DIM(value, start, end);
                 }
 
                 public auto opSliceOpAssign(string op, OTSASS)(OTSASS value, size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opSliceAssign!op(value, start, end);
                 }
 
                 public auto opSliceUnary(string op)(size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opSliceUnary!op(start, end);
                 }
 
                 public auto opUnary(string op)()
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
-                    scope (exit) this.assign(orig.conv!(typeof(this)));
+                    scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opUnary!op();
                 }";
         return str;

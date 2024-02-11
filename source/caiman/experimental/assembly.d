@@ -133,15 +133,16 @@ public struct REFERENCE { ubyte[33] bytes; }
 /// Struct to act as an inout, reference with special treatment by `mov`
 public struct INOUT { ubyte[33] bytes; }
 
+public:
+static:
+pure:
 /** 
-    Creates a mixin for preparing the stack for `COUNT` arguments.
-
-    Params:
-       COUNT = The number of arguments to prepare for.
-
-    Returns: Mixin
-*/
-pure string prep(uint COUNT)()
+ * Creates a mixin for preparing the stack for `COUNT` arguments.
+ *
+ * Params:
+ *  COUNT = The number of arguments to prepare for.
+ */
+string prep(uint COUNT)()
 {
     version (Windows)
     {
@@ -156,14 +157,12 @@ pure string prep(uint COUNT)()
 }
 
 /** 
-    Creates a mixin for restoring the stack after a call with `COUNT` arguments.
-
-    Params:
-       COUNT = The number of arguments to restore for.
-
-    Returns: Mixin
-*/
-pure string rest(uint COUNT)()
+ * Creates a mixin for restoring the stack after a call with `COUNT` arguments.
+ *
+ * Params:
+ *  COUNT = The number of arguments to restore for.
+ */
+string rest(uint COUNT)()
 {
     version (Windows)
     {
@@ -179,26 +178,26 @@ pure string rest(uint COUNT)()
 
 shared ubyte[8] movBuff;
 /** 
-    All chained uses of mov must be enclosed in a scope using `{..}` \
-    Failure to do this will result in registers being overwritten by other movs, as this template uses `scope (exit)` for inline asm!
-
-    Does not automatically prepare the stack for you, and R10, R11, R12 & XMM8 are used as scratch registers. \
-    Use `prep!(uint)` to prepare the stack and rest!(uint) to restore the stack.
-
-    Params:
-       ID = Register (or argument index) to put `VAR` into.
-       VAR = Value to put into `ID`
-       AS = Type to emulate `VAR` as, defaults to void for the same type as `VAR` is.
-       LINE = Used for preventing collisions when storing high/low of `VAR`. Change to a different value if getting errors.
-
-    Example:
-        ```d
-        {
-            mixin(mov!(rax, a));
-            mixin(mov!(rbx, b));
-            mixin(mov!(rcx, a, void, true));
-        }
-        ```
+ * All chained uses of mov must be enclosed in a scope using `{..}` \
+ * Failure to do this will result in registers being overwritten by other movs, as this template uses `scope (exit)` for inline asm!
+ *
+ * Does not automatically prepare the stack for you, and R10, R11, R12 & XMM8 are used as scratch registers. \
+ * Use `prep!(uint)` to prepare the stack and rest!(uint) to restore the stack.
+ *
+ * Params:
+ *  ID = Register (or argument index) to put `VAR` into.
+ *  VAR = Value to put into `ID`
+ *  AS = Type to emulate `VAR` as, defaults to void for the same type as `VAR` is.
+ *  _LINE = Used for preventing collisions when storing high/low of `VAR`. Change to a different value if getting errors.
+ *
+ * Example:
+ *  ```d
+ *  {
+ *      mixin(mov!(rax, a));
+ *      mixin(mov!(rbx, b));
+ *      mixin(mov!(rcx, a, void, true));
+ * }
+ * ```
 */
 // TODO: isOverflow!T
 //       Fix stack arguments
@@ -353,7 +352,7 @@ public template mov(uint ID, alias VAR, AS = void, uint _LINE = __LINE__)
 }
 
 /// ditto
-/// Precision past 2 decimals is lost if `T` is a floating point.
+// Precision past 2 decimals is lost if `T` is a floating point.
 public template mov(uint ID, T, T val, AS = void, uint _LINE = __LINE__)
 {
     immutable string LINE = _LINE.to!string;

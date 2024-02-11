@@ -1,3 +1,4 @@
+/// Comptime and runtime Regex that matches fast and builds even faster
 module caiman.regex;
 
 import caiman.regex.builder;

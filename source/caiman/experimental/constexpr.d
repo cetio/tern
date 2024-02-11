@@ -1,51 +1,61 @@
-/**
- * Thin wrapper around `caiman.experimental.ds_allocator` that allows for allocating a dynamic array in the data segment. \
- * Provides all normal behavior of dynamic arrays.
- */
-module caiman.experimental.ds_array;
+/// Thin wrapper around `caiman.experimental.ds_allocator` that allows for allocating a type in the data segment.
+module caiman.experimental.constexpr;
 
 import caiman.experimental.ds_allocator;
+import caiman.traits;
 import std.conv;
 
-/**
- * Thin wrapper around `caiman.experimental.ds_allocator` that allows for allocating a dynamic array in the data segment. \
- * Provides all normal behavior of dynamic arrays.
+/// Allocates `T` in the data segment when `T` is *not* a dynamic array, this is used identically to `T` normally.
+public struct constexpr(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
+    if (!isDynamicArray!T)
+{
+    T value = dsNew!(T, R0, R1, R2, R3);
+    alias value this;
+}
+
+/** 
+ * Allocates `T` in the data segment when `T` is a dynamic array, this is used identically to `T` normally.
+ *
+ * Remarks:
+ *  Does not provide an initializer, must reserve initially.
  */
-public struct DSArray(T)
+public struct constexpr(T : U[], U)
+    if (isDynamicArray!T)
 {
 private:
 final:
-    T[] arr;
+    T arr;
 
 public:
+final:
     string toString() const
     {
         return arr.to!string;
     }
 
 @nogc:
-    void reserve(uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(ptrdiff_t length)
+    void reserve(uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)(ptrdiff_t length)
     {
         if (arr is null)
-            arr = dsNew!(T[], r0, r1, r2, r3, r4)(length);
+            arr = dsNew!(T, R0, R1, R2, R3)(length);
         else
             dsResize(arr, length);
     }
 
     size_t length() const => arr.length;
-    const(T)* ptr() const => arr.ptr;
+    const(U)* ptr() const => arr.ptr;
 
     bool empty()
     {
         return length == 0;
     }
 
-    T opIndex(size_t index) const
+    U opIndex(size_t index) const
     {
         return arr[index];
     }
 
-    ref T opIndex(size_t index)
+    ref U opIndex(size_t index)
     {
         return arr[index];
     }
@@ -60,7 +70,7 @@ public:
         return arr[from..to];
     }
 
-    void opSliceAssign(T[] slice, size_t from, size_t to)
+    void opSliceAssign(T slice, size_t from, size_t to)
     {
         import std.stdio;
         arr[from..to] = slice;
@@ -71,7 +81,7 @@ public:
         return arr.length;
     }
 
-    T[] opDollar(string op)() const
+    T opDollar(string op)() const
     {
         static if (op == "front")
             return arr[0 .. 1];
@@ -81,12 +91,18 @@ public:
             static assert(0, "Unknown opDollar operation");
     }
 
-    T front() const
+    ref auto opAssign(T)(T val)
+    {
+        arr = val;
+        return this;
+    }
+
+    U front() const
     {
         return arr[0];
     }
 
-    T back() const
+    U back() const
     {
         return arr[$-1];
     }
@@ -103,26 +119,21 @@ public:
             dsResize(arr, arr.length - 1);
     }
 
-    T opOpAssign(string op, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(T val) 
+    U opOpAssign(string op, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)(U val)
         if (op == "~") 
     {
         if (arr is null)
-            arr = dsNew!(T[], r0, r1, r2, r3, r4)(1);
+            arr = dsNew!(T, R0, R1, R2, R3)(1);
         else
             dsResize(arr, arr.length + 1);
         arr[$-1] = val;
         return val;
     }
-
-    ~this()
-    {
-        destroy(arr);
-    }
 }
 
 unittest 
 {
-    DSArray!int dsArray;
+    constexpr!(int[]) dsArray;
     dsArray.reserve(5);
 
     assert(dsArray.length == 5);

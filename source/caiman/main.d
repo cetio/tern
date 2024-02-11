@@ -5,6 +5,7 @@ import std.stdio;
 import std.meta;
 import std.algorithm;
 import std.traits;
+import std.array;
 
 public class A
 {
@@ -29,15 +30,12 @@ public struct D
     void test() => writeln(a);
 }
 
-void f()
-{
-    writeln("guh");
-}
-
 void main()
 {
-    Nullable!C b;
-    writeln(b == null); // true
-    b = new C();
-    writeln(b == null); // false
+    /* Atomic!(Nullable!int) a;
+    a = 0;
+    writeln(a); */
+    Atomic!(Nullable!uint) a;
+    a = 1;
+    writeln(a > 0);
 }

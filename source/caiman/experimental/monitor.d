@@ -1,3 +1,4 @@
+/// Utility for creating/destroying the monitors of objects
 module caiman.experimental.monitor;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string;
@@ -123,4 +124,3 @@ void setMonitor(T)(T val, shared(Monitor)* m)
 {
     atomicStore!(MemoryOrder.rel)(val.monitor, m);
 }
-

@@ -12,7 +12,6 @@ static:
  * Allocates an entry of `size` 
  *
  * Params:
- *  threadSafe = Should this operation be thread safe? Default false.
  *  size = Size to be allocated.
  *
  * Returns:
@@ -24,7 +23,6 @@ static:
  * Allocates an entry of `size` and clears the entry.
  *
  * Params:
- *  threadSafe = Should this operation be thread safe? Default false.
  *  size = Size of the new entry.
  *
  * Returns:
@@ -37,7 +35,6 @@ static:
  * Tries to avoid actually doing a new allocation if possible.
  *
  * Params:
- *  threadSafe = Should this operation be thread safe? Default false.
  *  ptr = Pointer to entry to be reallocated.
  *  size = Size of the new entry.
  */
@@ -47,7 +44,6 @@ static:
  * Zeroes the entry pointed to by `ptr`
  *
  * Params:
- *  threadSafe = Should this operation be thread safe? Default false.
  *  ptr = Pointer to entry to be zeroed.
  */
 @trusted void wake(void* ptr) => caiman.experimental.heap_allocator.wake!true(ptr);
@@ -56,7 +52,6 @@ static:
  * Frees `ptr`, self explanatory.
  *
  * Params:
- *  threadSafe = Should this operation be thread safe? Default false.
  *  ptr = Pointer to entry to be freed.
  *
  * Returns:
@@ -68,7 +63,6 @@ static:
  * Clears and then frees `ptr` before allocating `ptr` as a new entry with `calloc`
  *
  * Params:
- *  threadSafe = Should this operation be thread safe? Default false.
  *  ptr = Pointer to entry to be exchanged.
  *  size = New size of `ptr`
  */

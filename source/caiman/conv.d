@@ -1,3 +1,4 @@
+/// Utilities for cloning, converting, and modifying types/data
 module caiman.conv;
 
 import caiman.traits;
@@ -293,11 +294,23 @@ pragma(inline)
     return val;
 }
 
-@trusted assign(T, F)(auto ref F rhs, T lhs)
+@trusted void blit(T, F)(auto ref F lhs, T rhs)
+    if ((!isIntrinsicType!F && !isIntrinsicType!T) || (isArray!T && isArray!F))
 {
-    static foreach (field; FieldNames!F)
+    static if (isArray!F && isArray!T)
     {
-        static if (hasMember!(T, field) && !isImmutable!(TypeOf!(T, field)) && !isImmutable!(TypeOf!(F, field)))
-            __traits(getMember, rhs, field) = cast(TypeOf!(F, field))__traits(getMember, lhs, field);
+        if (!rhs.length == lhs.length)
+            throw new Throwable("Cannot blit rhs to lhs when sizes do not match!");
+
+        foreach (i, u; rhs)
+            lhs[i] = u;
+    }
+    else
+    {
+        static foreach (field; FieldNames!F)
+        {
+            static if (hasMember!(T, field) && !isImmutable!(TypeOf!(T, field)) && !isImmutable!(TypeOf!(F, field)))
+                __traits(getMember, lhs, field) = cast(TypeOf!(F, field))__traits(getMember, rhs, field);
+        }
     }
 }

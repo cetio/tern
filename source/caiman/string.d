@@ -1,3 +1,4 @@
+/// Utilities for working with strings and characters of any encoding
 module caiman.string;
 
 import std.array;

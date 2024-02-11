@@ -1,10 +1,7 @@
 module caiman;
 
-/// Cryptography: aes, chacha20, fnv1, lon, mira
 public import caiman.crypto;
-/// Executable formats: PE, ELF, MACH-O
 public import caiman.exe;
-/// Experimental: ABI, allocator, duck-typing, inheritance, pool, stack
 public import caiman.experimental;
 public import caiman.regex;
 public import caiman.conv;
@@ -21,4 +18,5 @@ public import caiman.state;
 public import caiman.stream;
 public import caiman.string;
 public import caiman.traits;
+public import caiman.typeblit;
 public import caiman.typecons;

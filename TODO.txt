@@ -1,4 +1,10 @@
 caiman.exe
 caiman.crypto
-caiman.inheritance
+caiman.typecons
+caiman.serialization
+caiman.file
+caiman.string
+caiman.atomic
+caiman.dataframe
+caiman.experimental.constexpr
 unittests!!!!!!!!!!!!

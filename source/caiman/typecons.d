@@ -1,37 +1,21 @@
+/// General-purpose types and constructions for interacting with types and enums
 module caiman.typecons;
 
-import std.string;
-import std.array;
-import std.ascii;
-import std.algorithm;
 import caiman.conv;
 import caiman.traits;
 import caiman.meta;
+import core.atomic;
+import core.sync.mutex;
 
-/// Attribute signifying an enum uses flags
-public enum flags;
-/// Attribute signifying an enum should not have properties made
-public enum exempt;
-
-public static pure string mangle(string str) 
-{
-    size_t idx = str.lastIndexOf('.');
-    if (idx != -1)
-        str = str[(idx + 1)..$];
-    str = str.replace("*", "PTR")
-        .replace("[", "OPBRK")
-        .replace("]", "CLBRK")
-        .replace(",", "COMMA")
-        .replace("!", "EXCLM");
-    return str.filter!(c => isAlphaNum(c) || c == '_').array.to!string;
-}
-
+/** 
+ * Implements all functions of an abstract class with an default/empty function.
+ */
 public class BlackHole(T)
     if (isAbstractClass!T)
 {
     mixin(fullyQualifiedName!T~" val;
     alias val this;");
-    static foreach (func; FunctionNames!T[0..$-5])
+    static foreach (func; FunctionNames!T)
     {
         static if (isAbstractFunction!(__traits(getMember, T, func)))
         {
@@ -48,7 +32,11 @@ public class BlackHole(T)
     }
 }
 
+/** 
+ * Implements all functions of an abstract class with an assert trap.
+ */
 public class WhiteHole(T)
+    if (isAbstractClass!T)
 {
     mixin(fullyQualifiedName!T~" val;
     alias val this;");
@@ -60,208 +48,14 @@ public class WhiteHole(T)
 }
 
 /** 
- * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type. \
- * This is an attribute and should be used like `@inherit!T`
- *
- *  Example:
- *  ```d
- *  struct A {int b; int x() => b; }
- *
- *  interface B { string y(); }
- *
- *  @inherit!A @inherit!B struct C 
- *  {
- *   mixin apply;
- *
- *   string y() => "yohoho!";
- *  }
- *  ```
- */
-public template inherit(T)
-    if (hasChildren!T)
-{
-    alias inherit = T;
-}
-
-/** 
- * Sets up all inherits for the type that mixes this in. \
- * Must set inherited types by using `inherit(T)` beforehand.
- *
- *  Example:
- *  ```d
- *  struct A {int b; int x() => b; }
- *
- *  interface B { string y(); }
- *
- *  @inherit!A @inherit!B struct C 
- *  {
- *   mixin applyInherits;
- *
- *   string y() => "yohoho!";
- *  }
- *  ```
- */
-// TODO: Use opDispatch to allow for multiple class/struct inherits
-//       Find a faster way to do this, do not regenerate every call
-//       Apply changes on parent to self
-public template applyInherits()
-{
-    static foreach (i, A; seqFilter!(isType, __traits(getAttributes, typeof(this))))
-    {
-        static assert(!hasModifiers!A, "Type with modifier cannot inherit from another type, must be a normal aggregate.");
-        
-        static foreach (field; FieldNames!A)
-        {
-            static if (hasParents!(TypeOf!(A, field)))
-                mixin("import "~moduleName!(TypeOf!(A, field)));
-
-            static if (!hasMember!(typeof(this), field) && (seqFilter!("isType!X && hasMember!(X, \""~field~"\")", __traits(getAttributes, typeof(this))).length == 0 ||
-                is(seqFilter!("isType!X && hasMember!(X, \""~field~"\")", __traits(getAttributes, typeof(this)))[0] == A)))
-                mixin(FieldSignature!(__traits(getMember, A, field))~';');
-            else
-            {
-                static assert(is(TypeOf!(typeof(this), field) == TypeOf!(A, field)), "Type mismatch of "~typeof(this).stringof~"."~field~" and inherited "~A.stringof~"."~field);
-                static assert(isImmutable!(__traits(getMember, typeof(this), field)) && !isImmutable!(__traits(getMember, A, field)), "Mutability mismatch of "~typeof(this).stringof~"."~field~" and inherited "~A.stringof~"."~field);
-                static assert(isStatic!(__traits(getMember, typeof(this), field)) == isStatic!(__traits(getMember, A, field)), "Static mismatch of "~typeof(this).stringof~"."~field~" and inherited "~A.stringof~"."~field);
-            }
-        }
-
-        static foreach (func; FunctionNames!A)
-        {
-            static if (hasParents!(ReturnType!(TypeOf!(A, func))))
-                mixin("import "~moduleName!(ReturnType!(TypeOf!(A, func)))~';'); 
-        }
-
-        mixin("X as(X : "~fullyQualifiedName!A~")() const => this.conv!X;");
-        mixin(functionMap!(A, i == 0));
-    }
-}
-
-/* unittest
-{
-    struct A
-    {
-        int b;
-
-        int x() => b;
-    }
-
-    interface B
-    {
-        string y();
-    }
-
-    @inherit!A @inherit!B struct C
-    {
-        mixin apply;
-
-        string y() => "yohoho!";
-    }
-
-    C c;
-    c.b = 2;
-    assert(c.x() == 2);
-    assert(c.y() == "yohoho!");
-} */
-
-/// Template mixin for auto-generating properties. \
-/// Assumes standardized prefixes! (m_ for backing fields, k for masked enum values) \
-/// Assumes standardized postfixes! (MASK or Mask for masks) \
-// TODO: Overloads (allow devs to write specifically a get/set and have the counterpart auto generated)
-//       ~Bitfield exemption?~
-//       Conditional get/sets? (check flag -> return a default) (default attribute?)
-//       Flag get/sets from pre-existing get/sets (see methodtable.d relatedTypeKind)
-//       Auto import types (generics!!)
-//       Allow for indiv. get/sets without needing both declared
-//       Clean up with caiman.meta
-/// Does not support multiple fields with the same enum type!
-public template accessors()
-{
-    import std.traits;
-    import std.string;
-    import std.meta;
-
-    static foreach (string member; __traits(allMembers, typeof(this)))
-    {
-        static if (member.startsWith("m_") && !__traits(compiles, { enum _ = mixin(member); }) &&
-            isMutable!(TypeOf!(typeof(this), member)) &&
-            (isFunction!(__traits(getMember, typeof(this), member)) || staticIndexOf!(exempt, __traits(getAttributes, __traits(getMember, typeof(this), member))) == -1))
-        {
-            static if (!__traits(hasMember, typeof(this), member[2..$]))
-            {
-                static if (!__traits(hasMember, typeof(this), member[2..$]))
-                {
-                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_"~member[2..$]~"_get\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"() { return "~member~"; }");
-                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_"~member[2..$]~"_set\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"("~fullyQualifiedName!(TypeOf!(typeof(this), member))~" val) { "~member~" = val; return "~member~"; }");
-                }
-
-                // Flags
-                static if (is(TypeOf!(typeof(this), member) == enum) &&
-                    !seqContains!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) &&
-                    seqContains!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))))
-                {
-                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
-                    {
-                        static if (flag.startsWith('k'))
-                        {
-                            static foreach_reverse (string mask; __traits(allMembers, TypeOf!(this, member))[0..staticIndexOf!(flag, __traits(allMembers, TypeOf!(this, member)))])
-                            {
-                                static if (mask.endsWith("Mask") || mask.endsWith("MASK"))
-                                {
-                                    static if (!__traits(hasMember, typeof(this), "is"~flag[1..$]))
-                                    {
-                                        // @property bool isEastern()...
-                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag[1..$]~"_get\") extern (C) export final @property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                                        // @property bool isEastern(bool state)...
-                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag[1..$]~"get\") extern (C) export final @property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~")) == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                                    }
-                                }
-
-                            }
-                        }
-                        else
-                        {  
-                            static if (!__traits(hasMember, typeof(this), "is"~flag))
-                            {
-                                // @property bool isEastern()...
-                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") != 0; }");
-                                // @property bool isEastern(bool state)...
-                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"))) != 0; }");
-                            }
-                        }
-                    }
-                }
-
-                // Non-flags
-                static if (is(TypeOf!(typeof(this), member) == enum) &&
-                    !seqContains!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) &&
-                    !seqContains!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))))
-                {
-                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
-                    {
-                        static if (!__traits(hasMember, typeof(this), "is"~flag))
-                        {
-                            // @property bool Eastern()...
-                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                            // @property bool Eastern(bool state)...
-                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** 
  * Wraps a type with modified or optional fields. \
  * Short for VariadicType.
  *
  * Remarks:
- * - Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
- * - Accepts syntax `VadType!A(TYPE, NAME, CONDITION...)` or `VadType!A(TYPE, NAME...)` interchangably.
- * - Use `VadType.as!T` to extract `T` in the original layout.
- * - Does not support functions for local/voldemort types.
+ *  Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
+ *  Accepts syntax `VadType!A(TYPE, NAME, CONDITION...)` or `VadType!A(TYPE, NAME...)` interchangably.
+ *  Use `VadType.as!T` to extract `T` in the original layout.
+ *  Does not support functions for local/voldemort types.
  * 
  * Example:
  * ```d
@@ -409,9 +203,12 @@ unittest
 
 /**
  * Wraps `T` to allow it to be defined as null. \
- * This does not work for reference types, as they already have a null state.
- *
  * No, this is not actually an optional, it is literally backed by a pointer and thus *actually* nullable.
+ *
+ * Remarks: 
+ *  This does not work for reference types, as they already have a null state.
+ *  `opOpAssign` is not supported for fields of `T`
+ *  const Nullable(T) is not supported, but shared Nullable(T) is.
  *
  * Example:
  * ```d
@@ -438,9 +235,16 @@ final:
         ptr = &value;
     }
 
-    auto opAssign(R)(R val)
+    auto opAssign(R)(R ahs)
     {
-        value = val;
+        value = ahs;
+        ptr = &value;
+        return this;
+    }
+
+    auto opAssign(R)(R ahs) shared
+    {
+        value = ahs;
         ptr = &value;
         return this;
     }
@@ -453,43 +257,122 @@ final:
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
 
-        mixin("return Nullable!T("~op~"value);");
+        return mixin("Nullable!T("~op~"value)");
     }
 
-    auto opEquals(R)(R val) const
+    auto opUnary(string op)() shared
+    {
+        static if (op.length == 2)
+            ptr = &value;
+
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        return mixin("Nullable!T("~op~"value)");
+    }
+
+    auto opEquals(A)(A ahs) const
     {
         alias N = typeof(null);
         static if (is(R == N))
             return ptr == null;
         else
-            return value == val;
+            return value == ahs;
     }
 
-    public auto opOpAssign(string op, ORASS)(ORASS rhs)
+    auto opEquals(A)(A ahs) const shared
+    {
+        alias N = typeof(null);
+        static if (is(R == N))
+            return ptr == null;
+        else
+            return value == ahs;
+    }
+
+    int opCmp(R)(const R other) const
     {
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
 
-        mixin("return Nullable!T(value "~op~"= rhs);");
+        static if (isScalarType!T)
+            return cast(int)(value - other);
+        else
+            return mixin("value.opCmp(other)");
     }
 
-    auto opBinary(string op, ORASS)(const ORASS rhs)
+    int opCmp(R)(const R other) const shared
     {
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
 
-        mixin("return Nullable!T(value "~op~" rhs);");
+        static if (isScalarType!T)
+            return cast(int)(value - other);
+        else
+            return mixin("value.opCmp(other)");
     }
 
-    auto opBinaryRight(string op, OLASS)(const OLASS lhs)
+    auto opOpAssign(string op, R)(R rhs)
     {
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
 
-        mixin("return Nullable!T(lhs "~op~" value);");
+        mixin("value "~op~"= rhs;");
+        return this;
+    }
+
+    auto opOpAssign(string op, R)(R rhs) shared
+    {
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        mixin("value "~op~"= rhs;");
+        return this;
+    }
+
+    auto opBinary(string op, R)(const R rhs)
+    {
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        return mixin("Nullable!T(value "~op~" rhs)");
+    }
+
+    auto opBinary(string op, R)(const R rhs) shared
+    {
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        return mixin("Nullable!T(value "~op~" rhs)");
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs)
+    {
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        return mixin("Nullable!T(lhs "~op~" value);");
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs) shared
+    {
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        return mixin("Nullable!T(lhs "~op~" value);");
     }
 
     auto opDispatch(string member, ARGS...)(ARGS args)
+    {
+        if (ptr == null)
+            throw new Throwable("Null object reference T.T");
+
+        static if (seqContains!(member, FieldNames!T))
+            mixin("return value."~member~" = args[0];");
+        else static if (seqContains!(member, FunctionNames!T))
+            mixin("return value."~member~"(args);");
+    }
+
+    auto opDispatch(string member, ARGS...)(ARGS args) shared
     {
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
@@ -504,6 +387,159 @@ final:
     {
         if (ptr == null)
             return "null";
+
+        return value.to!string;
+    }
+}
+
+/**
+ * Wraps `T` to make every opteration atomic, if possible.
+ *
+ * Remarks:
+ *  `opOpAssign` is not supported for fields of `T`
+ */
+public struct Atomic(T, bool MUTEXLOAD = false, MemoryOrder M = MemoryOrder.seq)
+{
+    shared T value;
+    alias value this;
+
+public:
+final:
+    shared Mutex mutex;
+
+    auto opAssign(R)(R ahs)
+    {
+        static if (isScalarType!T)
+            value.atomicStore!M(ahs);
+        else
+        {
+            mixin("if (mutex is null)
+                    mutex = new shared Mutex();
+                mutex.lock();
+                scope (exit) mutex.unlock();
+                value = ahs;");
+        }
+        return this;
+    }
+
+    auto opUnary(string op)()
+    {
+        static if (isScalarType!T)
+            return mixin("Atomic!(T, MUTEXLOAD, M)("~op~"value.atomicLoad!M())");
+        else
+        {
+            mixin("if (mutex is null)
+                    mutex = new shared Mutex();
+                mutex.lock();
+                scope (exit) mutex.unlock();
+                auto _value = "~op~"(cast(T)value);
+                return Atomic!(T, MUTEXLOAD, M)(cast(shared(T))_value);");
+        }
+    }
+
+    static if (isScalarType!T)
+    auto opEquals(A)(A ahs) const
+    {
+        return mixin("value.atomicLoad!M() == ahs");
+    }
+
+    static if (!isScalarType!T)
+    auto opEquals(A)(A ahs)
+    {
+        mixin("if (mutex is null)
+                mutex = new shared Mutex();
+            mutex.lock();
+            scope (exit) mutex.unlock();
+            return value == ahs;");
+    }
+
+    static if (isScalarType!T)
+    int opCmp(R)(const R other) const
+    {
+        return cast(int)(value.atomicLoad() - other);
+    }
+
+    static if (!isScalarType!T)
+    int opCmp(R)(const R other)
+    {
+        mixin("if (mutex is null)
+                mutex = new shared Mutex();
+            mutex.lock();
+            scope (exit) mutex.unlock();
+            return value.opCmp(other);");
+    }
+
+    public auto opOpAssign(string op, R)(R rhs)
+    {
+        static if (isScalarType!T)
+            value.atomicOp!(M, op~'=')(rhs);
+        else
+        {
+            mixin("if (mutex is null)
+                    mutex = new shared Mutex();
+                mutex.lock();
+                scope (exit) mutex.unlock();
+                auto _value = cast(T)value "~op~" rhs;
+                return Atomic!(T, MUTEXLOAD, M)(cast(shared(T))_value);");
+        }
+    }
+
+    auto opBinary(string op, R)(const R rhs)
+    {
+        static if (isScalarType!T)
+            return mixin("Atomic!(T, MUTEXLOAD, M)(value.atomicLoad!M() "~op~" rhs)");
+        else
+        {
+            mixin("if (mutex is null)
+                    mutex = new shared Mutex();
+                mutex.lock();
+                scope (exit) mutex.unlock();
+                auto _value = cast(T)value "~op~" rhs;
+                return Atomic!(T, MUTEXLOAD, M)(cast(shared(T))_value);");
+        }
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs)
+    {
+        static if (isScalarType!T)
+            return mixin("Atomic!(T, MUTEXLOAD, M)(cast(shared(T))(lhs "~op~" value.atomicLoad!M()))");
+        else
+        {
+            mixin("if (mutex is null)
+                    mutex = new shared Mutex();
+                mutex.lock();
+                scope (exit) mutex.unlock();
+                auto _value = lhs "~op~" cast(T)value;
+                return Atomic!(T, MUTEXLOAD, M)(cast(shared(T))_value);");
+        }
+    }
+
+    auto opDispatch(string member, ARGS...)(ARGS args)
+    {
+        static if (seqContains!(member, FieldNames!T))
+        {
+            static if (MUTEXLOAD)
+            {
+                mixin("if (mutex is null)
+                        mutex = new shared Mutex();
+                    mutex.lock();
+                    scope (exit) mutex.unlock();
+                    return value."~member~" = args[0];");
+            }
+            else
+            {
+                mixin("auto _value = value.dup().atomicLoad!M();
+                    _value."~member~" = args[0];
+                    value.atomicStore!M(_value);
+                    return _value."~member~";");
+            }
+        }
+        else static if (seqContains!(member, FunctionNames!T))
+            mixin("return value.atomicLoad!M()."~member~"(args);");
+    }
+
+    string toString() const
+    {
         return value.to!string;
     }
 }

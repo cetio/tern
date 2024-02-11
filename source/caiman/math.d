@@ -1,3 +1,4 @@
+/// Simple math functions and expression simplifier
 module caiman.math;
 
 import std.algorithm;
@@ -6,11 +7,14 @@ import std.range;
 import std.conv;
 import std.ascii;
 
+public:
+static:
+pure:
 /**
  * Calculates the factorial of an integer.
  *
  * Params:
- *   n: Integer for which factorial is to be calculated.
+ *   n = Integer for which factorial is to be calculated.
  *
  * Returns:
  *   Factorial of the input integer.
@@ -19,9 +23,7 @@ ulong factorial(int n)
 {
     ulong result = 1;
     foreach (i; 2 .. n + 1)
-    {
         result *= i;
-    }
     return result;
 }
 
@@ -29,8 +31,8 @@ ulong factorial(int n)
  * Calculates the greatest common divisor (GCD) of two integers.
  *
  * Params:
- *   a: First integer.
- *   b: Second integer.
+ *   a = First integer.
+ *   b = Second integer.
  *
  * Returns:
  *   GCD of the two input integers.
@@ -50,8 +52,8 @@ int gcd(int a, int b)
  * Calculates the least common multiple (LCM) of two integers.
  *
  * Params:
- *   a: First integer.
- *   b: Second integer.
+ *   a = First integer.
+ *   b = Second integer.
  *
  * Returns:
  *   LCM of the two input integers.
@@ -62,25 +64,26 @@ int lcm(int a, int b)
 }
 
 /**
- * Aligns a number to another number using modulo.
+ * Aligns a number to another number upwards.
  *
  * Params:
- *   value: The value to be aligned.
- *   alignment: The alignment value.
+ *   value = The value to be aligned.
+ *   alignment = The alignment value.
  *
  * Returns:
  *   The aligned value.
  */
 int falign(int value, int alignment)
 {
-    return value - (value % alignment);
+    return value + (alignment - (value % alignment));
 }
 
 /**
  * Calculates the transpose of a matrix.
  *
  * Params:
- *   matrix: The matrix to be transposed.
+ *   matrix = The matrix to be transposed.
+ *
  * Returns:
  *   Transposed matrix.
  */

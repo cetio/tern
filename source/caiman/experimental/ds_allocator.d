@@ -40,12 +40,12 @@ static:
  * Returns:
  *  A new array of type `T`
  */
-T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)(ptrdiff_t length)
+T dsNew(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)(ptrdiff_t length)
     if (isDynamicArray!T)
 {
     enum elem = cast(ptrdiff_t)(ElementType!T.sizeof * 1.5) + (cast(ptrdiff_t)(ElementType!T.sizeof * 1.5) == 8 ? 0 : (ptrdiff_t.sizeof - (cast(ptrdiff_t)(ElementType!T.sizeof * 1.5) % ptrdiff_t.sizeof)));
     const ptrdiff_t size = elem * length + ptrdiff_t.sizeof;
-    mixin(generateCases!(random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3, r4)));
+    mixin(generateCases!(random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, R0, R1, R2, R3)));
 }
 
 /**
@@ -72,7 +72,7 @@ void dsResize(T : U[], U)(ref T arr, ptrdiff_t length)
     else
     {
         T tarr = dsNew!T(length);
-        copy(arr.ptr, tarr.ptr, size);
+        copy(cast(void*)arr.ptr, cast(void*)tarr.ptr, size);
         (cast(ptrdiff_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)tarr.ptr;
     }
@@ -104,7 +104,7 @@ void dsResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
     else
     {
         T tarr = dsNew!T(length);
-        copy(cast(void*)arr.ptr + offset, tarr.ptr, size);
+        copy(cast(void*)arr.ptr + offset, cast(void*)tarr.ptr, size);
         (cast(ptrdiff_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)tarr.ptr;
     }
@@ -125,20 +125,19 @@ void dsResizeBeneath(T : U[], U)(ref T arr, ptrdiff_t length)
  *   writeln(a); // caiman.main.B
  *   ```
  */
-T dsNew(T, uint r0 = __LINE__, string r1 = __TIMESTAMP__, string r2 = __FILE_FULL_PATH__, string r3 = __FUNCTION__, string r4 = __MODULE__)()
-    if (!is(T : U[], U))
+T dsNew(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)()
+    if (!isDynamicArray!T)
 {
     static if (!is(T == class))
     {
-        static if (hasCtor!T)
-            T ret = T(args);
+        static if (hasConstructor!T)
+            return T(args);
         else
-            T ret;
-        return ret;
+            return T.init;
     }
     else
     {
-        enum rand = random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, r0, r1, r2, r3, r4).to!string;
+        enum rand = random!(ptrdiff_t, 0, ptrdiff_t.max, uint.max, R0, R1, R2, R3).to!string;
         mixin("static ubyte[__traits(classInstanceSize, T)] bytes"~rand~";");
         foreach (field; FieldNames!T)
         {
