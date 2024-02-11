@@ -78,6 +78,15 @@ shared static this()
 public:
 static:
 @nogc:
+/** 
+ * Creates a monitor for `val`
+ *
+ * Params:
+ *  val = Value to create a monitor for.
+ *
+ * Returns: 
+ *  True if the monitor was successfully created.
+ */
 bool createMonitor(T)(ref T val)
     if (isAssignable!(T, Object))
 {
@@ -100,6 +109,12 @@ bool createMonitor(T)(ref T val)
     }
 }
 
+/** 
+ * Deletes the monitor `m`
+ *
+ * Params:
+ *  m = Pointer to the monitor to be deleted.
+ */
 void destroyMonitor(Monitor* m)
 {
     destroyMutex(&m.mtx);
@@ -113,12 +128,28 @@ pure:
     return *cast(shared Monitor**)&val.__monitor;
 }
 
+/** 
+ * Gets the monitor of `val`
+ *
+ * Params:
+ *  val = Value to get the monitor of.
+ *
+ * Returns: 
+ *  The monitor of `val`
+ */
 shared(Monitor)* getMonitor(T)(T val)
     if (isAssignable!(T, Object))
 {
     return atomicLoad!(MemoryOrder.acq)(val.monitor);
 }
 
+/** 
+ * Sets the monitor of `val`
+ *
+ * Params:
+ *  val = Value to set the monitor of.
+ *  m = The new monitor of `val`
+ */
 void setMonitor(T)(T val, shared(Monitor)* m)
     if (isAssignable!(T, Object))
 {

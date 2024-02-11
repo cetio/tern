@@ -3,7 +3,7 @@ module caiman.experimental.constexpr;
 
 import caiman.experimental.ds_allocator;
 import caiman.traits;
-import std.conv;
+import caiman.conv;
 
 /// Allocates `T` in the data segment when `T` is *not* a dynamic array, this is used identically to `T` normally.
 public struct constexpr(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
@@ -11,6 +11,36 @@ public struct constexpr(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string
 {
     T value = dsNew!(T, R0, R1, R2, R3);
     alias value this;
+
+public:
+final:
+    auto opAssign(T)(T ahs)
+    {
+        static if (isIntrinsicType!T && !isArray!T)
+            value = ahs;
+        else
+            value.blit(ahs);
+        return this;
+    }
+
+    auto opAssign(T)(T ahs) shared
+    {
+        static if (isIntrinsicType!T && !isArray!T)
+            value = ahs;
+        else
+            value.blit(ahs);
+        return this;
+    }
+
+    string toString() const
+    {
+        return value.to!string;
+    }
+
+    string toString() const shared
+    {
+        return value.to!string;
+    }
 }
 
 /** 

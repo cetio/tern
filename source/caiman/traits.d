@@ -134,6 +134,13 @@ public template ElementType(T)
         alias ElementType = OriginalType!T;
 }
 
+/// Gets the length of `T`, if applicable.
+public template Length(T) 
+{
+    static if (is(T U == U[L], ptrdiff_t L))
+        enum Length = L;
+}
+
 /** 
  * Gets the signature of `F` as a string. \
  * Initializers will be lost.

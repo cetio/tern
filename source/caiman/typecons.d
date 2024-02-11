@@ -205,8 +205,7 @@ unittest
  * Wraps `T` to allow it to be defined as null. \
  * No, this is not actually an optional, it is literally backed by a pointer and thus *actually* nullable.
  *
- * Remarks: 
- *  This does not work for reference types, as they already have a null state.
+ * Remarks:
  *  `opOpAssign` is not supported for fields of `T`
  *  const Nullable(T) is not supported, but shared Nullable(T) is.
  *
@@ -384,6 +383,14 @@ final:
     }
 
     string toString() const
+    {
+        if (ptr == null)
+            return "null";
+
+        return value.to!string;
+    }
+
+    string toString() const shared
     {
         if (ptr == null)
             return "null";

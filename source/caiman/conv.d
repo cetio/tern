@@ -295,7 +295,7 @@ pragma(inline)
 }
 
 @trusted void blit(T, F)(auto ref F lhs, T rhs)
-    if ((!isIntrinsicType!F && !isIntrinsicType!T) || (isArray!T && isArray!F))
+    if ((!isIntrinsicType!F && !isIntrinsicType!T) || (isArray!T && isArray!F && !isAssociativeArray!T))
 {
     static if (isArray!F && isArray!T)
     {
@@ -303,7 +303,7 @@ pragma(inline)
             throw new Throwable("Cannot blit rhs to lhs when sizes do not match!");
 
         foreach (i, u; rhs)
-            lhs[i] = u;
+            lhs[i] = cast(ElementType!F)u;
     }
     else
     {

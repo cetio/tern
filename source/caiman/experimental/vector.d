@@ -1,178 +1,180 @@
-/// SIMD (non-intrinsics) optimized for data encryption/copies
+/// Optimized non-intrinsic vector and matrix (by proxy)
 module caiman.experimental.vector;
 
-import std.traits;
-import caiman.memory;
 import core.simd;
+import caiman.traits;
+import caiman.conv;
 // TODO: Finish
 
-public alias byte16 = Vector128!byte;
-public alias ubyte16 = Vector128!ubyte;
-public alias short8 = Vector128!short;
-public alias ushort8 = Vector128!ushort;
-public alias int4 = Vector128!int;
-public alias uint4 = Vector128!uint;
-public alias long2 = Vector128!long;
-public alias ulong2 = Vector128!ulong;
-public alias float4 = Vector128!float;
-public alias double2 = Vector128!double;
-
-public struct Vector128(T)
-    if ((isIntegral!T || isFloatingPoint!T) && T.sizeof <= 8)
+public struct Vector(T)
+    if (is(T U : U[L], ptrdiff_t L) && (isIntegral!U || isFloatingPoint!U))
 {
-    static if (T.sizeof % 8 == 0)
-        T[2] data;
-    else static if (T.sizeof % 4 == 0)
-        T[4] data;
-    else static if (T.sizeof % 2 == 0)
-        T[8] data;
-    else
-        T[16] data;
-    alias data this;
-
-public:
-final:
-    Vector128!T opBinary(string op, V)(V val)
+    enum is256 = length * ElementType!T.sizeof > 16;
+    static if (is256)
     {
-        Vector128!T vec = this.ddup;
-        void* arr = vec.data.ptr;
-        static if (op == "+")
-        {
-            static if (is(V == byte) || is(V == ubyte))
-            {
-                asm 
-                {
-                    mov R10, arr;
-                    movdqa XMM0, [R10];
-                    pinsrb XMM1, val, 0;
-                    pinsrb XMM1, val, 1;
-                    pinsrb XMM1, val, 2;
-                    pinsrb XMM1, val, 3;
-                    pinsrb XMM1, val, 4;
-                    pinsrb XMM1, val, 5;
-                    pinsrb XMM1, val, 6;
-                    pinsrb XMM1, val, 7;
-                    pinsrb XMM1, val, 8;
-                    pinsrb XMM1, val, 9;
-                    pinsrb XMM1, val, 10;
-                    pinsrb XMM1, val, 11;
-                    pinsrb XMM1, val, 12;
-                    pinsrb XMM1, val, 13;
-                    pinsrb XMM1, val, 14;
-                    pinsrb XMM1, val, 15;
-                    addps XMM0, XMM1;
-                    movdqa [R10], XMM0;
-                }
-            }
-            else static if (is(V == short) || is(V == ushort))
-            {
-                asm 
-                {
-                    mov R10, arr;
-                    movdqa XMM0, [R10];
-                    pinsrw XMM1, val, 0;
-                    pinsrw XMM1, val, 1;
-                    pinsrw XMM1, val, 3;
-                    pinsrw XMM1, val, 4;
-                    pinsrw XMM1, val, 5;
-                    pinsrw XMM1, val, 6;
-                    pinsrw XMM1, val, 7;
-                    addps XMM0, XMM1;
-                    movdqa [R10], XMM0;
-                }
-            }
-            else static if (is(V == int) || is(V == uint))
-            {
-                asm 
-                {
-                    mov R10, arr;
-                    movdqa XMM0, [R10];
-                    pinsrd XMM1, val, 0;
-                    pinsrd XMM1, val, 1;
-                    pinsrd XMM1, val, 2;
-                    pinsrd XMM1, val, 3;
-                    addps XMM0, XMM1;
-                    movdqa [R10], XMM0;
-                }
-            }
-            else static if (is(V == long) || is(V == ulong))
-            {
-                asm 
-                {
-                    mov R10, arr;
-                    movdqa XMM0, [R10];
-                    pinsrq XMM1, val, 0;
-                    pinsrq XMM1, val, 1;
-                    addps XMM0, XMM1;
-                    movdqa [R10], XMM0;
-                }
-            }
-            else static if (is(V == core.simd.long2) || is(V == core.simd.ulong2))
-            {
-                void* dat = &val;
-                asm 
-                {
-                    mov R10, arr;
-                    mov R11, dat;
-                    movdqa XMM0, [R10];
-                    movdqa XMM1, [R11];
-                    addps XMM0, XMM1;
-                    movdqa [R10], XMM0;
-                }
-            }
-            else static if (is(V == long2) || is(V == ulong2))
-            {
-                void* dat = val.data.ptr;
-                asm 
-                {
-                    mov R10, arr;
-                    mov R11, dat;
-                    movdqa XMM0, [R10];
-                    movdqa XMM1, [R11];
-                    addps XMM0, XMM1;
-                    movdqa [R10], XMM0;
-                }
-            }
-        }
-        else static if (op == "^")
-        {
-            // XORPD
-        }
-        else static if (op == "<<")
-        {
-            // PSLLQ
-        }
-        else static if (op == ">>")
-        {
-            // PSRLQ
-        }
-        return vec;
+        static if (ElementType!T.sizeof % 8 == 0)
+            ElementType!T[4] data;
+        else static if (ElementType!T.sizeof % 4 == 0)
+            ElementType!T[8] data;
+        else static if (ElementType!T.sizeof % 2 == 0)
+            ElementType!T[16] data;
+        else
+            ElementType!T[32] data;
     }
-}
-
-public alias byte32 = Vector256!byte;
-public alias ubyte32 = Vector256!ubyte;
-public alias short16 = Vector256!short;
-public alias ushort16 = Vector256!ushort;
-public alias int8 = Vector256!int;
-public alias uint8 = Vector256!uint;
-public alias long4 = Vector256!long;
-public alias ulong4 = Vector256!ulong;
-public alias float8 = Vector256!float;
-public alias double4 = Vector256!double;
-
-public struct Vector256(T)
-    if ((isIntegral!T || isFloatingPoint!T) && T.sizeof <= 8)
-{
-    static if (T.sizeof % 8 == 0)
-        T[4] data;
-    else static if (T.sizeof % 4 == 0)
-        T[8] data;
-    else static if (T.sizeof % 2 == 0)
-        T[16] data;
     else
-        T[32] data;
+    {
+        static if (ElementType!T.sizeof % 8 == 0)
+            ElementType!T[2] data;
+        else static if (ElementType!T.sizeof % 4 == 0)
+            ElementType!T[4] data;
+        else static if (ElementType!T.sizeof % 2 == 0)
+            ElementType!T[8] data;
+        else
+            ElementType!T[16] data;
+    }
     alias data this;
+
 public:
 final:
+    enum length = Length!T;
+    static if (ElementType!T.sizeof == 1)
+        alias P = mixin(ElementType!T.stringof~"16");
+    else static if (ElementType!T.sizeof == 2)
+        alias P = mixin(ElementType!T.stringof~"8");
+    else static if (ElementType!T.sizeof == 4)
+        alias P = mixin(ElementType!T.stringof~"4");
+    else static if (ElementType!T.sizeof == 8)
+        alias P = mixin(ElementType!T.stringof~"2");
+
+    auto opAssign(A)(A ahs)
+    {
+        data.blit(ahs);
+        return this;
+    }
+
+    auto opBinary(string op, R)(const R rhs) const
+    {
+        static if (is256)
+        {
+            mixin("Vector!T vec = this;
+                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
+                (cast(P*)&vec)[1] "~op~"= cast(ElementType!T)rhs;
+                return vec;");
+        }
+        else
+        {
+            mixin("Vector!T vec = this;
+                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
+                return vec;");
+        }
+    }
+
+    auto opBinary(string op, R)(const R rhs) const shared
+    {
+        static if (is256)
+        {
+            mixin("Vector!T vec = this;
+                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
+                (cast(P*)&vec)[1] "~op~"= cast(ElementType!T)rhs;
+                return vec;");
+        }
+        else
+        {
+            mixin("Vector!T vec = this;
+                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
+                return vec;");
+        }
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs) const 
+    {
+        static if (is256)
+        {
+            mixin("Vector!T vec = this;
+                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
+                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[1];
+                return vec;");
+        }
+        else
+        {
+            mixin("Vector!T vec = this;
+                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
+                return vec;");
+        }
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs) const shared
+    {
+        static if (is256)
+        {
+            mixin("Vector!T vec = this;
+                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
+                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[1];
+                return vec;");
+        }
+        else
+        {
+            mixin("Vector!T vec = this;
+                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
+                return vec;");
+        }
+    }
+
+    auto opOpAssign(string op, A)(A ahs)
+    {
+        static if (is256)
+        {
+            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;
+                (cast(P*)&this)[1] "~op~"= (cast(P*)&this)[1];");
+        }
+        else
+        {
+            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;");
+        }
+        return this;
+    }
+
+    auto opOpAssign(string op, A)(A ahs) shared
+    {
+        static if (is256)
+        {
+            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;
+                (cast(P*)&this)[1] "~op~"= (cast(P*)&this)[1];");
+        }
+        else
+        {
+            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;");
+        }
+        return this;
+    }
+
+    auto opEquals(A)(A ahs) const
+    {
+        return (*cast(T*)&data) == ahs;
+    }
+
+    auto opEquals(A)(A ahs) const shared
+    {
+        return (*cast(T*)&data) == ahs;
+    }
+
+    size_t opDollar() const
+    {
+        return length;
+    }
+
+    size_t opDollar() const shared
+    {
+        return length;
+    }
+
+    string toString() const
+    {
+        return (*cast(T*)&data).to!string;
+    }
+
+    string toString() const shared
+    {
+        return (*cast(T*)&data).to!string;
+    }
 }
