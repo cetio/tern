@@ -6,6 +6,8 @@ import std.meta;
 import std.algorithm;
 import std.traits;
 import std.array;
+import std.datetime;
+import std.file;
 
 public class A
 {
@@ -31,8 +33,15 @@ public struct D
 }
 void main()
 {
-    FileStream stream = new FileStream(r"C:\Users\stake\Desktop\test.txt");
-    stream.writeString!char("abc");
-    stream.position = 0;
-    writeln(stream.readString!char);
+    //ubyte[] bytes = cast(ubyte[])std.file.read(r"C:\Users\stake\Downloads\VSCodeUserSetup-x64-1.86.1.exe");
+    ubyte[] bytes = cast(ubyte[])"Hello World!";
+    auto start = Clock.currTime();
+    writeln(cast(string)bytes);
+    mira_encrypt(bytes, "YTvF4J2XHSbiZSWQ5uZfQqwyn8NNJkyd");
+    writeln(cast(string)bytes);
+    std.file.write(r"C:\Users\stake\Downloads\out.exe", bytes);
+    //writeln(cast(string)bytes);
+    writeln(Clock.currTime() - start);
+    //mira_decrypt(bytes, "YTvF4J2XHSbiZSWQ5uZfQqwyn8NNJkyd");
+    //writeln(cast(string)bytes);
 }
