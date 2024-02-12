@@ -1,26 +1,41 @@
 module caiman.stream.impl;
 
+public enum Seek
+{
+    Start,
+    Current,
+    End
+}
+
+public enum ReadKind
+{
+    Prefix,
+    Field,
+    Fixed
+}
+
 public interface IStream
 {
+public:
+final:
     bool mayRead(T)();
-    bool mayRead(ptrdiff_t count);
+    bool mayRead(ptrdiff_t size);
 
-    void seekRead(T)();
-    void seekPeek(T)();
-    void seek();
+    void step(T)();
+    void seek(Seek SEEK)(ptrdiff_t offset);
 
     T read(T)();
     T read(T)(ptrdiff_t count);
     T read(T : U[], U)();
-    T readString(CHAR, bool PREFIXED = false)();
+    immutable(CHAR)[] readString(CHAR, bool PREFIXED = false)();
 
     T peek(T)();
     T peek(T)(ptrdiff_t count);
     T peek(T : U[], U)();
-    T peekString(CHAR, bool PREFIXED = false)();
+    immutable(CHAR)[] peekString(CHAR, bool PREFIXED = false)();
 
     void write(T)(T val);
-    void write(T : U[], U, bool PREFIXED = true)(T items);
+    void write(T, bool PREFIXED = true)(T items);
     void writeString(CHAR, bool PREFIXED = false)(immutable(CHAR)[] string);
 
     void put(T)();

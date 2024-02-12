@@ -426,21 +426,6 @@ public:
 final:
     shared Mutex mutex;
 
-    auto opAssign(R)(R ahs)
-    {
-        static if (isScalarType!T)
-            value.atomicStore!M(ahs);
-        else
-        {
-            mixin("if (mutex is null)
-                    mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                value = cast(shared(T))ahs;");
-        }
-        return this;
-    }
-
     auto opAssign(R)(R ahs) shared
     {
         static if (isScalarType!T)
@@ -454,20 +439,6 @@ final:
                 value = cast(shared(T))ahs;");
         }
         return this;
-    }
-
-    auto opUnary(string op)()
-    {
-        static if (isScalarType!T)
-            return mixin("Atomic!(T, M)("~op~"value.atomicLoad!M())");
-        else
-        {
-            mixin("if (mutex is null)
-                    mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                return Atomic!(T, M)(cast(shared(T))("~op~"value));");
-        }
     }
 
     auto opUnary(string op)() shared
@@ -548,28 +519,6 @@ final:
             return value.opCmp(other);");
     }
 
-    public auto opOpAssign(string op, R)(R rhs)
-    {
-        static if (isScalarType!T)
-            return value.atomicOp!(M, op~'=')(rhs);
-        else static if (op == "~")
-        {
-            mixin("if (mutex is null)
-                    mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                return value ~= rhs;");
-        }
-        else
-        {
-            mixin("if (mutex is null)
-                    mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                return Atomic!(T, M)(cast(shared(T))(value "~op~" rhs));");
-        }
-    }
-
     public auto opOpAssign(string op, R)(R rhs) shared
     {
         static if (isScalarType!T)
@@ -582,20 +531,6 @@ final:
                 scope (exit) mutex.unlock();
                 return value ~= rhs;");
         }
-        else
-        {
-            mixin("if (mutex is null)
-                    mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                return Atomic!(T, M)(cast(shared(T))(value "~op~" rhs));");
-        }
-    }
-
-    auto opBinary(string op, R)(const R rhs)
-    {
-        static if (isScalarType!T)
-            return mixin("Atomic!(T, M)(value.atomicLoad!M() "~op~" rhs)");
         else
         {
             mixin("if (mutex is null)
@@ -620,20 +555,6 @@ final:
         }
     }
 
-    auto opBinaryRight(string op, L)(const L lhs)
-    {
-        static if (isScalarType!T)
-            return mixin("Atomic!(T, M)(cast(shared(T))(lhs "~op~" value.atomicLoad!M()))");
-        else
-        {
-            mixin("if (mutex is null)
-                    mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                return Atomic!(T, M)(cast(shared(T))(lhs "~op~" value));");
-        }
-    }
-
     auto opBinaryRight(string op, L)(const L lhs) shared
     {
         static if (isScalarType!T)
@@ -649,16 +570,6 @@ final:
     }
 
     static if (__traits(compiles, { return value[index]; }))
-    ref auto opIndex(size_t index)
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[index];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
     ref auto opIndex(size_t index) shared
     {
         mixin("if (mutex is null)
@@ -666,16 +577,6 @@ final:
             mutex.lock();
             scope (exit) mutex.unlock();
             return value[index];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
-    auto opIndexAssign(A)(A ahs, size_t index) 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[index] = ahs;");
     }
 
     static if (__traits(compiles, { return value[index]; }))
@@ -689,16 +590,6 @@ final:
     }
 
     static if (__traits(compiles, { return value[index]; }))
-    auto opIndexOpAssign(string op, A)(A ahs, size_t index) 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[index] "~op~"= ahs;");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
     auto opIndexOpAssign(string op, A)(A ahs, size_t index) shared
     {
         mixin("if (mutex is null)
@@ -706,16 +597,6 @@ final:
             mutex.lock();
             scope (exit) mutex.unlock();
             return value[index] "~op~"= ahs;");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
-    auto opIndexUnary(string op)(size_t index) 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return "~op~"value[index];");
     }
 
     static if (__traits(compiles, { return value[index]; }))
@@ -729,16 +610,6 @@ final:
     }
 
     static if (__traits(compiles, { return value[index]; }))
-    auto opSlice(size_t start, size_t end)
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[start..end];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
     auto opSlice(size_t start, size_t end) shared
     {
         mixin("if (mutex is null)
@@ -746,16 +617,6 @@ final:
             mutex.lock();
             scope (exit) mutex.unlock();
             return value[start..end];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
-    auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[start..end] = ahs;");
     }
 
     static if (__traits(compiles, { return value[index]; }))
@@ -769,16 +630,6 @@ final:
     }
 
     static if (__traits(compiles, { return value[index]; }))
-    auto opSlice(size_t DIM : 0)(size_t start, size_t end)
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[DIM][start..end];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
     auto opSlice(size_t DIM : 0)(size_t start, size_t end) shared
     {
         mixin("if (mutex is null)
@@ -786,16 +637,6 @@ final:
             mutex.lock();
             scope (exit) mutex.unlock();
             return value[DIM][start..end];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
-    auto opSliceOpAssign(string op, A)(A ahs, size_t start, size_t end) 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[start..end] "~op~"= ahs;");
     }
 
     static if (__traits(compiles, { return value[index]; }))
@@ -809,16 +650,6 @@ final:
     }
 
     static if (__traits(compiles, { return value[index]; }))
-    auto opSliceUnary(string op)(size_t start, size_t end) 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return "~op~"value[start..end];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
     auto opSliceUnary(string op)(size_t start, size_t end) shared
     {
         mixin("if (mutex is null)
@@ -826,16 +657,6 @@ final:
             mutex.lock();
             scope (exit) mutex.unlock();
             return "~op~"value[start..end];");
-    }
-
-    static if (__traits(compiles, { return value[index]; }))
-    size_t opDollar()
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value.length;");
     }
 
     static if (__traits(compiles, { return value[index]; }))
@@ -858,54 +679,10 @@ final:
             return value[DIM].length;");
     }
 
-    static if (__traits(compiles, { return value[index]; }))
-    size_t opDollar(size_t DIM : 0)() 
-    {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value[DIM].length;");
-    }
-
     template opDispatch(string member) 
     {
         template opDispatch(TARGS...) 
         {
-            auto opDispatch(ARGS...)(ARGS args) 
-            {
-                static if (seqContains!(member, FunctionNames!T) || 
-                    __traits(compiles, { mixin("return value.atomicLoad!M()."~member~"!TARGS(args);"); }) ||
-                    (__traits(compiles, { mixin("return value.atomicLoad!M()."~member~';'); }) && ARGS.length == 0) ||
-                    !__traits(compiles, { mixin("return value."~member~" = args[0];"); }))
-                {
-                    static if (TARGS.length == 0 && ARGS.length == 0)
-                    {
-                        mixin("if (mutex is null)
-                                mutex = new shared Mutex();
-                            mutex.lock();
-                            scope (exit) mutex.unlock();
-                            return value."~member~";");
-                    }
-                    else
-                    {
-                        mixin("if (mutex is null)
-                                mutex = new shared Mutex();
-                            mutex.lock();
-                            scope (exit) mutex.unlock();
-                            return value."~member~"!TARGS(args);");
-                    }
-                }
-                else
-                {
-                    mixin("if (mutex is null)
-                                mutex = new shared Mutex();
-                            mutex.lock();
-                            scope (exit) mutex.unlock();
-                            return value."~member~" = args[0];");
-                }
-            }
-
             auto opDispatch(ARGS...)(ARGS args) shared
             {
                 static if (seqContains!(member, FunctionNames!T) || 
@@ -940,11 +717,6 @@ final:
                 }
             }
         }
-    }
-
-    string toString() const
-    {
-        return value.to!string;
     }
 
     string toString() const shared

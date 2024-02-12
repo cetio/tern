@@ -17,6 +17,5 @@ public import caiman.meta;
 public import caiman.random;
 public import caiman.serialization;
 public import caiman.state;
-public import caiman.stream;
 public import caiman.string;
 public import caiman.traits;

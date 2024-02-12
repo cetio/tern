@@ -31,9 +31,9 @@ public struct D
 }
 void main()
 {
-    ubyte[] a = new ubyte[32];
-    shared AtomicStream stream = new shared AtomicStream(a);
-    stream.write!uint(1);
-    stream.position -= uint.sizeof;
-    writeln(stream.read!uint);
+    ubyte[] a = new ubyte[128];
+    BinaryStream stream = new BinaryStream(a);
+    stream.putString!(wchar, true)("Hello World!");
+    writeln(stream.peekString!(wchar, true));
+    writeln(stream.position);
 }

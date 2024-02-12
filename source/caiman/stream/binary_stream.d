@@ -1,29 +1,13 @@
-/// Advanced binary stream, with optional reading, file access, endianness support, and much more.
-// TODO: Refactor
-//       AOB scan
+/// Performant binary stream implementation using `IStream`
+// TODO: Pattern/value scan
 module caiman.stream.binary_stream;
 
-import std.file;
-import std.stdio;
-import std.algorithm;
+import caiman.stream.impl;
+import caiman.serialization;
 import caiman.conv;
 import caiman.traits;
 
-public enum ReadKind
-{
-    Prefix,
-    Field,
-    Fixed
-}
-
-public enum Seek
-{
-    Start,
-    Current,
-    End
-}
-
-public class BinaryStream
+public class BinaryStream : IStream
 {
 public:
 final:
@@ -33,36 +17,39 @@ final:
 
     this(T)(T data, Endianness endianness = Endianness.Native)
     {
-        this.data = cast(ubyte[])data.dup;
+        if (isArray!T)
+            this.data = cast(ubyte[])data;
+        else
+            this.data = data.serialize();
         this.endianness = endianness;
     }
 
     /**
-        Checks if there are enough elements left in the data array to read.
-        
-        Params:
-           size = The number of elements to try to read. Defaults to 1.
-        
-        Returns:
-            True if there are at least size elements left to read from the current position. 
+     * Checks if there are enough elements left in the data array to read `T`.
+     *
+     * Params:
+     *  T = The type to check if can be read.
+     * 
+     * Returns:
+     *  True if there are at least `T.sizeof` bytes left to read from the current position. 
      */
-    @nogc bool mayRead()(int size = 1)
+    bool mayRead(T)()
     {
-        return position + size - 1 < data.length;
+        return position + T.sizeof > data.length;
     }
 
     /**
-        Checks if there are enough elements left in the data array to read `T`.
-        
-        Params:
-           T = The type to check if can be read.
-        
-        Returns:
-            True if there are at least `T.sizeof` bytes left to read from the current position. 
+     * Checks if there are enough elements left in the data array to read.
+     * 
+     * Params:
+     *  size = The number of elements to try to read. Defaults to 1.
+     *
+     * Returns:
+     *  True if there are at least size elements left to read from the current position. 
      */
-    @nogc bool mayRead(T)()
+    bool mayRead(ptrdiff_t size)
     {
-        return position + T.sizeof - 1 < data.length;
+        return position + size > data.length;
     }
 
     /**
@@ -71,27 +58,18 @@ final:
      * Params:
      *   T = The size of type to move the position by.
      */
-    @nogc void step(T)()
+    void step(T)()
     {
         position += T.sizeof;
     }
 
-    /**
-     * Moves the position in the stream by the size of type T * elements.
-     *
-     * Params:
-     *   T = The size of type to move the position by.
-     *   count = The number of elements.
-     */
-    @nogc void step(T)(int count)
-    {
-        position += T.sizeof * count;
-    }
-
     /** 
      * Moves the position in the stream forward by one until `val` is peeked.
+     *
+     * Params:
+     *  val = The value to be peeked.
      */
-    @nogc void stepUntil(T)(T val)
+    void stepUntil(T)(T val)
     {
         static if (isSomeString!T)
         {
@@ -107,27 +85,19 @@ final:
 
     /**
      * Seeks to a new position in the stream based on the provided offset and seek direction.
-     * Does not work like a conventional seek, and will read type T from the stream, using that as the seek offset.
      *
      * Params:
-     *   T = The offset value for seeking.
-     *   SEEK = The direction of the seek operation (Start, Current, or End).
+     *  SEEK = The direction of the seek operation (Start, Current, or End).
+     *  offset = The offset from the seek direction to be set.
      */
-    @nogc void seek(T, Seek SEEK)()
-        if (isIntegral!T)
+    void seek(Seek SEEK)(ptrdiff_t offset)
     {
-        static if (SEEK == Seek.Start)
-        {
-            position = peek!T;
-        }
-        else static if (SEEK == Seek.Current)
-        {
-            position += peek!T;
-        }
+        static if (SEEK = Seek.Current)
+            position += offset;
+        else static if (SEEK = Seek.Start)
+            position = offset;
         else
-        {
-            position = data.length - peek!T;
-        }
+            position = data.length - offset;
     }
 
     /**
@@ -139,240 +109,249 @@ final:
      * Returns:
      *  The value read from the stream.
      */
-    @nogc T read(T)()
-        if (!isArray!T || isStaticArray!T)
+    T read(T)()
+        if (!isDynamicArray!T)
     {
-        if (data.length <= position)
-            return T.init;
+        if (position + T.sizeof > data.length)
+            throw new Throwable("Tried to read past the end of stream!");
 
-        scope(exit) step!T;
-        T val = *cast(T*)(&data[position]);
-        return makeEndian!T(val, endianness);
+        return (*cast(T*)data[position..(position += T.sizeof)].ptr).makeEndian(endianness);
     }
 
     /**
-    * Peeks at the next value from the stream of type T without advancing the stream position.
-    *
-    * Params:
-    *   T = The type of data to peek.
-    *
-    * Returns:
-    *  The value peeked from the stream.
-    */
-    @nogc T peek(T)()
-        if (!isArray!T)
+     * Peeks at the next value from the stream of type T without advancing the stream position.
+     *
+     * Params:
+     *  T = The type of data to peek.
+     *
+     * Returns:
+     *  The value peeked from the stream.
+     */
+    T peek(T)()
+        if (!isDynamicArray!T)
     {
-        if (data.length <= position)
-            return T.init;
+        if (position + T.sizeof > data.length)
+            throw new Throwable("Tried to read past the end of stream!");
 
-        T val = *cast(T*)(&data[position]);
-        return makeEndian!T(val, endianness);
+        return (*cast(T*)data[position..(position + T.sizeof)].ptr).makeEndian(endianness);
     }
 
     /**
-    * Reads an array of type T from the stream.
-    *
-    * Params:
-    *   T = The type of data to be read.
-    *
-    * Returns:
-    *  An array read from the stream.
-    */
-    T read(T : U[], U)()
-        if (!isStaticArray!T)
-    {
-        T items;
-        foreach (ulong i; 0..read7EncodedInt())
-            items ~= read!(U);
-        return items;
-    }
-
-    /**
-    * Peeks an array of type T from the stream without advancing the stream position.
-    *
-    * Params:
-    *   T = The type of data to peek.
-    *
-    * Returns:
-    *  An array peeked from the stream.
-    */
-    T peek(T : U[], U)()
-        if (!isStaticArray!T)
-    {
-        ulong _position = position;
-        scope(exit) position = _position;
-        return read!T;
-    }
-
-    /**
-    * Writes the provided value to the stream.
-    *
-    * Params:
-    *   T = The type of data to be written.
-    *   val = The value to be written to the stream.
-    */
-    @nogc void write(T)(T val)
-    {
-        if (data.length <= position)
-            return;
-
-        scope(exit) step!T;
-        *cast(T*)(&data[position]) = makeEndian!T(val, endianness);
-    }
-
-    /**
-    * Writes the provided value to the stream without advancing the stream position.
-    *
-    * Params:
-    *   T = The type of data to be written.
-    *   val = The value to be written to the stream.
-    */
-    @nogc void put(T)(T val)
-    {
-        if (data.length <= position)
-            return;
-
-        *cast(T*)(&data[position]) = makeEndian!T(val, endianness), key;
-    }
-
-    /**
-    * Reads multiple values of type T from the stream.
-    *
-    * Params:
-    *   T = The type of data to be read.
-    *   count = The number of values to read from the stream.
-    *
-    * Returns:
-    *  An array of values read from the stream.
-    */
+     * Reads multiple values of type T from the stream.
+     *
+     * Params:
+     *  T = The type of data to be read.
+     *  count = The number of values to read from the stream.
+     *
+     * Returns:
+     *  An array of values read from the stream.
+     */
     T[] read(T)(ptrdiff_t count)
+        if (!isDynamicArray!T)
     {
-        T[] items;
+        T[] arr;
         foreach (i; 0..count)
-            items ~= read!T;
-        return items;
+            arr ~= read!T;
+        return arr;
     }
 
     /**
-    * Peeks at multiple values of type T from the stream without advancing the stream position.
-    *
-    * Params:
-    *   T = The type of data to peek.
-    *   count = The number of values to peek from the stream.
-    *
-    * Returns:
-    *  An array of values peeked from the stream.
-    */
+     * Peeks at multiple values of type T from the stream without advancing the stream position.
+     *
+     * Params:
+     *  T = The type of data to peek.
+     *  count = The number of values to peek from the stream.
+     *
+     * Returns:
+     *  An array of values peeked from the stream.
+     */
     T[] peek(T)(ptrdiff_t count)
+        if (!isDynamicArray!T)
     {
-        ulong _position = position;
-        scope(exit) position = _position;
-        return read!T(count);
+        auto _position = position;
+        scope (exit) position = _position;
+        T[] arr;
+        foreach (i; 0..count)
+            arr ~= read!T;
+        return arr;
     }
 
     /**
-    * Writes multiple values of type T to the stream.
-    *
-    * Params:
-    *   T = The type of data to be written.
-    *   items = An array of values to be written to the stream.
-    */
-    @nogc void write(T, bool NOPREFIX = false)(T[] items)
+     * Reads an array of type T from the stream.
+     *
+     * Params:
+     *  T = The type of data to be read.
+     *
+     * Returns:
+     *  An array read from the stream.
+     */
+    T read(T : U[], U)()
+        if (isDynamicArray!T)
     {
-        static if (!NOPREFIX)
-            write7EncodedInt(cast(int)items.length);
-
-        foreach (ulong i; 0..items.length)
-            write!T(items[i]);
-            
+        return read!(ElementType!T)(cast(ptrdiff_t)read7EncodedInt());
     }
 
     /**
-    * Writes multiple values of type T to the stream without advancing the stream position.
-    *
-    * Params:
-    *   T = The type of data to be written.
-    *   items = An array of values to be written to the stream.
-    */
-    @nogc void put(T, bool NOPREFIX = false)(T[] items)
+     * Peeks an array of type T from the stream without advancing the stream position.
+     *
+     * Params:
+     *  T = The type of data to peek.
+     *
+     * Returns:
+     *  An array peeked from the stream.
+     */
+    T peek(T : U[], U)()
+        if (isDynamicArray!T)
     {
-        ulong _position = position;
-        scope(exit) position = _position;
-        write!(T, NOPREFIX)(items);
+        return peek!(ElementType!T)(cast(ptrdiff_t)read7EncodedInt());
     }
 
     /**
-    * Reads a string from the stream considering the character width and prefixing.
-    *
-    * Params:
-    *   CHAR = The character type used for reading the string (char, wchar, or dchar).
-    *   PREFIXED = Indicates whether the string is prefixed. Default is false.
-    *
-    * Returns:
-    *  The read string from the stream.
-    */
-    string readString(CHAR, bool PREFIXED = false)()
-        if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
+     * Writes the provided value to the stream.
+     *
+     * Params:
+     *   T = The type of data to be written.
+     *   val = The value to be written to the stream.
+     */
+    void write(T)(T val)
+    {        
+        if (position + T.sizeof > data.length)
+            throw new Throwable("Tried to write past the end of stream!");
+
+        auto _val = val.makeEndian(endianness);
+        data[position..(position += T.sizeof)] = (cast(ubyte*)&_val)[0..T.sizeof];
+    }
+
+    /**
+     * Writes the provided value to the stream without advancing the stream position.
+     *
+     * Params:
+     *   T = The type of data to be written.
+     *   val = The value to be written to the stream.
+     */
+    void put(T)(T val)
+    {
+        if (position + T.sizeof > data.length)
+            throw new Throwable("Tried to write past the end of stream!");
+
+        _val = val.makeEndian(endianness);
+        data[position..(position + T.sizeof)] = (cast(ubyte*)&_val)[0..T.sizeof];
+    }
+
+    /**
+     * Writes multiple values of type T to the stream.
+     *
+     * Params:
+     *   T = The type of data to be written.
+     *   items = An array of values to be written to the stream.
+     */
+    void write(T, bool PREFIXED = true)(T val)
+        if (isArray!T)
     {
         static if (PREFIXED)
-            return read!(CHAR[]).to!string;
+            write7EncodedInt(cast(uint)(val.length));
 
-        char[] chars;
-        while (peek!CHAR != '\0')
-            chars ~= read!CHAR;
-        return makeEndian!string(chars.to!string, endianness);
+        foreach (u; val)
+            write(u);
     }
 
     /**
-    * Reads a string from the stream considering the character width and prefixing without advancing the stream position.
-    *
-    * Params:
-    *   CHAR = The character type used for reading the string (char, wchar, or dchar).
-    *   PREFIXED = Indicates whether the string is prefixed. Default is false.
-    *
-    * Returns:
-    *  The read string from the stream.
-    */
-    string peekString(CHAR, bool PREFIXED = false)()
-        if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
+     * Writes multiple values of type T to the stream without advancing the stream position.
+     *
+     * Params:
+     *   T = The type of data to be written.
+     *   items = An array of values to be written to the stream.
+     */
+    void put(T, bool PREFIXED = true)(T val)
+        if (isArray!T)
     {
-        ulong _position = position;
-        scope(exit) position = _position;
-        return readString!(CHAR, PREFIXED);
+        auto _position = position;
+        scope (exit) position = _position;
+        static if (PREFIXED)
+            write7EncodedInt(cast(uint)(val.length));
+
+        foreach (u; val)
+            write(u);
     }
 
     /**
-    * Writes a string to the stream considering the character width and prefixing.
-    *
-    * Params:
-    *   CHAR = The character type used for writing the string (char, wchar, or dchar).
-    *   PREFIXED = Indicates whether the string is prefixed. Default is false.
-    *   str = The string to be written to the stream.
-    */
-    void writeString(CHAR, bool PREFIXED = false)(string str)
-        if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
+     * Reads a string from the stream considering the character width and prefixing.
+     *
+     * Params:
+     *   CHAR = The character type used for reading the string (char, wchar, or dchar).
+     *   PREFIXED = Indicates whether the string is prefixed. Default is false.
+     *
+     * Returns:
+     *  The read string from the stream.
+     */
+    immutable(CHAR)[] readString(CHAR, bool PREFIXED = false)()
     {
-        if (!PREFIXED && str.length > 0 && str[$-1] != '\0')
-            str ~= '\0';
-
-        write!(CHAR, !PREFIXED)(str.dup.to!(CHAR[]));
+        static if (PREFIXED)
+            return cast(immutable(CHAR)[])read!(immutable(CHAR)[]);
+        else
+        {
+            immutable(CHAR)[] ret;
+            while (peek!CHAR != '\0')
+                ret ~= read!CHAR;
+            return ret;
+        }
     }
 
     /**
-    * Writes a string into the stream considering the character width and prefixing without advancing the stream position.
-    *
-    * Params:
-    *   CHAR = The character type used for writing the string (char, wchar, or dchar).
-    *   PREFIXED = Indicates whether the string is prefixed. Default is false.
-    *   str = The string to be put into the stream.
-    */
-    void putString(CHAR, bool PREFIXED = false)(string str)
-        if (is(CHAR == char) || is(CHAR == dchar) || is(CHAR == wchar))
+     * Reads a string from the stream considering the character width and prefixing without advancing the stream position.
+     *
+     * Params:
+     *   CHAR = The character type used for reading the string (char, wchar, or dchar).
+     *   PREFIXED = Indicates whether the string is prefixed. Default is false.
+     *
+     * Returns:
+     *  The read string from the stream.
+     */
+    immutable(CHAR)[] peekString(CHAR, bool PREFIXED = false)()
     {
-        if (!PREFIXED && str.length > 0 && str[$-1] != '\0')
-            str ~= '\0';
-        
-        put!(CHAR, !PREFIXED)(str.dup.to!(CHAR[]));
+        auto _position = position;
+        scope (exit) position = _position;
+        static if (PREFIXED)
+            return cast(immutable(CHAR)[])read!(immutable(CHAR)[]);
+        else
+        {
+            immutable(CHAR)[] ret;
+            while (peek!CHAR != '\0')
+                ret ~= read!CHAR;
+            return ret;
+        }
+    }
+
+    /**
+     * Writes a string to the stream considering the character width and prefixing.
+     *
+     * Params:
+     *   CHAR = The character type used for writing the string (char, wchar, or dchar).
+     *   PREFIXED = Indicates whether the string is prefixed. Default is false.
+     *   val = The string to be written to the stream.
+     */
+    void writeString(CHAR, bool PREFIXED = false)(immutable(CHAR)[] val)
+    {
+        static if (!PREFIXED)
+            val ~= '\0';
+
+        write!(immutable(CHAR)[], PREFIXED)(val);
+    }
+
+    /**
+     * Writes a string into the stream considering the character width and prefixing without advancing the stream position.
+     *
+     * Params:
+     *   CHAR = The character type used for writing the string (char, wchar, or dchar).
+     *   PREFIXED = Indicates whether the string is prefixed. Default is false.
+     *   val = The string to be put into the stream.
+     */
+    void putString(CHAR, bool PREFIXED = false)(immutable(CHAR)[] val)
+    {
+        static if (!PREFIXED)
+            val ~= '\0';
+
+        put!(immutable(CHAR)[], PREFIXED)(val);
     }
 
     /**
@@ -381,15 +360,15 @@ final:
     * Returns:
     *  The integer value read from the stream.
     */
-    @nogc int read7EncodedInt()
+    uint read7EncodedInt()
     {
-        int result = 0;
-        int shift = 0;
+        uint result = 0;
+        uint shift = 0;
 
-        foreach (int i; 0..5)
+        foreach (i; 0..5)
         {
-            ubyte b = read!ubyte();
-            result |= cast(int)(b & 0x7F) << shift;
+            ubyte b = read!ubyte;
+            result |= cast(uint)(b & 0x7F) << shift;
             if ((b & 0x80) == 0)
                 return result;
             shift += 7;
@@ -404,15 +383,15 @@ final:
     * Params:
     *   val = The integer value to be written to the stream.
     */
-    @nogc void write7EncodedInt(int val)
+    void write7EncodedInt(uint val)
     {
-        foreach (int i; 0..5)
+        foreach (i; 0..5)
         {
             byte b = cast(byte)(val & 0x7F);
             val >>= 7;
             if (val != 0)
                 b |= 0x80;
-            write!ubyte(b);
+            write(b);
             if (val == 0)
                 return;
         }
@@ -574,24 +553,4 @@ final:
         }
         return val;
     }
-
-    /**
-     * Flushes the data stored in this stream to the given file path.
-     *
-     * Params:
-     *  filePath = The file path to flush to.
-     */
-    void flush(string filePath)
-    {
-        if (filePath != null)
-            std.file.write(filePath, data);
-    }
-}
-
-public class FileStream
-{
-public:
-final:
-    File file;
-
 }
