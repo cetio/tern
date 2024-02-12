@@ -27,26 +27,13 @@ public struct D
 {
     int a;
 
-    void test() => writeln(a);
+    void test() shared => writeln(a);
 }
-
 void main()
 {
-    /* Atomic!(Nullable!int) a;
-    a = 0;
-    writeln(a); */
-    Atomic!(Nullable!(constexpr!D)) a;
-    writeln(a);
-    a = D.init;
-    a.test();
-    writeln(a);
-    Vector!(int[8]) vec;
-    writeln(vec + 1); // [1, 1, 1, 1, 1, 1, 1, 1]
-    Vector!(ubyte[4]) vec2;
-    vec2 = [1, 2, 3, 4];
-    writeln(vec2 += 10); // [11, 12, 13, 14]
-    import core.simd;
-    ubyte16 vec3 = [1, 2, 3, 4];
-    // Error: incompatible types for `(vec3) * (cast(__vector(ubyte[16]))cast(ubyte)4u)`: both operands are of type `__vector(ubyte[16])`
-    writeln(vec3 * 4);
+    ubyte[] a = new ubyte[32];
+    shared AtomicStream stream = new shared AtomicStream(a);
+    stream.write!uint(1);
+    stream.position -= uint.sizeof;
+    writeln(stream.read!uint);
 }

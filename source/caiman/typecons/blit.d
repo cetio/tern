@@ -1,5 +1,5 @@
 /// Templates for blitting arbitrary functions or other comptime data onto a type
-module caiman.typeblit;
+module caiman.typecons.blit;
 
 import std.string;
 import std.array;

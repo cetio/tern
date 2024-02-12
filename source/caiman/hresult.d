@@ -1,7 +1,7 @@
 /// HResult enum and functions for easily checking state
 module caiman.hresult;
 
-import caiman.typeblit;
+import caiman.typecons;
 
 /// HResult values for handling error codes.
 public @exempt enum HResult

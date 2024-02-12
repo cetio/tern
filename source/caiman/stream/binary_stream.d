@@ -1,19 +1,13 @@
-/// Advanced data stream support, with optional reading, file access, endianness support, and much more.
+/// Advanced binary stream, with optional reading, file access, endianness support, and much more.
 // TODO: Refactor
-//       AOB/pattern scan
-module caiman.stream;
+//       AOB scan
+module caiman.stream.binary_stream;
 
 import std.file;
+import std.stdio;
+import std.algorithm;
 import caiman.conv;
-import std.algorithm.mutation;
 import caiman.traits;
-
-public enum Seek
-{
-    Start,
-    Current,
-    End
-}
 
 public enum ReadKind
 {
@@ -22,34 +16,25 @@ public enum ReadKind
     Fixed
 }
 
-public class Stream
+public enum Seek
 {
-protected:
-final:
-    string filePath;
+    Start,
+    Current,
+    End
+}
 
+public class BinaryStream
+{
 public:
+final:
     ubyte[] data;
     ptrdiff_t position;
     Endianness endianness;
 
-    this(ubyte[] data, Endianness endianness = Endianness.Native)
-    {
-        this.data = data.dup;
-        this.endianness = endianness;
-    }
-
-    this(byte[] data, Endianness endianness = Endianness.Native)
+    this(T)(T data, Endianness endianness = Endianness.Native)
     {
         this.data = cast(ubyte[])data.dup;
         this.endianness = endianness;
-    }
-
-    this(string filePath, Endianness endianness = Endianness.Native)
-    {
-        this.data = cast(ubyte[])std.file.read(filePath);
-        this.endianness = endianness;
-        this.filePath = filePath;
     }
 
     /**
@@ -434,72 +419,6 @@ public:
     }
 
     /**
-    * Commits the results of multiple functions to a byte stream and returns the combined result.
-    *
-    * Params:
-    *   T = The type representing the return value.
-    *   FUNCS = Variadic template parameter representing the functions to be executed.
-    *
-    * Returns:
-    *  Returns the combined result of executing the provided functions as a byte stream.
-    */
-    T commit(T, FUNCS...)()
-    {
-        ubyte[] bytes;
-        foreach (FUNC; FUNCS)
-        {
-            auto ret = FUNC();
-            bytes ~= (cast(ubyte*)&ret)[0..ReturnType!(FUNC).sizeof];
-        }
-        return *cast(T*)&bytes[0];
-    }
-
-    /// ditto
-    T[] commit(T, FUNCS...)(ptrdiff_t count)
-    {
-        T[] items;
-        foreach (i; 0..count)
-            items ~= commit!(T, FUNCS);
-        return items;
-    }
-
-    /**
-    * Commits the results of multiple functions to the stream and writes it to the stream.
-    *
-    * Params:
-    *   T = The type representing the return value.
-    *   FUNCS = Variadic template parameter representing the functions to be executed.
-    */
-    void commitWrite(T, FUNCS...)()
-    {
-        ubyte[] bytes;
-        foreach (FUNC; FUNCS)
-        {
-            auto ret = FUNC();
-            bytes ~= (cast(ubyte*)&ret)[0..ReturnType!(FUNC).sizeof];
-        }
-        write!byte(bytes, true);
-    }
-
-    /**
-    * Commits the results of multiple functions the stream and writes it to the stream without advancing the stream position.
-    *
-    * Params:
-    *   T = The type representing the return value.
-    *   FUNCS = Variadic template parameter representing the functions to be executed.
-    */
-    void commitPut(T, FUNCS...)()
-    {
-        ubyte[] bytes;
-        foreach (FUNC; FUNCS)
-        {
-            auto ret = FUNC();
-            bytes ~= (cast(ubyte*)&ret)[0..ReturnType!(FUNC).sizeof];
-        }
-        put!byte(bytes, true);
-    }
-
-    /**
     * Reads data from a byte stream into a structured type based on specified field names and read kinds. \
     * Designed specifically for better control reading string and array fields.
     *
@@ -657,21 +576,22 @@ public:
     }
 
     /**
-        Flushes the data stored in this stream to the given file path.
-
-        Params:
-           filePath = The file path to flush to.
-    */
+     * Flushes the data stored in this stream to the given file path.
+     *
+     * Params:
+     *  filePath = The file path to flush to.
+     */
     void flush(string filePath)
     {
         if (filePath != null)
             std.file.write(filePath, data);
     }
+}
 
-    /// Flushes the data stored in this stream to the file path that this stream was initialized with.
-    void flush()
-    {
-        if (this.filePath != null)
-            std.file.write(this.filePath, data);
-    }
+public class FileStream
+{
+public:
+final:
+    File file;
+
 }

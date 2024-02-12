@@ -186,3 +186,9 @@ unittest
     assert(dsArray.length == 5);
     assert(dsArray[$-1] == 2);
 }
+
+pragma(inline)
+constexpr!T constexpr(T)(T val)
+{
+    return constexpr!T(val);
+}

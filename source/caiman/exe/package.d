@@ -71,7 +71,7 @@ public class PE
 private:
 final:
     /// The stream used for reading the PE file.
-    Stream stream;
+    BinaryStream stream;
 
     /// Reads the DOS header of the PE file.
     void readDOSHeader() 
@@ -290,7 +290,7 @@ public:
     static PE read(string filePath)
     {
         PE pe = new PE();
-        pe.stream = new Stream(filePath);
+        pe.stream = new BinaryStream(filePath);
 
         pe.readDOSHeader();
         pe.readCOFFHeader();

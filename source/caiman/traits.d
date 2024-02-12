@@ -488,14 +488,14 @@ public template functionMap(T, bool mapOperators = false)
                     return orig.opSliceAssign(value, start, end);
                 }
 
-                public auto opSlice(size_t DIM = 0)(size_t start, size_t end) 
+                public auto opSlice(size_t DIM : 0)(size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
                     scope (exit) this.blit(orig.conv!(typeof(this)));
                     return orig.opSlice!DIM(start, end);
                 }
 
-                public auto opSliceAssign(size_t dim = 0, OTSASS)(OTSASS value, size_t start, size_t end) 
+                public auto opSliceAssign(size_t DIM : 0, OTSASS)(OTSASS value, size_t start, size_t end) 
                 {
                     auto orig = as!("~fullyQualifiedName!T~");
                     scope (exit) this.blit(orig.conv!(typeof(this)));

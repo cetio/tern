@@ -1,33 +1,60 @@
 /// Utilities for serializing and deserializing arbitrary data types
 module caiman.serialization;
 
+import caiman.traits;
+
 public:
 static:
 pure:
-@trusted ubyte[] deserialize(T)(T val)
+@trusted ubyte[] serialize(T)(T val)
 {
     static if (isArray!T)
     {
         ubyte[] bytes;
-        bytes ~= val.length.deserialize;
+        bytes ~= val.length.serialize;
         foreach (u; val)
-            bytes ~= u.deserialize;
+            bytes ~= u.serialize;
         return bytes;
     }
     else static if (is(T == class))
     {
         ubyte[] bytes;
         foreach (field; FieldNameTuple!T)
-            bytes ~= __traits(getMember, T, field).deserialize;
+            bytes ~= __traits(getMember, val, field).serialize;
         return bytes;
     }
     else
     {
-        return (cast(ubyte*)&val)[0..T.sizeof];
+        return (cast(ubyte*)&val)[0..T.sizeof].dup;
     }
 }
 
-@trusted serialize(T)(ubyte[] bytes)
+@trusted deserialize(T)(ubyte[] bytes)
 {
-    
+    static if (isReferenceType!T)
+        T ret = new T();
+    else
+        T ret;
+    ptrdiff_t offset;
+    static if (isArray!T)
+    {
+        ptrdiff_t length = deserialize!ptrdiff_t(bytes[offset..(offset += ptrdiff_t.sizeof)]);
+        static if (isDynamicArray!T)
+            ret = new T(length);
+
+        foreach (i; 0..length)
+            ret[i] = bytes[offset..(offset += ElementType!T.sizeof)];
+        return ret;
+    }
+    else static if (is(T == class))
+    {
+        foreach (field; FieldNameTuple!T)
+            __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]);
+        return ret;
+    }
+    else
+    {
+        return *cast(T*)&bytes[offset];
+        //return *cast(T*)(bytes[offset..(offset += T.sizeof)].ptr);
+    }
 }
