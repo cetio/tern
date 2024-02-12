@@ -29,21 +29,31 @@ pure:
     }
 }
 
-@trusted deserialize(T)(ubyte[] bytes)
+@trusted deserialize(T, B)(B bytes)
+    if ((isDynamicArray!B || isStaticArray!B) && (is(ElementType!B == ubyte) || is(ElementType!B == byte)))
 {
     static if (isReferenceType!T)
-        T ret = new T();
+    {
+        static if (isArray!T)
+            T ret = new T(0);
+        else
+            T ret = new T();
+    }
     else
         T ret;
     ptrdiff_t offset;
     static if (isArray!T)
     {
         ptrdiff_t length = deserialize!ptrdiff_t(bytes[offset..(offset += ptrdiff_t.sizeof)]);
-        static if (isDynamicArray!T)
+        static if (isDynamicArray!T && !isImmutable!(ElementType!T))
             ret = new T(length);
 
         foreach (i; 0..length)
+        static if (!isImmutable!(ElementType!T))
             ret[i] = bytes[offset..(offset += ElementType!T.sizeof)];
+        else
+            ret ~= bytes[offset..(offset += ElementType!T.sizeof)];
+
         return ret;
     }
     else static if (is(T == class))

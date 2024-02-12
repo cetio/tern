@@ -250,7 +250,7 @@ shared:
         if (isArray!T)
     {
         static if (PREFIXED)
-            write7EncodedInt(cast(uint)(val.length));
+            write7EncodedInt(cast(uint)val.length);
 
         foreach (u; val)
             write(u);
@@ -269,7 +269,7 @@ shared:
         auto _position = position;
         scope (exit) position = _position;
         static if (PREFIXED)
-            write7EncodedInt(cast(uint)(val.length));
+            write7EncodedInt(cast(uint)val.length);
 
         foreach (u; val)
             write(u);
@@ -356,11 +356,11 @@ shared:
     }
 
     /**
-    * Reads an integer value encoded in 7 bits from the stream.
-    *
-    * Returns:
-    *  The integer value read from the stream.
-    */
+     * Reads an integer value encoded in 7 bits from the stream.
+     *
+     * Returns:
+     *  The integer value read from the stream.
+     */
     uint read7EncodedInt()
     {
         uint result = 0;
@@ -379,11 +379,11 @@ shared:
     }
 
     /**
-    * Writes an integer value encoded in 7 bits to the stream.
-    *
-    * Params:
-    *   val = The integer value to be written to the stream.
-    */
+     * Writes an integer value encoded in 7 bits to the stream.
+     *
+     * Params:
+     *   val = The integer value to be written to the stream.
+     */
     void write7EncodedInt(uint val)
     {
         foreach (i; 0..5)

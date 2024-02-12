@@ -31,9 +31,8 @@ public struct D
 }
 void main()
 {
-    ubyte[] a = new ubyte[128];
-    BinaryStream stream = new BinaryStream(a);
-    stream.putString!(wchar, true)("Hello World!");
-    writeln(stream.peekString!(wchar, true));
-    writeln(stream.position);
+    FileStream stream = new FileStream(r"C:\Users\stake\Desktop\test.txt");
+    stream.writeString!char("abc");
+    stream.position = 0;
+    writeln(stream.readString!char);
 }

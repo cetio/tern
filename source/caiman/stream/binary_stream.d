@@ -355,11 +355,11 @@ final:
     }
 
     /**
-    * Reads an integer value encoded in 7 bits from the stream.
-    *
-    * Returns:
-    *  The integer value read from the stream.
-    */
+     * Reads an integer value encoded in 7 bits from the stream.
+     *
+     * Returns:
+     *  The integer value read from the stream.
+     */
     uint read7EncodedInt()
     {
         uint result = 0;
@@ -378,11 +378,11 @@ final:
     }
 
     /**
-    * Writes an integer value encoded in 7 bits to the stream.
-    *
-    * Params:
-    *   val = The integer value to be written to the stream.
-    */
+     * Writes an integer value encoded in 7 bits to the stream.
+     *
+     * Params:
+     *   val = The integer value to be written to the stream.
+     */
     void write7EncodedInt(uint val)
     {
         foreach (i; 0..5)

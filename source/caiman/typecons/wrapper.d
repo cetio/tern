@@ -248,6 +248,16 @@ final:
         return this;
     }
 
+    A opCast(A)() const
+    {
+        return Nullable!A(cast(A)value);
+    }
+    
+    A opCast(A)() const shared
+    {
+        return Nullable!A(cast(A)value);
+    }
+
     auto opUnary(string op)()
     {
         static if (op.length == 2)
@@ -439,6 +449,11 @@ final:
                 value = cast(shared(T))ahs;");
         }
         return this;
+    }
+
+    A opCast(A)() const shared
+    {
+        return Atomic!(A, M)(cast(shared(A))value);
     }
 
     auto opUnary(string op)() shared

@@ -39,6 +39,6 @@ final:
     void writeString(CHAR, bool PREFIXED = false)(immutable(CHAR)[] string);
 
     void put(T)();
-    void put(T : U[], U, bool PREFIXED = true)(T items);
+    void put(T, bool PREFIXED = true)(T items);
     void putString(CHAR, bool PREFIXED = false)(immutable(CHAR)[] string);
 }

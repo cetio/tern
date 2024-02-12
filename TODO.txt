@@ -1,10 +1,5 @@
 caiman.exe
 caiman.crypto
-caiman.typecons
-caiman.serialization
-caiman.file
 caiman.string
-caiman.atomic
-caiman.dataframe
-caiman.experimental.constexpr
+caiman.typecons.blit
 unittests!!!!!!!!!!!!

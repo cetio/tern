@@ -7,7 +7,6 @@ public import caiman.regex;
 public import caiman.stream;
 public import caiman.typecons;
 public import caiman.conv;
-public import caiman.dataframe;
 public import caiman.error;
 public import caiman.event;
 public import caiman.hresult;
