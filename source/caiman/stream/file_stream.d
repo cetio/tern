@@ -6,6 +6,7 @@ import caiman.stream.impl;
 import caiman.serialization;
 import caiman.conv;
 import caiman.traits;
+import caiman.mira;
 
 public enum Mode
 {
@@ -13,7 +14,6 @@ public enum Mode
     Write,
     ReadWrite,
     Append,
-    ReadAppend
 }
 
 public class FileStream : IStream
@@ -32,11 +32,9 @@ public:
         else if (mode == Mode.Write)
             this.file = File(path, "w");
         else if (mode == Mode.ReadWrite)
-            this.file = File(path, "w+");
+            this.file = File(path, "a+");
         else if (mode == Mode.Append)
             this.file = File(path, "a");
-        else if (mode == Mode.ReadAppend)
-            this.file = File(path, "a+");
         this.endianness = endianness;
     }
 
@@ -219,12 +217,6 @@ public:
         put!(immutable(CHAR)[], PREFIXED)(val);
     }
 
-    /**
-     * Reads an integer value encoded in 7 bits from the stream.
-     *
-     * Returns:
-     *  The integer value read from the stream.
-     */
     uint read7EncodedInt()
     {
         uint result = 0;
@@ -242,12 +234,6 @@ public:
         return result;
     }
 
-    /**
-     * Writes an integer value encoded in 7 bits to the stream.
-     *
-     * Params:
-     *   val = The integer value to be written to the stream.
-     */
     void write7EncodedInt(uint val)
     {
         foreach (i; 0..5)
@@ -260,5 +246,25 @@ public:
             if (val == 0)
                 return;
         }
+    }
+
+    void encrypt(ptrdiff_t size)
+    {
+        if (!mayRead(size))
+            encrypt(size - 1);
+
+        ubyte[] buff = peek!ubyte(size);
+        Mira.encrypt(buff, "9G7o6mcmxMFfAv0jOedyx1JWnGqRNk0g");
+        write!(ubyte[], false)(buff);
+    }
+
+    void decrypt(ptrdiff_t size)
+    {
+        if (!mayRead(size))
+            decrypt(size - 1);
+
+        ubyte[] buff = peek!ubyte(size);
+        Mira.decrypt(buff, "9G7o6mcmxMFfAv0jOedyx1JWnGqRNk0g");
+        write!(ubyte[], false)(buff);
     }
 }

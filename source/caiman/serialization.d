@@ -5,7 +5,6 @@ import caiman.traits;
 
 public:
 static:
-pure:
 @trusted ubyte[] serialize(T)(T val)
 {
     static if (isArray!T)

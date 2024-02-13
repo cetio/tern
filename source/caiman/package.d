@@ -1,6 +1,5 @@
 module caiman;
 
-public import caiman.crypto;
 public import caiman.exe;
 public import caiman.experimental;
 public import caiman.regex;
@@ -13,6 +12,7 @@ public import caiman.hresult;
 public import caiman.math;
 public import caiman.memory;
 public import caiman.meta;
+public import caiman.mira;
 public import caiman.random;
 public import caiman.serialization;
 public import caiman.state;

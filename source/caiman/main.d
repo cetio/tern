@@ -33,15 +33,17 @@ public struct D
 }
 void main()
 {
-    //ubyte[] bytes = cast(ubyte[])std.file.read(r"C:\Users\stake\Downloads\VSCodeUserSetup-x64-1.86.1.exe");
-    ubyte[] bytes = cast(ubyte[])"Hello World!";
-    auto start = Clock.currTime();
-    writeln(cast(string)bytes);
-    mira_encrypt(bytes, "YTvF4J2XHSbiZSWQ5uZfQqwyn8NNJkyd");
-    writeln(cast(string)bytes);
-    std.file.write(r"C:\Users\stake\Downloads\out.exe", bytes);
-    //writeln(cast(string)bytes);
+    FileStream fs = new FileStream(r"C:\Users\stake\Downloads\VSCodeUserSetup-x64-1.86.1.exe");
+    writeln("Data size: ", fs.size / 1024f / 1024f, "MB");
+    /* auto start = Clock.currTime();
+    Mira.encrypt(bytes, "YTvF4J2XHSbiZSWQ5uZfQqwyn8NNJkyd");
     writeln(Clock.currTime() - start);
-    //mira_decrypt(bytes, "YTvF4J2XHSbiZSWQ5uZfQqwyn8NNJkyd");
-    //writeln(cast(string)bytes);
+    Mira.decrypt(bytes, "YTvF4J2XHSbiZSWQ5uZfQqwyn8NNJkyd");
+    ptrdiff_t diff;
+    foreach (i; 0..bytes.length)
+    {
+        if (bytes[i] != tbytes[i])
+            diff++;
+    }
+    writeln("Corrupted? ", bytes != tbytes, ", diff: ", diff); */
 }
