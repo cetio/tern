@@ -1,4 +1,4 @@
-module caiman.stream.file_stream;
+/* module caiman.stream.file_stream;
 
 import std.stdio;
 import caiman.typecons;
@@ -270,4 +270,4 @@ public:
         Mira.decrypt(buff, "9G7o6mcmxMFfAv0jOedyx1JWnGqRNk0g");
         write!(ubyte[], false)(buff);
     }
-}
+} */
