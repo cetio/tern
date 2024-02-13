@@ -2,40 +2,16 @@
 module caiman.digest.chacha20;
 
 /// ChaCha20 symmetric streaming encryption implementation using 256 bit keys.
-// Credit: https://github.com/route616/chacha/blob/master/source/chacha.d
 public static class ChaCha20
 {
 private:
 static:
-pure:
-    private struct StructuredState 
+    void quarterRound(ref uint[16] block, uint a, uint b, uint c, uint d)
     {
-        enum uint[4] constants = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
-        ubyte[32] key = 0;
-        uint counter = 0;
-        ubyte[12] nonce = 0;
-    }
-
-    private union State 
-    {
-        StructuredState asStruct;
-        uint[16] asInts;
-        ubyte[64] asBytes;
-
-        alias asStruct this;
-    }
-
-    uint rotateLeft(uint value, uint shift)
-    {
-        return (value << shift) | (value >> (32 - shift));
-    }
-
-    void quarterRound(ref uint[16] block, ubyte a, ubyte b, ubyte c, ubyte d)
-    {
-        block[a] += block[b]; block[d] = rotateLeft(block[d] ^ block[a], 16);
-        block[c] += block[d]; block[b] = rotateLeft(block[b] ^ block[c], 12);
-        block[a] += block[b]; block[d] = rotateLeft(block[d] ^ block[a], 8);
-        block[c] += block[d]; block[b] = rotateLeft(block[b] ^ block[c], 7);
+        block[a] += block[b]; block[d] = (block[d] ^ block[a]) >>> 16;
+        block[c] += block[d]; block[b] = (block[b] ^ block[c]) >>> 12;
+        block[a] += block[b]; block[d] = (block[d] ^ block[a]) >>> 8;
+        block[c] += block[d]; block[b] = (block[b] ^ block[c]) >>> 7;
     }
 
     uint[16] innerRound(ref uint[16] block)
@@ -46,13 +22,11 @@ pure:
             quarterRound(block, 1, 5, 9, 13);
             quarterRound(block, 2, 6, 10, 14);
             quarterRound(block, 3, 7, 11, 15);
-
             quarterRound(block, 0, 5, 10, 15);
             quarterRound(block, 1, 6, 11, 12);
             quarterRound(block, 2, 7, 8, 13);
             quarterRound(block, 3, 4, 9, 14);
         }
-
         return block;
     }
 
@@ -60,28 +34,30 @@ public:
     void crypt(ref ubyte[] data, string key, ubyte[12] nonce, uint counter = 0)
     {
         if (key.length != 32)
-            throw new Throwable("Key is not 256 bits!");
+            throw new Throwable("Key must be 256 bits!");
 
-        State state;
-        state.key = cast(ubyte[32])(key[0..32]);
-        state.nonce = nonce;
-        state.counter = counter;
+        uint[16] state;
+        state[0..4] = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
+        state[4..12] = *cast(uint[8]*)key.ptr;
+        state[12..13] = counter;
+        state[13..16] = cast(uint[3])nonce;
 
-        State keyStream = void;
-        ubyte currentByteOffset = 64;
+        uint[16] keyStream;
+        ubyte offset = 64;
 
-        foreach (ref octal; data) 
+        foreach (ref octet; data) 
         {
-            if (currentByteOffset >= 64) 
+            if (offset >= 64) 
             {
-                keyStream = state;
-                keyStream.asInts[] += innerRound(keyStream.asInts)[];
-                state.counter++;
-                currentByteOffset = 0;
+                keyStream = state.dup;
+                innerRound(keyStream);
+                // Counter
+                state[12]++;
+                offset = 0;
             }
 
-            octal ^= keyStream.asBytes[currentByteOffset];
-            currentByteOffset++;
+            octet ^= (cast(ubyte[64])keyStream)[offset];
+            offset++;
         }
     }
 }
