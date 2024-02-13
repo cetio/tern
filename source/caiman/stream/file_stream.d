@@ -14,6 +14,7 @@ public enum Mode
     Write,
     ReadWrite,
     Append,
+    ReadAppend,
 }
 
 public class FileStream : IStream
@@ -32,9 +33,11 @@ public:
         else if (mode == Mode.Write)
             this.file = File(path, "w");
         else if (mode == Mode.ReadWrite)
-            this.file = File(path, "a+");
+            this.file = File(path, "r+");
         else if (mode == Mode.Append)
             this.file = File(path, "a");
+        else if (mode == Mode.ReadAppend)
+            this.file = File(path, "a+");
         this.endianness = endianness;
     }
 
