@@ -58,7 +58,4 @@ void main()
     ptrdiff_t numShuffles;
     writeln("Sane Key Hash: ", Mira512.getSaneKeyHash(bytes, key, 0, numShuffles));
     writeln("Shuffles: ", numShuffles);
-    start = Clock.currTime();
-    ChaCha20.crypt(bytes, "SpWc5m7uednxBqV2YrKk83tZ6UayFEPR", (ubyte[12]).init);
-    writeln(Clock.currTime() - start);
 }

@@ -15,7 +15,7 @@ pure:
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
 
-        key = fhkdf(key, seed);
+        key = FHKDF.hash(key, seed);
         ulong a = (cast(ulong*)&key[0])[0];
         ulong b = (cast(ulong*)&key[0])[1];
         ulong c = (cast(ulong*)&key[0])[2];
@@ -40,7 +40,7 @@ pure:
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
 
-        key = fhkdf(key, seed);
+        key = FHKDF.hash(key, seed);
         ulong a = (cast(ulong*)key.ptr)[0];
         ulong b = (cast(ulong*)key.ptr)[1];
         ulong c = (cast(ulong*)key.ptr)[2];
@@ -86,7 +86,7 @@ pure:
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
             
-        key = fhkdf(key, seed);
+        key = FHKDF.hash(key, seed);
         ulong a = (cast(ulong*)&key[0])[0];
         ulong b = (cast(ulong*)&key[0])[1];
         ulong c = (cast(ulong*)&key[0])[2];

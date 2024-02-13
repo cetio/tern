@@ -15,8 +15,8 @@ pure:
         if (key.length != 64)
             throw new Throwable("Key is not 512 bits!");
 
-        string keyFront = fhkdf(key[0..32], seed);
-        string keyBack = fhkdf(key[32..64], seed);
+        string keyFront = FHKDF.hash(key[0..32], seed);
+        string keyBack = FHKDF.hash(key[32..64], seed);
 
         ulong ap = (cast(ulong*)keyBack.ptr)[0];
         ulong bp = (cast(ulong*)keyBack.ptr)[1];
@@ -42,8 +42,8 @@ pure:
         if (key.length != 64)
             throw new Throwable("Key is not 512 bits!");
 
-        string keyFront = fhkdf(key[0..32], seed);
-        string keyBack = fhkdf(key[32..64], seed);
+        string keyFront = FHKDF.hash(key[0..32], seed);
+        string keyBack = FHKDF.hash(key[32..64], seed);
 
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];
@@ -94,8 +94,8 @@ pure:
         if (key.length != 64)
             throw new Throwable("Key is not 512 bits!");
         
-        string keyFront = fhkdf(key[0..32], seed);
-        string keyBack = fhkdf(key[32..64], seed);
+        string keyFront = FHKDF.hash(key[0..32], seed);
+        string keyBack = FHKDF.hash(key[32..64], seed);
         
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];
