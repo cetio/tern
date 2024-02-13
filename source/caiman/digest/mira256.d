@@ -1,18 +1,21 @@
+/// Mira symmetric streaming encryption implementation using 256 bit keys.
 module caiman.digest.mira256;
 
 import core.simd;
-import caiman.digest.fixedhash;
+import caiman.digest.fhkdf;
 
+/// Mira symmetric streaming encryption implementation using 256 bit keys.
 public static class Mira256
 {
 public:
 static:
+pure:
     public string getSaneKeyHash(ubyte[] data, string key, ulong seed, out ptrdiff_t numShuffles)
     {
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
 
-        key = fixedHash(key, seed);
+        key = fhkdf(key, seed);
         ulong a = (cast(ulong*)&key[0])[0];
         ulong b = (cast(ulong*)&key[0])[1];
         ulong c = (cast(ulong*)&key[0])[2];
@@ -32,17 +35,16 @@ static:
         return sane;
     }
 
-    pragma(inline)
     public void encrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
-            
-        key = fixedHash(key, seed);
-        ulong a = (cast(ulong*)&key[0])[0];
-        ulong b = (cast(ulong*)&key[0])[1];
-        ulong c = (cast(ulong*)&key[0])[2];
-        ulong d = (cast(ulong*)&key[0])[3];
+
+        key = fhkdf(key, seed);
+        ulong a = (cast(ulong*)key.ptr)[0];
+        ulong b = (cast(ulong*)key.ptr)[1];
+        ulong c = (cast(ulong*)key.ptr)[2];
+        ulong d = (cast(ulong*)key.ptr)[3];
 
         ptrdiff_t rlen = data.length - (data.length % 16);
         ptrdiff_t e = (a + b + c + d) % ((data.length / 16_384) | 2);
@@ -79,13 +81,12 @@ static:
         }
     }
 
-    pragma(inline)
     public void decrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
             
-        key = fixedHash(key, seed);
+        key = fhkdf(key, seed);
         ulong a = (cast(ulong*)&key[0])[0];
         ulong b = (cast(ulong*)&key[0])[1];
         ulong c = (cast(ulong*)&key[0])[2];

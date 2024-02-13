@@ -5,7 +5,7 @@ module caiman.digest;
 public import caiman.digest.adler32;
 public import caiman.digest.aes;
 public import caiman.digest.chacha20;
-public import caiman.digest.fixedhash;
+public import caiman.digest.fhkdf;
 public import caiman.digest.fnv1;
 public import caiman.digest.mira256;
 public import caiman.digest.mira512;

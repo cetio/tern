@@ -2,8 +2,10 @@ module caiman.digest.pbkdf2;
 
 import std.math;
 
+public:
+static:
 // Credit: https://github.com/1100110/cryptod/blob/master/cryptod/src/kdf/pbkdf2.d
-ubyte[] PBKDF2(ubyte[] function(ubyte[], ubyte[]) PRF, string P, ubyte[] S, uint c, uint dkLen)
+ubyte[] pbkdf2(ubyte[] function(ubyte[], ubyte[]) PRF, string P, ubyte[] S, uint c, uint dkLen)
 {
 	union WORD 
     { 

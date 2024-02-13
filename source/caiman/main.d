@@ -37,16 +37,16 @@ void main()
 {
     import std.digest;
     import std.digest.md;
-    string key = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
+    string key = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPRSpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
     ubyte[] bytes = cast(ubyte[])std.file.read(r"C:\Users\stake\Downloads\VSCodeUserSetup-x64-1.86.1.exe");
     ubyte[] tbytes = bytes.dup;
     writeln("Size: ", bytes.length / 1024 / 1024, "MB");
     writeln("MD5: ", digest!MD5(bytes).toHexString());
     auto start = Clock.currTime();
-    Mira256.encrypt(bytes, key);
+    Mira512.encrypt(bytes, key);
     writeln(Clock.currTime() - start);
     writeln("MD5: ", digest!MD5(bytes).toHexString());
-    Mira256.decrypt(bytes, key);
+    Mira512.decrypt(bytes, key);
     ptrdiff_t diff;
     foreach (i; 0..bytes.length)
     {
@@ -56,6 +56,9 @@ void main()
     writeln("Corrupted? ", bytes != tbytes, ", diff: ", diff);
     writeln("Sane Key: ", key);
     ptrdiff_t numShuffles;
-    writeln("Sane Key Hash: ", Mira256.getSaneKeyHash(bytes, key, 0, numShuffles));
+    writeln("Sane Key Hash: ", Mira512.getSaneKeyHash(bytes, key, 0, numShuffles));
     writeln("Shuffles: ", numShuffles);
+    start = Clock.currTime();
+    ChaCha20.crypt(bytes, "SpWc5m7uednxBqV2YrKk83tZ6UayFEPR", (ubyte[12]).init);
+    writeln(Clock.currTime() - start);
 }

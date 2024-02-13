@@ -1,6 +1,8 @@
 module caiman.digest.pbkdf1;
 
-ubyte[] PBKDF1(string P, ubyte[8] S, uint C, uint kLen, ubyte[] function(ubyte[]) hash)
+public:
+static:
+ubyte[] pbkdf1(string P, ubyte[8] S, uint C, uint kLen, ubyte[] function(ubyte[]) hash)
 {
 	ptrdiff_t hLen = hash([]).length;
 	if(kLen > hLen)
