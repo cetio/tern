@@ -283,7 +283,7 @@ final:
     auto opEquals(A)(A ahs) const
     {
         alias N = typeof(null);
-        static if (is(R == N))
+        static if (is(A == N))
             return ptr == null;
         else
             return value == ahs;
@@ -292,7 +292,7 @@ final:
     auto opEquals(A)(A ahs) const shared
     {
         alias N = typeof(null);
-        static if (is(R == N))
+        static if (is(A == N))
             return ptr == null;
         else
             return value == ahs;

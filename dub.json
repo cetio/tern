@@ -9,9 +9,5 @@
 	"description": "mmmffnnn~~",
 	"license": "AGPL-3.0-only",
 	"name": "caiman",
-	"targetType": "library",
-    "sourcePaths": 
-    [
-		"source/"
-	]
+	"targetType": "executable",
 }
