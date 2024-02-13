@@ -1,4 +1,4 @@
-/// Mira symmetric streaming encryption key hash algorithm implementation.
+/// Mira symmetric streaming encryption key derivation implementation.
 module caiman.digest.fhkdf;
 
 public static class FHKDF
@@ -7,20 +7,20 @@ public:
 static:
 pure:
     /** 
-    * Hashes a 256 bit key.
+    * Derives a 256 bit key from `key`.
     *
     * Params:
-    *   key = Source string to be hashed.
+    *   key = Key to hash and derive from.
     *   seed = Seed of the hash. (IV)
     *
     * Returns: 
-    *  The hash of `key` as a 256 bit string.
+    *  The new key derived from `key`
     *
     * Remarks:
     *  Does not validate the length of `key`
     */
     pragma(inline)
-    string hash(string key, ulong seed)
+    string derive(string key, ulong seed)
     {
         char[32] dst;
         foreach (k; 0..32)
