@@ -77,7 +77,6 @@ shared static this()
 
 public:
 static:
-@nogc:
 /** 
  * Creates a monitor for `val`
  *
