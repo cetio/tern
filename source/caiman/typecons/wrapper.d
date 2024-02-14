@@ -7,9 +7,7 @@ import caiman.meta;
 import core.atomic;
 import core.sync.mutex;
 
-/** 
- * Implements all functions of an abstract class with an default/empty function.
- */
+/// Implements all functions of an abstract class with an default/empty function.
 public class BlackHole(T)
     if (isAbstractClass!T)
 {
@@ -32,9 +30,7 @@ public class BlackHole(T)
     }
 }
 
-/** 
- * Implements all functions of an abstract class with an assert trap.
- */
+/// Implements all functions of an abstract class with an assert trap.
 public class WhiteHole(T)
     if (isAbstractClass!T)
 {
@@ -48,7 +44,7 @@ public class WhiteHole(T)
 }
 
 /** 
- * Wraps a type with modified or optional fields. \
+ * Wraps a type with modified or optional fields.  
  * Short for VariadicType.
  *
  * Remarks:
@@ -202,7 +198,7 @@ unittest
 }
 
 /**
- * Wraps `T` to allow it to be defined as null. \
+ * Wraps `T` to allow it to be defined as null.  
  * No, this is not actually an optional, it is literally backed by a pointer and thus *actually* nullable.
  *
  * Remarks:
@@ -412,6 +408,7 @@ final:
     }
 }
 
+/// Helper function for creating an nullable with a non-nullable value.
 pragma(inline)
 Nullable!T nullable(T)(T val)
 {
@@ -740,6 +737,7 @@ final:
     }
 }
 
+/// Helper function for creating an atomic with a non-atomic value
 pragma(inline)
 Atomic!(T, M) atomic(MemoryOrder M = MemoryOrder.seq, T)(T val)
     if (!is(T == shared))
@@ -747,6 +745,7 @@ Atomic!(T, M) atomic(MemoryOrder M = MemoryOrder.seq, T)(T val)
     return Atomic!(T, M)(cast(shared(T))val);
 }
 
+/// Helper function for creating an atomic with a non-atomic value
 pragma(inline)
 Atomic!(T, M) atomic(MemoryOrder M = MemoryOrder.seq, T)(T val)
     if (is(T == shared))
@@ -754,12 +753,14 @@ Atomic!(T, M) atomic(MemoryOrder M = MemoryOrder.seq, T)(T val)
     return Atomic!(T, M)(val);
 }
 
+/// Arbitrary length tuple-type construct allowing for any number of values to be stored of any type.
 struct Compound(T...)
 {
     T value;
     alias value this;
 }
 
+/// Helper function for creating a compound with arguments
 pragma(inline)
 Compound!T compound(T...)(T args)
 {

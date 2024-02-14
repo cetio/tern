@@ -1,9 +1,23 @@
-module caiman.digest.hash.murmurhash;
+/// Implementation of MurmurHash digester
+module caiman.digest.murmurhash;
 
 import caiman.memory;
 import caiman.serialization;
+import caiman.digest;
 
-public static class MurmurHash
+/**
+ * Implementation of MurmurHash digester.
+ *
+ * MurmurHash is a non-cryptographic hash function suitable for general hash-based 
+ * lookup. It provides fast and relatively good distribution of hash values.
+ *
+ * Example:
+ * ```d
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * auto hashValue = MurmurHash.hash(data);
+ * ```
+ */
+public static @digester class MurmurHash
 {
 private:
 static:
@@ -14,6 +28,16 @@ pure:
     }
 
 public:
+    /**
+    * Computes the MurmurHash digest of the given data.
+    *
+    * Params:
+    *  data = The input byte array for which the hash is to be computed.
+    *  seed = An optional seed value used to initialize the hash function. Defaults to 0.
+    *
+    * Returns:
+    *  An array of bytes representing the computed MurmurHash digest.
+    */
     ubyte[] hash(ubyte[] data, uint seed = 0)
     {
         enum uint c1 = 0xcc9e2d51;

@@ -1,13 +1,44 @@
-module caiman.digest.cipher.mira;
+/// Implementation of Mira digesters, internally backed by `caiman.digest.fhkdf`
+module caiman.digest.mira;
 
 import core.simd;
 import caiman.digest;
+import caiman.digest.fhkdf;
 
-public static class Mira256
+/**
+ * Implementation of Mira256 digester, internally backed by `caiman.digest.fhkdf`
+ *
+ * Mira is an incredibly fast stream encryption algorithm based on shuffling and vector
+ * xor operations on data.
+ *
+ * Example:
+ * ```d
+ * string key = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPRSpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
+ * ubyte[] data = cast(ubyte[])"Hello World!";
+ * Mira256.encrypt(data, key);
+ * Mira256.decrypt(data, key);
+ */
+public static @digester class Mira256
 {
 public:
 static:
 pure:
+    /**
+    * Computes a sane hash value of the key and calculates the number of shuffles.
+    *
+    * This method takes an input byte array `data`, a string `key`, an unsigned long `seed`, 
+    * and returns a string representing the sane hash value of the key. Additionally, it 
+    * outputs the number of shuffles performed during the operation.
+    *
+    * Params:
+    *  data = The input byte array.
+    *  key = The encryption key as a string. Must be either 256 or 512 bits.
+    *  seed = An unsigned long value used as a seed for the hashing operation.
+    *  numShuffles = An output parameter representing the number of shuffles performed during the operation.
+    *
+    * Returns:
+    *  A string representing the sane hash value of the key.
+    */
     string getSaneKeyHash(ubyte[] data, string key, ulong seed, out ptrdiff_t numShuffles)
     {
         if (key.length != 32)
@@ -33,6 +64,17 @@ pure:
         return sane;
     }
 
+    /**
+    * Encrypts the given byte array `data`
+    *
+    * This method encrypts the data using the Mira algorithm with the specified encryption `key`
+    * and an optional `seed` value. The encryption is done in place.
+    *
+    * Params:
+    *  data = Reference to the byte array to be encrypted.
+    *  key = The encryption key as a string. Must be either 256 or 512 bits.
+    *  seed = An optional seed value used for encryption. Defaults to 0.
+    */
     void encrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 32)
@@ -79,6 +121,17 @@ pure:
         }
     }
 
+    /**
+    * Decrypts the given byte array `data`
+    *
+    * This method decrypts the data using the Mira algorithm with the specified decryption `key`
+    * and an optional `seed` value. The decryption is done in place.
+    *
+    * Params:
+    *  data = Reference to the byte array to be decrypted.
+    *  key = The decryption key as a string. Must be either 256 or 512 bits.
+    *  seed = An optional seed value used for decryption. Defaults to 0.
+    */
     void decrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 32)
@@ -129,11 +182,40 @@ pure:
     }
 }
 
-public static class Mira512
+/**
+ * Implementation of Mira512 digester, internally backed by `caiman.digest.fhkdf`
+ *
+ * Mira is an incredibly fast stream encryption algorithm based on shuffling and vector
+ * xor operations on data.
+ *
+ * Example:
+ * ```d
+ * string key = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPRSpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
+ * ubyte[] data = cast(ubyte[])"Hello World!";
+ * Mira512.encrypt(data, key);
+ * Mira512.decrypt(data, key);
+ */
+public static @digester class Mira512
 {
 public:
 static:
 pure:
+    /**
+    * Computes a sane hash value of the key and calculates the number of shuffles.
+    *
+    * This method takes an input byte array `data`, a string `key`, an unsigned long `seed`, 
+    * and returns a string representing the sane hash value of the key. Additionally, it 
+    * outputs the number of shuffles performed during the operation.
+    *
+    * Params:
+    *  data = The input byte array.
+    *  key = The encryption key as a string. Must be either 256 or 512 bits.
+    *  seed = An unsigned long value used as a seed for the hashing operation.
+    *  numShuffles = An output parameter representing the number of shuffles performed during the operation.
+    *
+    * Returns:
+    *  A string representing the sane hash value of the key.
+    */
     string getSaneKeyHash(ubyte[] data, string key, ulong seed, out ptrdiff_t numShuffles)
     {
         if (key.length != 64)
@@ -161,6 +243,17 @@ pure:
         return sane;
     }
 
+    /**
+    * Encrypts the given byte array `data`
+    *
+    * This method encrypts the data using the Mira algorithm with the specified encryption `key`
+    * and an optional `seed` value. The encryption is done in place.
+    *
+    * Params:
+    *  data = Reference to the byte array to be encrypted.
+    *  key = The encryption key as a string. Must be either 256 or 512 bits.
+    *  seed = An optional seed value used for encryption. Defaults to 0.
+    */
     void encrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 64)
@@ -213,6 +306,17 @@ pure:
         }
     }
 
+    /**
+    * Decrypts the given byte array `data`
+    *
+    * This method decrypts the data using the Mira algorithm with the specified decryption `key`
+    * and an optional `seed` value. The decryption is done in place.
+    *
+    * Params:
+    *  data = Reference to the byte array to be decrypted.
+    *  key = The decryption key as a string. Must be either 256 or 512 bits.
+    *  seed = An optional seed value used for decryption. Defaults to 0.
+    */
     void decrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 64)

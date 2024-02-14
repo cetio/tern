@@ -1,33 +1,20 @@
 /// Templates for blitting arbitrary functions or other comptime data onto a type
 module caiman.typecons.blit;
 
-import std.string;
 import std.array;
 import std.ascii;
 import std.algorithm;
 import caiman.traits;
 import caiman.conv;
+import caiman.string;
 
 /// Attribute signifying an enum uses flags
 public enum flags;
 /// Attribute signifying an enum should not have properties made
 public enum exempt;
 
-public static pure string mangle(string str) 
-{
-    size_t idx = str.lastIndexOf('.');
-    if (idx != -1)
-        str = str[(idx + 1)..$];
-    str = str.replace("*", "PTR")
-        .replace("[", "OPBRK")
-        .replace("]", "CLBRK")
-        .replace(",", "COMMA")
-        .replace("!", "EXCLM");
-    return str.filter!(c => isAlphaNum(c) || c == '_').array.to!string;
-}
-
 /** 
- * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type. \
+ * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type.  
  * This is an attribute and should be used like `@inherit!T`
  *
  *  Example:
@@ -51,7 +38,7 @@ public template inherit(T)
 }
 
 /** 
- * Sets up all inherits for the type that mixes this in. \
+ * Sets up all inherits for the type that mixes this in.  
  * Must set inherited types by using `inherit(T)` beforehand.
  *
  *  Example:
@@ -131,9 +118,9 @@ public template applyInherits()
     assert(c.y() == "yohoho!");
 } */
 
-/// Template mixin for auto-generating properties. \
-/// Assumes standardized prefixes! (m_ for backing fields, k for masked enum values) \
-/// Assumes standardized postfixes! (MASK or Mask for masks) \
+/// Template mixin for auto-generating properties.  
+/// Assumes standardized prefixes! (m_ for backing fields, k for masked enum values)  
+/// Assumes standardized postfixes! (MASK or Mask for masks)  
 // TODO: Overloads (allow devs to write specifically a get/set and have the counterpart auto generated)
 //       ~Bitfield exemption?~
 //       Conditional get/sets? (check flag -> return a default) (default attribute?)

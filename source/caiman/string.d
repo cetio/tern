@@ -1,4 +1,4 @@
-/// Utilities for working with strings and characters of any encoding
+/// String mangling, `std.ascii` functionality, and general string utilities to replace `std.string`
 module caiman.string;
 
 import std.array;
@@ -8,7 +8,7 @@ import caiman.traits;
 public:
 static:
 pure:
-/* string mangle(string str) 
+string mangle(string str) 
 {
     size_t idx = str.lastIndexOf('.');
     if (idx != -1)
@@ -19,30 +19,28 @@ pure:
         .replace(",", "COMMA")
         .replace("!", "EXCLM");
     return cast(string)str.filter!(c => isAlphaNum(c) || c == '_').array;
-} */
+}
 
-T toUpper(T)(T str)
-    if (isSomeString!T)
+string toUpper(string str)
 {
     char[] ret = new char[str.length];
     foreach (i, c; str)
     {
         if (c.isLower)
-            ret[i] = cast(ElementType!T)(c - ('a' - 'A'));
+            ret[i] = cast(char)(c - ('a' - 'A'));
         else
             ret[i] = c;
     }
     return cast(string)ret;
 }
 
-T toLower(T)(T str)
-    if (isSomeString!T)
+string toLower(string str)
 {
     char[] ret = new char[str.length];
     foreach (i, c; str)
     {
         if (c.isUpper)
-            ret[i] = cast(ElementType!T)(c + ('a' - 'A'));
+            ret[i] = cast(char)(c + ('a' - 'A'));
         else
             ret[i] = c;
     }
@@ -56,8 +54,7 @@ bool isAlphaNum(T)(T c, uint base = 10) if (isSomeChar!T) => c.isAlpha || c.isDi
 bool isUpper(T)(T c) if (isSomeChar!T) => (c >= 'A' && c <= 'Z');
 bool isLower(T)(T c) if (isSomeChar!T) => (c >= 'a' && c <= 'z');
 
-bool isAlpha(T)(T str)
-    if (isSomeString!T)
+bool isAlpha(string str)
 {
     foreach (c; str)
     {
@@ -67,8 +64,7 @@ bool isAlpha(T)(T str)
     return true;
 }
 
-bool isAlphaNum(T)(T str, uint base = 10)
-    if (isSomeString!T)
+bool isAlphaNum(string str, uint base = 10)
 {
     foreach (c; str)
     {
@@ -78,8 +74,7 @@ bool isAlphaNum(T)(T str, uint base = 10)
     return true;
 }
 
-bool isNumeric(T)(T str, uint base = 10)
-    if (isSomeString!T)
+bool isNumeric(string str, uint base = 10)
 {
     foreach (c; str)
     {
@@ -89,8 +84,7 @@ bool isNumeric(T)(T str, uint base = 10)
     return true;
 }
 
-bool isUpper(T)(T str)
-    if (isSomeString!T)
+bool isUpper(string str)
 {
     foreach (c; str)
     {
@@ -100,8 +94,7 @@ bool isUpper(T)(T str)
     return true;
 }
 
-bool isLower(T)(T str)
-    if (isSomeString!T)
+bool isLower(string str)
 {
     foreach (c; str)
     {
@@ -111,8 +104,7 @@ bool isLower(T)(T str)
     return true;
 }
 
-ptrdiff_t indexOf(T)(T str, char c)
-    if (isSomeString!T)
+ptrdiff_t indexOf(string str, char c)
 {
     foreach (i, _c; str)
     {
@@ -122,14 +114,56 @@ ptrdiff_t indexOf(T)(T str, char c)
     return -1;
 }
 
-ptrdiff_t lastIndexOf(T)(T str, char c)
-    if (isSomeString!T)
+ptrdiff_t lastIndexOf(string str, char c)
 {
-    ptrdiff_t last = -1;
-    foreach (i, _c; str)
+    foreach_reverse (i, _c; str)
     {
         if (_c == c)
-            last = i;
+            return i;
     }
-    return last;
+    return -1;
+}
+
+ptrdiff_t indexOf(string str, string substr) 
+{
+    if (substr.length > str.length)
+        return -1;
+
+    foreach (i; 0..(str.length - substr.length))
+    {
+        bool found = true;
+        foreach (j, c; substr)
+        {
+            if (str[i + j] != c) 
+            {
+                found = false;
+                break;
+            }
+        }
+        if (found)
+            return i;
+    }
+    return -1;
+}
+
+ptrdiff_t lastIndexOf(string str, string substr) 
+{
+    if (substr.length > str.length)
+        return -1;
+
+    foreach_reverse (i; 0 .. (str.length - substr.length + 1)) 
+    {
+        bool found = true;
+        foreach (j, c; substr) 
+        {
+            if (str[i + j] != c) 
+            {
+                found = false;
+                break;
+            }
+        }
+        if (found)
+            return i;
+    }
+    return -1;
 }

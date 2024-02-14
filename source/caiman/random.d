@@ -1,4 +1,4 @@
-/// Comptime random number generation, supports all integral types, floats, and boolean
+/// Comptime random number generator with support for all integral types, floats, and boolean
 module caiman.random;
 
 import std.meta;

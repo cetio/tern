@@ -1,6 +1,21 @@
-module caiman.digest.hash.fhkdf;
+/// Implementation of FHKDF digester.
+module caiman.digest.fhkdf;
 
-public static class FHKDF
+import caiman.digest;
+
+/** 
+ * Implementation of FHKDF digester.
+ *
+ * FHKDF is a very fast and efficient key derivation algorithm designed for 256 bit keys.
+ *
+ * ```d
+ * import caiman.digest.fhkdf
+ *
+ * string key = "...";
+ * ulong seed = 0xFF3CA9FF;
+ * auto keyHash = FHKDF.hash(cast(ubyte)key, seed);
+ */
+public static @digester class FHKDF
 {
 public:
 static:

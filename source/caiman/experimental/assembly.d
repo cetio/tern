@@ -178,10 +178,10 @@ string rest(uint COUNT)()
 
 shared ubyte[8] movBuff;
 /** 
- * All chained uses of mov must be enclosed in a scope using `{..}` \
+ * All chained uses of mov must be enclosed in a scope using `{..}`  
  * Failure to do this will result in registers being overwritten by other movs, as this template uses `scope (exit)` for inline asm!
  *
- * Does not automatically prepare the stack for you, and R10, R11, R12 & XMM8 are used as scratch registers. \
+ * Does not automatically prepare the stack for you, and R10, R11, R12 & XMM8 are used as scratch registers.  
  * Use `prep!(uint)` to prepare the stack and rest!(uint) to restore the stack.
  *
  * Params:
@@ -193,9 +193,9 @@ shared ubyte[8] movBuff;
  * Example:
  *  ```d
  *  {
- *      mixin(mov!(rax, a));
- *      mixin(mov!(rbx, b));
- *      mixin(mov!(rcx, a, void, true));
+ *   mixin(mov!(rax, a));
+ *   mixin(mov!(rbx, b));
+ *   mixin(mov!(rcx, a, void, true));
  * }
  * ```
 */
@@ -359,7 +359,7 @@ public template mov(uint ID, T, T val, AS = void, uint _LINE = __LINE__)
     pure string mov()
     {
         static if (isSomeString!T)
-            const string mix = T.stringof~" tval"~val.to!string.mangle()~LINE~" = \""~val.to!string~"\";";
+            const string mix = T.stringof~" tval"~val.to!string.mangle()~LINE~" =  \""~val.to!string~"\";";
         else static if (isSomeChar!T)
             const string mix = T.stringof~" tval"~val.to!string.mangle()~LINE~" = '"~val.to!string~"';";
         else

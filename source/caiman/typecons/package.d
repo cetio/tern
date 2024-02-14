@@ -1,3 +1,4 @@
+/// Implementations for type wrappers/constructs and comptime type mixin blitting
 module caiman.typecons;
 
 public import caiman.typecons.blit;

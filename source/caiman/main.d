@@ -40,8 +40,11 @@ void main()
     ubyte[] tbytes = bytes.dup;
     writeln("Size: ", bytes.length / 1024 / 1024, "MB");
 
+    Digest!(Mira512, string) mira = new Digest!(Mira512, string)(key);
+    mira.devour(bytes);
+
     auto start = Clock.currTime();
-    Mira512.encrypt(bytes, key);
+    mira.digest(bytes.length, key);
     writeln(Clock.currTime() - start);
 
     Mira512.decrypt(bytes, key);

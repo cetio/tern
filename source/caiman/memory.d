@@ -1,4 +1,4 @@
-/// Lightning fast and easy hardware-accelerated memory operations
+/// General-purpose and hardware-accelerated memory operations and allocation functions
 module caiman.memory;
 
 import std.traits;
@@ -31,7 +31,7 @@ static:
 @trusted void* calloc(ptrdiff_t size) => caiman.experimental.heap_allocator.calloc!true(size);
 
 /**
- * Reallocates `ptr` with `size` \
+ * Reallocates `ptr` with `size`  
  * Tries to avoid actually doing a new allocation if possible.
  *
  * Params:

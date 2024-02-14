@@ -1,6 +1,27 @@
-module caiman.digest.cipher.chacha20;
+/// Implementation of ChaCha20 digester.
+module caiman.digest.chacha20;
 
-public static class ChaCha20
+import caiman.digest;
+
+/**
+ * Implementation of ChaCha20 digester.
+ *
+ * ChaCha20 is a symmetric encryption algorithm designed to provide both high performance 
+ * and high security. It operates on 512-bit (64-byte) blocks and accepts a 256-bit (32-byte) 
+ * key and a 96-bit (12-byte) nonce.
+*
+* Example:
+* ```d
+* import caiman.digest.chacha20;
+*
+* ubyte[] data = [1, 2, 3, 4, 5];
+* string key = "my_secret_key"; // Must be exactly 256 bits (32 bytes) in length.
+* ubyte[12] nonce = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Must be exactly 96 bits (12 bytes) in length.
+* uint counter = 0;
+* ChaCha20.encrypt(data, key, nonce, counter);
+* ```
+ */
+public static @digester class ChaCha20
 {
 private:
 static:
@@ -29,6 +50,15 @@ static:
     }
 
 public:
+    /**
+     * Encrypts the given byte array `data`
+     *
+     * Params:
+     *  data: Reference to the input byte array to be encrypted.
+     *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
+     *  nonce: The nonce value. Must be exactly 96 bits (12 bytes) in length.
+     *  counter: The initial counter value. Defaults to 0.
+     */
     void encrypt(ref ubyte[] data, string key, ubyte[12] nonce, uint counter = 0)
     {
         if (key.length != 32)
@@ -59,5 +89,14 @@ public:
         }
     }
 
+    /**
+     * Decrypts the given byte array `data`
+     *
+     * Params:
+     *  data: Reference to the input byte array to be encrypted.
+     *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
+     *  nonce: The nonce value. Must be exactly 96 bits (12 bytes) in length.
+     *  counter: The initial counter value. Defaults to 0.
+     */
     void decrypt(ref ubyte[] data, string key, ubyte[12] nonce, uint counter = 0) => encrypt(data, key, nonce, counter);
 }

@@ -1,6 +1,8 @@
-module caiman.digest.hash.adler32;
+module caiman.digest.adler32;
 
-public static class Adler32
+import caiman.digest;
+
+public static @digester class Adler32
 {
 public:
 static:
@@ -10,11 +12,11 @@ pure:
     /**
      * Computes the Adler-32 checksum for the given data.
      * 
-     * Parameters:
-     *     data - The input data for which the checksum is to be computed.
+     * Params:
+     *  data - The input data for which the checksum is to be computed.
      * 
      * Returns:
-     *     An array of 4 ubytes representing the Adler-32 checksum.
+     *  An array of 4 ubytes representing the Adler-32 checksum.
      */
     ubyte[] hash(ubyte[] data) 
     {

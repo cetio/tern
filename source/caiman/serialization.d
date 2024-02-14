@@ -1,10 +1,12 @@
-/// Utilities for serializing and deserializing arbitrary data types
+/// General-purpose binary serializer and deserializer for arbitrary data types
 module caiman.serialization;
 
 import caiman.traits;
+import caiman.conv;
 
 public:
 static:
+pure:
 @trusted ubyte[] serialize(bool RAW = false, T)(T val)
 {
     static if (isArray!T)
@@ -68,4 +70,15 @@ static:
         return *cast(T*)&bytes[offset];
         //return *cast(T*)(bytes[offset..(offset += T.sizeof)].ptr);
     }
+}
+
+string toHexString(ubyte[] data) 
+{
+    string ret;
+    foreach (b; data) 
+    {
+        ret ~= to!string(b >> 4);
+        ret ~= to!string(b & 0x0F);
+    }
+    return ret;
 }

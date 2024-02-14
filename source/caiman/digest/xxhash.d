@@ -1,8 +1,9 @@
-module caiman.digest.hash.xxhash;
+module caiman.digest.xxhash;
 
 import caiman.serialization;
+import caiman.digest;
 
-public static class xxHash
+public static @digester class xxHash
 {
 public:
 static:

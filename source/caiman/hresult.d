@@ -1,9 +1,8 @@
-/// HResult enum and functions for easily checking state
+/// HResult implementation and functions for easily interacting with HResult
 module caiman.hresult;
 
 import caiman.typecons;
 
-/// HResult values for handling error codes.
 public @exempt enum HResult
 {
     S_OK = 0x00000000,

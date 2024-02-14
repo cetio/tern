@@ -1,8 +1,9 @@
-module caiman.digest.hash.superfasthash;
+module caiman.digest.superfasthash;
 
 import caiman.serialization;
+import caiman.digest;
 
-public static class SuperFastHash
+public static @digester class SuperFastHash
 {
 public:
 static:

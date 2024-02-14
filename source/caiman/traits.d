@@ -25,7 +25,7 @@ public alias isTemplate(alias A) = Alias!(__traits(isTemplate, A));
 public alias isModule(alias A) = Alias!(__traits(isModule, A));
 /// True if `A` is a package.
 public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
-/// True if `A` is a field, otherwise false. \
+/// True if `A` is a field, otherwise false.  
 /// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`
 public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
 /// True if `A` has any parents.
@@ -48,9 +48,9 @@ public template isImmutable(alias A)
 public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateType!T);
 /// True if `T` has any instance constructor ("__ctor").
 public alias hasConstructor(T) = Alias!(hasMember!(T, "__ctor"));
-/// True if `A` implements `B`. \
+/// True if `A` implements `B`.  
 /// If you want to get all implements of 'A', see `Implements(T)`
-public alias isImplement(A, B) = Alias!(seqContains!(B, Implements!A));
+public alias isImplement(B, A) = Alias!(seqContains!(B, Implements!A));
 /// Gets an alias to the package in which `A` is defined, undefined behavior for any alias that does not have a package (any intrinsic type.)
 public alias getPackage(alias A) = Alias!(mixin(fullyQualifiedName!A.indexOf('.') == -1 ? fullyQualifiedName!A : fullyQualifiedName!A[0..fullyQualifiedName!A.indexOf('.')]));
 /// True if `A` is not D implementation defined.
@@ -114,7 +114,7 @@ public template TemplateDefaults(alias T)
     }();
 }
 
-/// Gets the type of member `MEMBER` in `A` \
+/// Gets the type of member `MEMBER` in `A`  
 /// This will return a function alias if `MEMBER` refers to a function, and do god knows what if `MEMBER` is a package or module.
 public template TypeOf(alias A, string MEMBER)
 {
@@ -124,7 +124,7 @@ public template TypeOf(alias A, string MEMBER)
         alias TypeOf = typeof(__traits(getMember, A, MEMBER));
 }
 
-/// Gets the element type of `T`, if applicable. \
+/// Gets the element type of `T`, if applicable.  
 /// Returns the type of enum values if `T` is an enum.
 public template ElementType(T) 
 {
@@ -142,7 +142,7 @@ public template Length(T)
 }
 
 /** 
- * Gets the signature of `F` as a string. \
+ * Gets the signature of `F` as a string.  
  * Initializers will be lost.
  */
 public template FieldSignature(alias F)
@@ -160,7 +160,7 @@ public template FieldSignature(alias F)
 }
 
 /** 
- * Gets the signature of `F` as a string. \
+ * Gets the signature of `F` as a string.  
  * This includes all attributes, templates (must be already initialized, names are lost,) and parameters.
  */
 public template FunctionSignature(alias F)
@@ -222,7 +222,7 @@ public template FunctionCallableSignature(alias F)
 /**
     Gets an `AliasSeq` all types that `T` implements.
 
-    This is functionally very similar to `InterfacesTuple(T)` from `std.traits`, but is more advanced and \
+    This is functionally very similar to `InterfacesTuple(T)` from `std.traits`, but is more advanced and  
     includes *all* implements, including class inherits and alias this.
 */
 public template Implements(T)
@@ -356,8 +356,8 @@ pure void*[] indirections(T)(T val)
  * Generates a mixin for implementing all possible functions of `T`
  * 
  * Remarks:
- *  - Any function that returns true for `isDImplDefined` is discarded. \
- *  - `nothrow`, `pure`, and `const` attributes are discarded. \
+ *  - Any function that returns true for `isDImplDefined` is discarded.  
+ *  - `nothrow`, `pure`, and `const` attributes are discarded.  
  *  - `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
  */
  // TODO: typeof(this) attributes (ie: shared)

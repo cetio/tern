@@ -1,6 +1,8 @@
 module caiman;
 
 public import caiman.digest;
+public import caiman.digest.hash;
+public import caiman.digest.cipher;
 public import caiman.exec;
 public import caiman.experimental;
 public import caiman.regex;
@@ -10,7 +12,6 @@ public import caiman.conv;
 public import caiman.error;
 public import caiman.event;
 public import caiman.hresult;
-public import caiman.math;
 public import caiman.memory;
 public import caiman.meta;
 public import caiman.random;

@@ -1,9 +1,10 @@
-module caiman.digest.hash.berus;
+module caiman.digest.berus;
 
 import std.conv;
 import caiman.serialization;
+import caiman.digest;
 
-public static class Berus
+public static @digester class Berus
 {
 private:
 static:
@@ -13,14 +14,14 @@ pure:
 
 public:
     /**
-     * Computes the hash using the Berus password hashing algorithm.
+     * Computes the Berus digest of the given data.
      * 
-     * Parameters:
-     *     data - The data to be hashed.
-     *     salt - The salt to be used in the hashing process.
+     * Params:
+     *  data - The data to be hashed.
+     *  salt - The salt to be used in the hashing process.
      * 
      * Returns:
-     *     The hashed result as an array of ubytes.
+     *  The hashed result as an array of ubytes.
      */
     ubyte[] hash(ubyte[] data, ubyte[] salt) 
     {

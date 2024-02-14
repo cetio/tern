@@ -1,6 +1,8 @@
-module caiman.digest.cipher.salsa20;
+module caiman.digest.salsa20;
 
-public static class Salsa20
+import caiman.digest;
+
+public static @digester class Salsa20
 {
 private:
 static:

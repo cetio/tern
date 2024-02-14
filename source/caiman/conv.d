@@ -263,8 +263,8 @@ pragma(inline)
 * Swaps the endianness of the provided value, if applicable.
 *
 * Params:
-*     val = The value to swap endianness.
-*     endianness = The desired endianness.
+*  val = The value to swap endianness.
+*  endianness = The desired endianness.
 *
 * Returns:
 *   The value with swapped endianness.
@@ -294,6 +294,13 @@ pragma(inline)
     return val;
 }
 
+/**
+ * Blits all members or array elements onto another value.
+ * 
+ * Params:
+ *  lhs = Side to have values blitted to.
+ *  rhs = Side to have values blitted from.
+ */
 @trusted void blit(T, F)(auto ref F lhs, T rhs)
     if ((!isIntrinsicType!F && !isIntrinsicType!T) || (isArray!T && isArray!F && !isAssociativeArray!T))
 {

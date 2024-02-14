@@ -398,7 +398,7 @@ final:
     }
 
     /**
-    * Reads data from a byte stream into a structured type based on specified field names and read kinds. \
+    * Reads data from a byte stream into a structured type based on specified field names and read kinds.  
     * Designed specifically for better control reading string and array fields.
     *
     * Params:

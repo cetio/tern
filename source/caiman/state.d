@@ -1,4 +1,4 @@
-/// Utility for working with flags enums and masks
+/// Flag enum to string conversion, flag get/sets, and mask interactions
 module caiman.state;
 
 import std.traits;

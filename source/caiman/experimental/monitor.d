@@ -1,4 +1,4 @@
-/// Utility for creating/destroying the monitors of objects
+/// Access to creation and deletion of object monitors abstracted out by the runtime
 module caiman.experimental.monitor;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string;

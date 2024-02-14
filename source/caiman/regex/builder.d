@@ -99,7 +99,7 @@ package enum : ubyte
     INSENSITIVE = 8,
     /// Ignore whitespace
     EXTENDED = 16,
-    /// . matches \r\n\f
+    /// . matches  r\n\f
     SINGLELINE = 32
 }
 
@@ -242,7 +242,7 @@ pure string highlightError(string str, uint index)
 }
 
 // TODO: Refer to future group/element
-//       \b \B (?:..) (..) lookahead lookbehind
+//        b  B (?:..) (..) lookahead lookbehind
 pragma(inline, true)
 pure Element[] build(string pattern, string[string] lookups)
 {
@@ -455,7 +455,7 @@ pure Element[] build(string pattern, string[string] lookups)
                 }
 
                 element.token = CHARACTERS;
-                // Will not be adding support for \gn
+                // Will not be adding support for  gn
                 // Expected to use $n
                 if (c == '\\' && i + 1 < pattern.length)
                 {

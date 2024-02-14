@@ -1,4 +1,4 @@
-/// Utilities for throwing informational errors/exceptions/throwables
+/// Simple highlighting and throwable raising aimed at parsers
 module caiman.error;
 
 import std.algorithm;
@@ -113,7 +113,7 @@ unittest
     }
     catch (Throwable e)
     {
-        assert(e.msg == "Test exception\n                      This is a \x1B[31;4mtest\x1B[0m string");
+        assert(e.msg == "Test exception\n                      This is a  x1B[31;4mtest\x1B[0m string");
     }
 }
 
@@ -139,6 +139,6 @@ unittest
     }
     catch (Throwable e)
     {
-        assert(e.msg == "Test exception\n                      This is a \x1B[31;4mtest\x1B[0m string");
+        assert(e.msg == "Test exception\n                      This is a  x1B[31;4mtest\x1B[0m string");
     }
 }

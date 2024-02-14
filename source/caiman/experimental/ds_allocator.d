@@ -1,5 +1,4 @@
-/// Very fast fixed data segment allocators \
-/// NOT thread safe.
+/// Very fast and very not thread-safe fixed data segment allocator
 module caiman.experimental.ds_allocator;
 
 import std.range;

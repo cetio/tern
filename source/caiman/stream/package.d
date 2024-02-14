@@ -1,3 +1,4 @@
+/// Diverse stream implementation focused towards in-memory performant stream access
 module caiman.stream;
 
 public import caiman.stream.atomic_stream;

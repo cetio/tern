@@ -1,4 +1,4 @@
-/// Fast slab-entry based memory allocator with simple defragmentation \
+/// Fast slab-entry based memory allocator with simple defragmentation  
 /// Recommended to use `caiman.memory.pool` instead if you want thread-safety
 module caiman.experimental.heap_allocator;
 
@@ -181,7 +181,7 @@ pragma(inline)
 }
 
 /**
- * Reallocates `ptr` with `size` \
+ * Reallocates `ptr` with `size`  
  * Tries to avoid actually doing a new allocation if possible.
  *
  * Params:

@@ -1,4 +1,4 @@
-/// Comptime algorithm templates for working with AliasSeq
+/// Comptime algorithm templates for working with `AliasSeq`
 module caiman.meta;
 
 import caiman.traits;
@@ -182,7 +182,7 @@ unittest
 }
 
 /** 
- * Creates a string representing `A` using the given separator. \
+ * Creates a string representing `A` using the given separator.  
  * Avoids weird behavior with `stringof` by not using `stringof` for values.
  */
 // TODO: Use enum format in traits too

@@ -1,6 +1,8 @@
-module caiman.digest.hash.sha;
+module caiman.digest.sha;
 
-public static class SHA1
+import caiman.digest;
+
+public static @digester class SHA1
 {
 public:
 static:
@@ -13,7 +15,7 @@ pure:
     }
 }
 
-public static class SHA256
+public static @digester class SHA256
 {
 public:
 static:
@@ -26,7 +28,7 @@ pure:
     }
 }
 
-public static class SHA512
+public static @digester class SHA512
 {
 public:
 static:
@@ -39,7 +41,7 @@ pure:
     }
 }
 
-public static class SHA224
+public static @digester class SHA224
 {
 public:
 static:
@@ -52,7 +54,7 @@ pure:
     }
 }   
 
-public static class SHA384
+public static @digester class SHA384
 {
 public:
 static:

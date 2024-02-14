@@ -9,8 +9,8 @@ static this()
 {
     lookups["\\w"] = expand("a-zA-Z0-9_", lookups);
     lookups["\\d"] = expand("0-9", lookups);
-    lookups["\\s"] = expand(" \t\r\n\f", lookups);
-    lookups["\\h"] = expand(" \t", lookups);
+    lookups["\\s"] = expand("  t\r\n\f", lookups);
+    lookups["\\h"] = expand("  t", lookups);
     lookups["\\t"] = expand("\t", lookups);
     lookups["\\r"] = expand("\r", lookups);
     lookups["\\n"] = expand("\n", lookups);
@@ -35,8 +35,8 @@ final:
         string[string] lookups;
         lookups["\\w"] = expand("a-zA-Z0-9_", lookups);
         lookups["\\d"] = expand("0-9", lookups);
-        lookups["\\s"] = expand(" \t\r\n\f", lookups);
-        lookups["\\h"] = expand(" \t", lookups);
+        lookups["\\s"] = expand("  t\r\n\f", lookups);
+        lookups["\\h"] = expand("  t", lookups);
         lookups["\\t"] = expand("\t", lookups);
         lookups["\\r"] = expand("\r", lookups);
         lookups["\\n"] = expand("\n", lookups);
@@ -55,8 +55,8 @@ final:
         string[string] lookups;
         lookups["\\w"] = expand("a-zA-Z0-9_", lookups);
         lookups["\\d"] = expand("0-9", lookups);
-        lookups["\\s"] = expand(" \t\r\n\f", lookups);
-        lookups["\\h"] = expand(" \t", lookups);
+        lookups["\\s"] = expand("  t\r\n\f", lookups);
+        lookups["\\h"] = expand("  t", lookups);
         lookups["\\t"] = expand("\t", lookups);
         lookups["\\r"] = expand("\r", lookups);
         lookups["\\n"] = expand("\n", lookups);
