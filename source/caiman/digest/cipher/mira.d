@@ -2,7 +2,6 @@ module caiman.digest.cipher.mira;
 
 import core.simd;
 import caiman.digest;
-import caiman.digest.fhkdf;
 
 public static class Mira256
 {
