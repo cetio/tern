@@ -35,29 +35,32 @@ public struct D
 
 void main()
 {
-    string key = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPRSpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
+    import caiman.digest.anura;
+    import caiman.digest.tea;
+    import caiman.digest.hight;
+    string key128 = "9ydZafSdHSivjFAh";
+    string key256 = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
+    string key512 = "Eepf6WDvoztoKhjTfyuc3Q4AMmdyJvZpaAoHAdZ2h3KA5gdJHriTDVB8RGqpKtaJ";
+    string key1024 = "GmtLDXR7RZdavKmq9vrLm2jafq2JexPHysH2r5rxZtzUpVfKZxps4K8AeZn9P3AZxkE3jfAuZNWWqfkXpbu7jp4mJzWQgx2pndW9uenJR9urJQwp7dvGdgBXkqPa8K8a";
     ubyte[] bytes = cast(ubyte[])std.file.read(r"C:\Users\stake\Downloads\VSCodeUserSetup-x64-1.86.1.exe");
     ubyte[] tbytes = bytes.dup;
     writeln("Size: ", bytes.length / 1024 / 1024, "MB");
 
-    Digest!(Mira512, string) mira = new Digest!(Mira512, string)(key);
-    mira.devour(bytes);
-
     auto start = Clock.currTime();
-    mira.digest(bytes.length, key);
+    HIGHT.encrypt(bytes, key128);
     writeln(Clock.currTime() - start);
 
-    Mira512.decrypt(bytes, key);
+    start = Clock.currTime();
+    HIGHT.decrypt(bytes, key128);
+    writeln(Clock.currTime() - start);
 
-    ptrdiff_t diff;
+    ptrdiff_t diff = tbytes.length - bytes.length;
+    if (bytes.length == tbytes.length)
     foreach (i; 0..bytes.length)
     {
         if (bytes[i] != tbytes[i])
             diff++;
     }
+    
     writeln("Corrupted? ", bytes != tbytes, ", diff: ", diff);
-    writeln("Sane Key: ", key);
-    ptrdiff_t numShuffles;
-    writeln("Sane Key Hash: ", Mira512.getSaneKeyHash(bytes, key, 0, numShuffles));
-    writeln("Shuffles: ", numShuffles);
 }

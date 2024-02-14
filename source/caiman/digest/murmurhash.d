@@ -47,7 +47,7 @@ public:
         enum uint m = 5;
         enum uint n = 0xe6546b64;
 
-        data ~= new ubyte[data.length + (uint.sizeof - (data.length % uint.sizeof))];
+        data ~= new ubyte[4 - (data.length % 4)];
 
         uint hash = seed;
         foreach (k; cast(uint[])data)

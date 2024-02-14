@@ -87,13 +87,13 @@ pure:
         ulong d = (cast(ulong*)keyFront.ptr)[3];
 
         ptrdiff_t rlen = data.length - (data.length % 16);
-        ptrdiff_t e = (a + b + c + d) % ((data.length / 16_384) | 2);
+        ptrdiff_t factor = ((a + b + c + d) % ((data.length / 16_384) | 2)) | 1;
 
-        for (ptrdiff_t i = e; i < data.length; i += e)
+        for (ptrdiff_t i = factor; i < data.length; i += factor)
         {
             ubyte b0 = data[i];
-            data[i] = data[i - e];
-            data[i - e] = b0;
+            data[i] = data[i - factor];
+            data[i - factor] = b0;
         }
 
         ulong2* vptr = cast(ulong2*)data.ptr;
@@ -101,7 +101,7 @@ pure:
         {
             ptrdiff_t ri = ~i;
             ptrdiff_t si = i % 8;
-            *vptr += e;
+            *vptr += factor;
             *vptr ^= (a << si) ^ ri; 
             *vptr ^= (b << si) ^ ri;
             *vptr ^= (c << si) ^ ri; 
@@ -113,7 +113,7 @@ pure:
         {
             ptrdiff_t ri = ~i;
             ptrdiff_t si = i % 8;
-            _b += e;
+            _b += factor;
             _b ^= (a << si) ^ ri;
             _b ^= (b << si) ^ ri;
             _b ^= (c << si) ^ ri;
@@ -143,7 +143,7 @@ pure:
         ulong c = (cast(ulong*)keyFront.ptr)[2];
         ulong d = (cast(ulong*)keyFront.ptr)[3];
 
-        ptrdiff_t e = (a + b + c + d) % ((data.length / 16_384) | 2);
+        ptrdiff_t factor = ((a + b + c + d) % ((data.length / 16_384) | 2)) | 1;
         ptrdiff_t rlen = data.length - (data.length % 16);
 
         ulong2* vptr = cast(ulong2*)data.ptr;
@@ -155,7 +155,7 @@ pure:
             *vptr ^= (b << si) ^ ri;
             *vptr ^= (c << si) ^ ri; 
             *vptr ^= (d << si) ^ ri;
-            *vptr -= e;
+            *vptr -= factor;
             vptr += 1;
         }
 
@@ -167,17 +167,17 @@ pure:
             _b ^= (b << si) ^ ri;
             _b ^= (c << si) ^ ri;
             _b ^= (d << si) ^ ri;
-            _b -= e;
+            _b -= factor;
         }
 
-        ptrdiff_t s = e;
-        for (; s < data.length; s += e) { }
-        s -= e;
-        for (; s >= e; s -= e)
+        ptrdiff_t s = factor;
+        for (; s < data.length; s += factor) { }
+        s -= factor;
+        for (; s >= factor; s -= factor)
         {
             ubyte b0 = data[s];
-            data[s] = data[s - e];
-            data[s - e] = b0;
+            data[s] = data[s - factor];
+            data[s - factor] = b0;
         }
     }
 }
@@ -272,13 +272,13 @@ pure:
         ulong dp = (cast(ulong*)keyBack.ptr)[3];
 
         ptrdiff_t rlen = data.length - (data.length % 16);
-        ptrdiff_t e = (ap + bp + cp + dp) % ((data.length / 16_384) | 2);
+        ptrdiff_t factor = ((ap + bp + cp + dp) % ((data.length / 16_384) | 2)) | 1;
 
-        for (ptrdiff_t i = e; i < data.length; i += e)
+        for (ptrdiff_t i = factor; i < data.length; i += factor)
         {
             ubyte b0 = data[i];
-            data[i] = data[i - e];
-            data[i - e] = b0;
+            data[i] = data[i - factor];
+            data[i - factor] = b0;
         }
 
         ulong2* vptr = cast(ulong2*)data.ptr;
@@ -286,7 +286,7 @@ pure:
         {
             ptrdiff_t ri = ~i;
             ptrdiff_t si = i % 8;
-            *vptr += e;
+            *vptr += factor;
             *vptr ^= (a << si) ^ ri; 
             *vptr ^= (b << si) ^ ri;
             *vptr ^= (c << si) ^ ri; 
@@ -298,7 +298,7 @@ pure:
         {
             ptrdiff_t ri = ~i;
             ptrdiff_t si = i % 8;
-            _b += e;
+            _b += factor;
             _b ^= (a << si) ^ ri;
             _b ^= (b << si) ^ ri;
             _b ^= (c << si) ^ ri;
@@ -335,7 +335,7 @@ pure:
         ulong dp = (cast(ulong*)keyBack.ptr)[3];
 
         ptrdiff_t rlen = data.length - (data.length % 16);
-        ptrdiff_t e = (ap + bp + cp + dp) % ((data.length / 16_384) | 2);
+        ptrdiff_t factor = ((ap + bp + cp + dp) % ((data.length / 16_384) | 2)) | 1;
 
         ulong2* vptr = cast(ulong2*)data.ptr;
         foreach (i; 0..(data.length / 16))
@@ -346,7 +346,7 @@ pure:
             *vptr ^= (b << si) ^ ri;
             *vptr ^= (c << si) ^ ri; 
             *vptr ^= (d << si) ^ ri;
-            *vptr -= e;
+            *vptr -= factor;
             vptr += 1;
         }
 
@@ -358,17 +358,17 @@ pure:
             _b ^= (b << si) ^ ri;
             _b ^= (c << si) ^ ri;
             _b ^= (d << si) ^ ri;
-            _b -= e;
+            _b -= factor;
         }
 
-        ptrdiff_t s = e;
-        for (; s < data.length; s += e) { }
-        s -= e;
-        for (; s >= e; s -= e)
+        ptrdiff_t s = factor;
+        for (; s < data.length; s += factor) { }
+        s -= factor;
+        for (; s >= factor; s -= factor)
         {
             ubyte b0 = data[s];
-            data[s] = data[s - e];
-            data[s - e] = b0;
+            data[s] = data[s - factor];
+            data[s - factor] = b0;
         }
     }
 }

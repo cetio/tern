@@ -1,4 +1,4 @@
-/// Traits templates intended to fill the gaps in `std.meta`
+/// Traits templates intended to fill the gaps in `std.traits`
 module caiman.traits;
 
 import std.string;

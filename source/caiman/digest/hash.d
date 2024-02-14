@@ -1,4 +1,4 @@
-/// Implementats all hashing digests
+/// Implements all hashing digests
 module caiman.digest.hash;
 
 public import caiman.digest.adler32;

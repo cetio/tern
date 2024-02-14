@@ -1,4 +1,4 @@
-/// Implementats all encrypting digests
+/// Implements all encrypting digests
 module caiman.digest.cipher;
 
 public import caiman.digest.aes;

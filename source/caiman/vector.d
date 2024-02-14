@@ -1,5 +1,5 @@
 /// Optimized non-intrinsic vector and matrix (by proxy)
-module caiman.experimental.vector;
+module caiman.vector;
 
 import core.simd;
 import caiman.traits;

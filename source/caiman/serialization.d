@@ -47,29 +47,67 @@ pure:
     ptrdiff_t offset;
     static if (isArray!T)
     {
-        ptrdiff_t length = deserialize!ptrdiff_t(bytes[offset..(offset += ptrdiff_t.sizeof)]);
         static if (isDynamicArray!T && !isImmutable!(ElementType!T))
+        {
+            ptrdiff_t length = deserialize!ptrdiff_t(bytes[offset..(offset += ptrdiff_t.sizeof)]);
             ret = new T(length);
+        }
+        else
+        {
+            ptrdiff_t length = Length!T;
+        }
+
+        if (bytes.length < length * ElementType!T.sizeof)
+            bytes ~= new ubyte[(length * ElementType!T.sizeof) - bytes.length];
 
         foreach (i; 0..length)
         static if (!isImmutable!(ElementType!T))
-            ret[i] = bytes[offset..(offset += ElementType!T.sizeof)];
+            ret[i] = bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T);
         else
-            ret ~= bytes[offset..(offset += ElementType!T.sizeof)];
+            ret ~= bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T);
 
         return ret;
     }
     else static if (is(T == class))
     {
+        if (bytes.length < __traits(classInstanceSize))
+            bytes ~= new ubyte[__traits(classInstanceSize) - bytes.length];
+
         foreach (field; FieldNameTuple!T)
             __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]);
         return ret;
     }
     else
     {
+        if (bytes.length < T.sizeof)
+            bytes ~= new ubyte[T.sizeof - bytes.length];
+
         return *cast(T*)&bytes[offset];
         //return *cast(T*)(bytes[offset..(offset += T.sizeof)].ptr);
     }
+}
+
+void vacpp(ref ubyte[] data, ptrdiff_t size)
+{
+    if (size < 8 || size > 2 ^^ 24)
+        throw new Throwable("Invalid vacpp padding size!");
+
+    ptrdiff_t margin = size - (data.length % size) + size;
+    data ~= new ubyte[margin];
+    data[$-5..$] = cast(ubyte[])"VacPp";
+    data[$-8..$-5] = margin.serialize!true()[0..3];
+}
+
+void unvacpp(ref ubyte[] data) 
+{
+    if (data.length < 8)
+        throw new Throwable("Invalid data length for vacpp!");
+
+    if (data[$-5..$] != cast(ubyte[])"VacPp")
+        throw new Throwable("Invalid padding signature in vacpp!");
+
+    uint margin = data[$-8..$-5].deserialize!uint();
+    data = data[0..(data.length - margin)];
 }
 
 string toHexString(ubyte[] data) 
