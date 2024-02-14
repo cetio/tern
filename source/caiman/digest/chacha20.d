@@ -2,6 +2,7 @@
 module caiman.digest.chacha20;
 
 import caiman.digest;
+import caiman.digest.fhkdf;
 
 /**
  * Implementation of ChaCha20 digester.
@@ -64,6 +65,8 @@ public:
         if (key.length != 32)
             throw new Throwable("Key must be 256 bits!");
 
+        key = cast(string)FHKDF.hash(cast(ubyte[])key);
+        
         uint[16] state;
         state[0..4] = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
         state[4..12] = *cast(uint[8]*)key.ptr;

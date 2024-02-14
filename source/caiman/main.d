@@ -38,6 +38,7 @@ void main()
     import caiman.digest.anura;
     import caiman.digest.tea;
     import caiman.digest.hight;
+    import caiman.digest.cityhash;
     string key128 = "9ydZafSdHSivjFAh";
     string key256 = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
     string key512 = "Eepf6WDvoztoKhjTfyuc3Q4AMmdyJvZpaAoHAdZ2h3KA5gdJHriTDVB8RGqpKtaJ";
@@ -49,6 +50,7 @@ void main()
     auto start = Clock.currTime();
     HIGHT.encrypt(bytes, key128);
     writeln(Clock.currTime() - start);
+    writeln(digest!CityHash(bytes));
 
     start = Clock.currTime();
     HIGHT.decrypt(bytes, key128);
@@ -61,6 +63,6 @@ void main()
         if (bytes[i] != tbytes[i])
             diff++;
     }
-    
+
     writeln("Corrupted? ", bytes != tbytes, ", diff: ", diff);
 }
