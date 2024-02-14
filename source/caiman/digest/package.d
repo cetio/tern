@@ -1,4 +1,4 @@
-/// Digests and ingests for cryptography
+/// Digests and ingests for various cryptography algorithms
 module caiman.digest;
 
 import std.meta;

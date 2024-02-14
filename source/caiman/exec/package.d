@@ -1,4 +1,4 @@
-/// Support for handling PE and ELF formats.
+/// Advanced executable format and binary support, with hooks, syscalls, and PE + ELF + Mach-o format support
 // TODO: ELF
 module caiman.exec;
 

@@ -1,3 +1,4 @@
+/// Experimental and sometimes unsafe modules too unruly to allow on walks
 module caiman.experimental;
 
 public import caiman.experimental.assembly;
