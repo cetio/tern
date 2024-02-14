@@ -1,5 +1,0 @@
-caiman.exe
-caiman.crypto
-caiman.string
-caiman.typecons.blit
-unittests!!!!!!!!!!!!

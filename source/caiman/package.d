@@ -1,7 +1,7 @@
 module caiman;
 
 public import caiman.digest;
-public import caiman.exe;
+public import caiman.exec;
 public import caiman.experimental;
 public import caiman.regex;
 public import caiman.stream;

@@ -52,10 +52,10 @@ public class WhiteHole(T)
  * Short for VariadicType.
  *
  * Remarks:
- *  Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
- *  Accepts syntax `VadType!A(TYPE, NAME, CONDITION...)` or `VadType!A(TYPE, NAME...)` interchangably.
- *  Use `VadType.as!T` to extract `T` in the original layout.
- *  Does not support functions for local/voldemort types.
+ *  - Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
+ *  - Accepts syntax `VadType!A(TYPE, NAME, CONDITION...)` or `VadType!A(TYPE, NAME...)` interchangably.
+ *  - Use `VadType.as!T` to extract `T` in the original layout.
+ *  - Does not support functions for local/voldemort types.
  * 
  * Example:
  * ```d
@@ -206,8 +206,8 @@ unittest
  * No, this is not actually an optional, it is literally backed by a pointer and thus *actually* nullable.
  *
  * Remarks:
- *  `opOpAssign` is not supported for fields of `T`
- *  const Nullable(T) is not supported, but shared Nullable(T) is.
+ *  - `opOpAssign` is not supported for fields of `T`
+ *  - const Nullable(T) is not supported, but shared Nullable(T) is.
  *
  * Example:
  * ```d

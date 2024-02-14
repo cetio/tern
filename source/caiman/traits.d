@@ -356,9 +356,9 @@ pure void*[] indirections(T)(T val)
  * Generates a mixin for implementing all possible functions of `T`
  * 
  * Remarks:
- *  Any function that returns true for `isDImplDefined` is discarded. \
- *  `nothrow`, `pure`, and `const` attributes are discarded. \
- *  `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
+ *  - Any function that returns true for `isDImplDefined` is discarded. \
+ *  - `nothrow`, `pure`, and `const` attributes are discarded. \
+ *  - `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
  */
  // TODO: typeof(this) attributes (ie: shared)
 public template functionMap(T, bool mapOperators = false)

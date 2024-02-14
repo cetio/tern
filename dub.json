@@ -6,8 +6,8 @@
 	"dependencies": {
 		"tanya": "~>0.19.0"
 	},
-	"description": "mmmffnnn~~",
+	"description": "General-purpose and diverse library intended to expand upon Phobos",
 	"license": "AGPL-3.0-only",
 	"name": "caiman",
-	"targetType": "library"
+	"targetType": "executable"
 }

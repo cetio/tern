@@ -5,12 +5,14 @@ import caiman.traits;
 
 public:
 static:
-@trusted ubyte[] serialize(T)(T val)
+@trusted ubyte[] serialize(bool RAW = false, T)(T val)
 {
     static if (isArray!T)
     {
         ubyte[] bytes;
-        bytes ~= val.length.serialize;
+        static if (!RAW)
+            bytes ~= val.length.serialize;
+            
         foreach (u; val)
             bytes ~= u.serialize;
         return bytes;
