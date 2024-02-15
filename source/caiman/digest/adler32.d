@@ -7,7 +7,7 @@ public static @digester class Adler32
 public:
 static:
 pure:
-    enum MOD_ADLER = 65521;
+    enum MOD_ADLER = 65_521;
 
     /**
      * Computes the Adler-32 checksum for the given data.

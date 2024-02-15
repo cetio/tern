@@ -10,7 +10,7 @@ private:
 static:
 pure:
     enum BLOCK_SIZE = 32;
-    enum OPS_LIMIT = 6;
+    enum OPS_LIMIT = 14;
 
 public:
     /**
@@ -26,6 +26,9 @@ public:
     ubyte[] hash(ubyte[] data, ubyte[] salt) 
     {
         ulong[BLOCK_SIZE] block;
+
+        foreach (i, ref b; block)
+            b += data[i % data.length];
 
         foreach (i, b; data)
             block[i % BLOCK_SIZE] ^= b;
@@ -52,7 +55,7 @@ public:
                 block[i] ^= block[(i + 1) % BLOCK_SIZE];
 
             foreach_reverse (i; 1..BLOCK_SIZE) 
-                block[i] -= block[i - 1];
+                block[i] += block[i - 1];
         }
 
         for (uint i = 0; i < OPS_LIMIT; i++)

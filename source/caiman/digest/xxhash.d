@@ -10,11 +10,11 @@ static:
 pure:
     ubyte[] hash(ubyte[] data)
     {
-        const ulong prime1 = 11400714785074694791UL;
-        const ulong prime2 = 14029467366897019727UL;
-        const ulong prime3 = 1609587929392839161UL;
-        const ulong prime4 = 9650029242287828579UL;
-        const ulong prime5 = 2870177450012600261UL;
+        const ulong prime1 = 11_400_714_785_074_694_791;
+        const ulong prime2 = 14_029_467_366_897_019_727;
+        const ulong prime3 = 1_609_587_929_392_839_161;
+        const ulong prime4 = 9_650_029_242_287_828_579;
+        const ulong prime5 = 2_870_177_450_012_600_261;
 
         ulong hash = data.length * prime5;
         foreach (b; data) 

@@ -36,8 +36,8 @@ pure:
      */
     ubyte[] hash(ubyte[] data) 
     {
-        enum OFFSETBASIS = 14695981039346656037;
-        enum PRIME = 1099511628211;
+        enum OFFSETBASIS = 14_695_981_039_346_656_037;
+        enum PRIME = 1_099_511_628_211;
 
         ulong hash = OFFSETBASIS;
         foreach (b; data) 

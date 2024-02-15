@@ -152,7 +152,6 @@ T dsNew(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FUL
     }
 }
 
-// TODO: Arrays
 T dsbNew(T, bool ctor = true)()
     if (!is(T : U[], U))
 {

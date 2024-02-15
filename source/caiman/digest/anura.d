@@ -3,6 +3,7 @@ module caiman.digest.anura;
 import caiman.digest;
 import caiman.digest.circe;
 import caiman.serialization;
+import caiman.range;
 
 public static @digester class Anura
 {
@@ -48,31 +49,35 @@ pure:
 
         vacpp(data, 8);
 
-        foreach (i; 0..200)
+        foreach (i; 0..(roba % 128))
         {
             ptrdiff_t factor = ((set[i % 16] * i) % ((data.length / 16_384) | 2)) | 1;  
             for (ptrdiff_t j = factor; j < data.length; j += factor)
-            {
-                ubyte b0 = data[j];
-                data[j] = data[j - factor];
-                data[j - factor] = b0;
-            }
+                data.swap(j, j - factor);
+        }
+
+        void swap(ref ulong block)
+        {
+            uint left = (cast(uint*)&block)[0];
+            (cast(uint*)&block)[0] = (cast(uint*)&block)[1];
+            (cast(uint*)&block)[1] = left;
         }
 
         foreach (i; 0..2)
         {
-            foreach (j, ref _b; cast(ulong[])data)
+            foreach (j, ref block; cast(ulong[])data)
             {
                 ptrdiff_t ri = ~i;
                 ptrdiff_t si = i % 8;
-                _b ^= (rola << si) ^ (ri * robd);
-                _b ^= (rolb << si) ^ (ri * robc);
-                _b ^= (rolc << si) ^ (ri * robb);
-                _b ^= (rold << si) ^ (ri * roba);
+                block += (rola << si) ^ ri;
+                block ^= (robb << si) ^ ri;
+                swap(block);
+                block -= (rolc << si) ^ ri;
+                block ^= (robd << si) ^ ri;
             }
 
-            foreach (j, ref b; (cast(ulong[])data)[1..$])
-                b ^= data.ptr[j - 1];
+            foreach (j, ref block; (cast(ulong[])data)[1..$])
+                block ^= data.ptr[j - 1];
         }
     }
 
@@ -116,34 +121,38 @@ pure:
         if (data.length % 8 != 0)
             vacpp(data, 8);
 
+        void swap(ref ulong block)
+        {
+            uint left = (cast(uint*)&block)[0];
+            (cast(uint*)&block)[0] = (cast(uint*)&block)[1];
+            (cast(uint*)&block)[1] = left;
+        }
+
         foreach_reverse (i; 0..2)
         {
             foreach_reverse (j, ref b; (cast(ulong[])data)[1..$])
                 b ^= data.ptr[j - 1];
 
-            foreach_reverse (j, ref _b; cast(ulong[])data)
+            foreach_reverse (j, ref block; cast(ulong[])data)
             {
                 ptrdiff_t ri = ~i;
                 ptrdiff_t si = i % 8;
-                _b ^= (rola << si) ^ (ri * robd);
-                _b ^= (rolb << si) ^ (ri * robc);
-                _b ^= (rolc << si) ^ (ri * robb);
-                _b ^= (rold << si) ^ (ri * roba);
+                block ^= (robd << si) ^ ri;
+                block += (rolc << si) ^ ri;
+                swap(block);
+                block ^= (robb << si) ^ ri;
+                block -= (rola << si) ^ ri;
             }
         }
 
-        foreach_reverse (i; 0..200)
+        foreach_reverse (i; 0..(roba % 128))
         {
             ptrdiff_t factor = ((set[i % 16] * i) % ((data.length / 16_384) | 2)) | 1;  
             ptrdiff_t s = factor;
             for (; s < data.length; s += factor) { }
             s -= factor;
             for (; s >= factor; s -= factor)
-            {
-                ubyte b0 = data[s];
-                data[s] = data[s - factor];
-                data[s - factor] = b0;
-            }
+                data.swap(s, s - factor);
         }
 
         unvacpp(data);

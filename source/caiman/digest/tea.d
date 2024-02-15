@@ -1,7 +1,5 @@
 module caiman.digest.tea;
 
-// TODO: XXTEA
-
 import caiman.digest;
 import caiman.range;
 import caiman.serialization;

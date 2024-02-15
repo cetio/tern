@@ -129,6 +129,14 @@ ElementType!T peek(O, T)(ref T arr)
     }
 }
 
+void swap(T)(ref T arr, ptrdiff_t i0, ptrdiff_t i1)
+    if (isDynamicArray!T)
+{
+    ubyte d = arr[i0];
+    arr[i0] = arr[i1];
+    arr[i1] = d;
+}
+
 /**
  * Swaps the top two values on the stack.
  *
@@ -146,17 +154,9 @@ void swap(O = LIFO, T)(ref T arr)
     assert(arr.length >= 2, "Cannot swap in a collection with less than 2 elements!");
 
     static if (is(O == LIFO))
-    {
-        arr[$-1] = arr[$-1] ^ arr[$-2];
-        arr[$-2] = arr[$-1] ^ arr[$-2];
-        arr[$-1] = arr[$-1] ^ arr[$-2];
-    }
+        arr.swap(arr.length - 1, arr.length - 2);
     else
-    {
-        arr[0] = arr[0] ^ arr[1];
-        arr[1] = arr[0] ^ arr[1];
-        arr[0] = arr[0] ^ arr[1];
-    }
+        arr.swap(0, 1);
 }
 
 /**

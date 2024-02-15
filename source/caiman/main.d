@@ -50,12 +50,12 @@ void main()
 
     writeln(digest!Berus(bytes, null).toHexString);
     auto start = Clock.currTime();
-    XXTEA.encrypt(bytes, key128);
+    Anura.encrypt(bytes, key1024);
     writeln(Clock.currTime() - start);
     writeln(digest!Berus(bytes, null).toHexString);
 
     start = Clock.currTime();
-    XXTEA.decrypt(bytes, key128);
+    Anura.decrypt(bytes, key1024);
     writeln(Clock.currTime() - start);
 
     ptrdiff_t diff = tbytes.length - bytes.length;
