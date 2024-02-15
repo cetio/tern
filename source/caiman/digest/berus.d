@@ -58,6 +58,6 @@ public:
         for (uint i = 0; i < OPS_LIMIT; i++)
             compress();
 
-        return block[0..24].serialize!true();
+        return block[0..8].serialize!true();
     }
 }
