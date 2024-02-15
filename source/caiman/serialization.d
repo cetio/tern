@@ -114,14 +114,3 @@ void unvacpp(ref ubyte[] data)
     uint margin = data[$-8..$-5].deserialize!uint();
     data = data[0..(data.length - margin)];
 }
-
-string toHexString(ubyte[] data) 
-{
-    string ret;
-    foreach (b; data) 
-    {
-        ret ~= to!string(b >> 4);
-        ret ~= to!string(b & 0x0F);
-    }
-    return ret;
-}

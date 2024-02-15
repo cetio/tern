@@ -27,12 +27,6 @@ public:
     {
         ulong[BLOCK_SIZE] block;
 
-        foreach (i; 0..BLOCK_SIZE)
-        {
-            block[i] += block[BLOCK_SIZE - 1 - i] | data[i];
-            block[BLOCK_SIZE - 1 - i] += data[i] << 2;
-        }
-
         foreach (i, b; data)
             block[i % BLOCK_SIZE] ^= b;
 

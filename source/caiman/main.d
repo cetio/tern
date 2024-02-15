@@ -48,6 +48,7 @@ void main()
     ubyte[] tbytes = bytes.dup;
     writeln("Size: ", bytes.length / 1024 / 1024, "MB");
 
+    writeln(digest!Berus(bytes, null).toHexString);
     auto start = Clock.currTime();
     XXTEA.encrypt(bytes, key128);
     writeln(Clock.currTime() - start);

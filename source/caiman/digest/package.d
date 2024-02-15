@@ -146,3 +146,20 @@ public auto ingest(T, ARGS...)(ARGS args)
 {
     return (serialize!true(T.hash(args))).toHexString();
 }
+
+string toHexString(ubyte[] data) 
+{
+    char hexDigit(ubyte value) 
+    {
+        return value < 10 ? cast(char)('0' + value) : cast(char)('A' + (value - 10));
+    }
+
+    string ret;
+    foreach (b; data) 
+    {
+        ret ~= hexDigit(b >> 4);
+        ret ~= hexDigit(b & 0x0F);
+    }
+    return ret;
+}
+
