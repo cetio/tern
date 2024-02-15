@@ -24,6 +24,11 @@ public:
 final:
     shared Mutex mutex;
 
+    this(T val)
+    {
+        this.value = cast(shared(T))val;
+    }
+
     auto opAssign(A)(A ahs) shared
     {
         static if (isScalarType!T)
@@ -37,6 +42,11 @@ final:
                 value = cast(shared(T))ahs;");
         }
         return this;
+    }
+
+    Atomic!T opImplicitCastFrom(A)(A ahs) shared
+    {
+        return Atomic!(T, M)(cast(T)ahs);
     }
 
     A opCast(A)() const shared
@@ -328,22 +338,6 @@ final:
     }
 }
 
-/// Helper function for creating an atomic with a non-atomic value
-pragma(inline)
-Atomic!(T, M) atomic(MemoryOrder M = MemoryOrder.seq, T)(T val)
-    if (!is(T == shared))
-{
-    return Atomic!(T, M)(cast(shared(T))val);
-}
-
-/// Helper function for creating an atomic with a non-atomic value
-pragma(inline)
-Atomic!(T, M) atomic(MemoryOrder M = MemoryOrder.seq, T)(T val)
-    if (is(T == shared))
-{
-    return Atomic!(T, M)(val);
-}
-
 /**
  * Prevents timing and power side channel attacks by obfuscating the processing of `T`
  *
@@ -396,6 +390,16 @@ final:
         scope (exit) obscure();
         value = ahs;
         return this;
+    }
+        
+    Blind!T opImplicitCastFrom(A)(A ahs)
+    {
+        return Blind!T(cast(T)ahs);
+    }
+
+    Blind!T opImplicitCastFrom(A)(A ahs) shared
+    {
+        return Blind!T(cast(T)ahs);
     }
 
     auto opOpAssign(string op, A)(A ahs)
@@ -474,10 +478,4 @@ final:
     {
         return value.to!string;
     }
-}
-
-/// Helper function for creating a blind using a non-blinded value.
-Blind!T blind(T)(T val)
-{
-    return Blind!T(val);
 }

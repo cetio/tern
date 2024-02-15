@@ -234,12 +234,18 @@ public struct Nullable(T)
 
 public:
 final:
+    alias NULL = typeof(null);
     T* ptr;
 
     this(T val)
     {
         value = val;
         ptr = &value;
+    }
+
+    this(NULL val)
+    {
+
     }
 
     auto opAssign(A)(A ahs)
@@ -266,6 +272,23 @@ final:
         return Nullable!A(cast(A)value);
     }
 
+// TODO: Implement elsewhere
+    Nullable!T opImplicitCastFrom(A)(A ahs)
+    {
+        static if (is(A == NULL))
+            return Nullable!T.init;
+        else
+            return Nullable!T(cast(T)ahs);
+    }
+
+    Nullable!T opImplicitCastFrom(A)(A ahs) shared
+    {
+        static if (is(A == NULL))
+            return Nullable!T.init;
+        else
+            return Nullable!T(cast(T)ahs);
+    }
+
     auto opUnary(string op)()
     {
         static if (op.length == 2)
@@ -290,8 +313,7 @@ final:
 
     auto opEquals(A)(A ahs) const
     {
-        alias N = typeof(null);
-        static if (is(A == N))
+        static if (is(A == NULL))
             return ptr == null;
         else
             return value == ahs;
@@ -299,8 +321,7 @@ final:
 
     auto opEquals(A)(A ahs) const shared
     {
-        alias N = typeof(null);
-        static if (is(A == N))
+        static if (is(A == NULL))
             return ptr == null;
         else
             return value == ahs;
@@ -433,13 +454,6 @@ final:
     {
         ptr = null;
     }
-}
-
-/// Helper function for creating an nullable with a non-nullable value.
-pragma(inline)
-Nullable!T nullable(T)(T val)
-{
-    return Nullable!T(val);
 }
 
 /// Arbitrary vector implementation, allows any length vector less than or equal to 256 bits and can be interacted with as an array.

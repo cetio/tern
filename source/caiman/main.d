@@ -51,7 +51,7 @@ void main()
     writeln(a.numNextOps);
     writeln(a + 1); */
 
-    mixin(using!(D, "a"));
+    Nullable!int a = null;
     writeln(a);
     
     import caiman.digest.anura;
