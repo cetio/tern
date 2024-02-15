@@ -1,8 +1,7 @@
 module caiman.digest.anura;
 
 import caiman.digest;
-import caiman.digest.fhkdf;
-import caiman.digest.adler32;
+import caiman.digest.circe;
 import caiman.serialization;
 
 public static @digester class Anura
@@ -15,10 +14,10 @@ pure:
         if (key.length != 128)
             throw new Throwable("Key is not 1024 bits!");
 
-        key = cast(string)digest!FHKDF(cast(ubyte[])key[0..32], 0xFC2AB8FFFFF)~
-            cast(string)digest!FHKDF(cast(ubyte[])key[32..64], 0xCCABB72DA)~
-            cast(string)digest!FHKDF(cast(ubyte[])key[64..96], 0xABC0001700)~
-            cast(string)digest!FHKDF(cast(ubyte[])key[96..128], 0x0000D7FFF);
+        key = cast(string)digest!Circe(cast(ubyte[])key[0..32], 0xFC2AB8FFFFF)~
+            cast(string)digest!Circe(cast(ubyte[])key[32..64], 0xCCABB72DA)~
+            cast(string)digest!Circe(cast(ubyte[])key[64..96], 0xABC0001700)~
+            cast(string)digest!Circe(cast(ubyte[])key[96..128], 0x0000D7FFF);
         ulong rola = (cast(ulong*)key.ptr)[0] ^ (cast(ulong*)key.ptr)[1] | 32;
         ulong rolb = (cast(ulong*)key.ptr)[2] ^ (cast(ulong*)key.ptr)[3] | 32;
         ulong rolc = (cast(ulong*)key.ptr)[4] ^ (cast(ulong*)key.ptr)[5] | 32;
@@ -82,10 +81,10 @@ pure:
         if (key.length != 128)
             throw new Throwable("Key is not 1024 bits!");
 
-        key = cast(string)digest!FHKDF(cast(ubyte[])key[0..32], 0xFC2AB8FFFFF)~
-            cast(string)digest!FHKDF(cast(ubyte[])key[32..64], 0xCCABB72DA)~
-            cast(string)digest!FHKDF(cast(ubyte[])key[64..96], 0xABC0001700)~
-            cast(string)digest!FHKDF(cast(ubyte[])key[96..128], 0x0000D7FFF);
+        key = cast(string)digest!Circe(cast(ubyte[])key[0..32], 0xFC2AB8FFFFF)~
+            cast(string)digest!Circe(cast(ubyte[])key[32..64], 0xCCABB72DA)~
+            cast(string)digest!Circe(cast(ubyte[])key[64..96], 0xABC0001700)~
+            cast(string)digest!Circe(cast(ubyte[])key[96..128], 0x0000D7FFF);
         ulong rola = (cast(ulong*)key.ptr)[0] ^ (cast(ulong*)key.ptr)[1] | 32;
         ulong rolb = (cast(ulong*)key.ptr)[2] ^ (cast(ulong*)key.ptr)[3] | 32;
         ulong rolc = (cast(ulong*)key.ptr)[4] ^ (cast(ulong*)key.ptr)[5] | 32;

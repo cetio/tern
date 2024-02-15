@@ -87,6 +87,11 @@ pure:
     }
 }
 
+void sachp(ref ubyte[] data, ptrdiff_t size)
+{
+    data ~= new ubyte[size - (data.length % size)];
+}
+
 void vacpp(ref ubyte[] data, ptrdiff_t size)
 {
     if (size < 8 || size > 2 ^^ 24)

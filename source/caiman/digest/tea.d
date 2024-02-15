@@ -149,3 +149,74 @@ pure:
         unvacpp(data);
     }
 }
+
+public static @digester class XXTEA 
+{
+public:
+static:
+pure:
+    void encrypt(ref ubyte[] data, string key) 
+    {
+        if (key.length != 16)
+            throw new Throwable("Key is not 128 bits!");
+
+        int[4] k = *cast(int[4]*)key.ptr;
+        int delta = 0x9E3779B9;
+        int rounds = 32;
+        int sum = 0;
+
+        vacpp(data, 8);
+
+        for (size_t i = 0; i < data.length; i += 8) 
+        {
+            auto block = data[i..(i + 8)].ptr;
+            int v0 = *cast(int*)block;
+            int v1 = *cast(int*)(block + 4);
+            sum = 0;
+
+            for (int j = 0; j < rounds; ++j) 
+            {
+                sum += delta;
+                v0 += (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + k[(sum >> 11) & 3]);
+                v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + k[sum & 3]);
+            }
+
+            *cast(int*)block = v0;
+            *cast(int*)(block + 4) = v1;
+        }
+    }
+
+    void decrypt(ref ubyte[] data, string key) 
+    {
+        if (key.length != 16)
+            throw new Throwable("Key is not 128 bits!");
+
+        int[4] k = *cast(int[4]*)key.ptr;
+        int delta = 0x9E3779B9;
+        int rounds = 32;
+        int sum;
+
+        if (data.length % 8 != 0)
+            vacpp(data, 8);
+
+        for (size_t i = 0; i < data.length; i += 8) 
+        {
+            auto block = data[i .. i + 8].ptr;
+            int v0 = *cast(int*)block;
+            int v1 = *cast(int*)(block + 4);
+            sum = delta << 5;
+
+            for (int j = 0; j < rounds; ++j) 
+            {
+                v1 -= (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + k[sum & 3]);
+                v0 -= (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + k[(sum >> 11) & 3]);
+                sum -= delta;
+            }
+
+            *cast(int*)block = v0;
+            *cast(int*)(block + 4) = v1;
+        }
+
+        unvacpp(data);
+    }
+}

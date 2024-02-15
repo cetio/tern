@@ -10,18 +10,17 @@ static:
 pure:
     ubyte[] hash(ubyte[] data)
     {
-        ptrdiff_t length = data.length;
         ptrdiff_t index = 0;
-        ptrdiff_t digest = length;
+        ptrdiff_t digest = data.length;
 
-        foreach_reverse (n; 0..(length >> 2)) 
+        foreach_reverse (n; 0..(data.length >> 2)) 
         {
             digest += (data[index++] | (data[index++] << 8));
             digest ^= (digest << 16) ^ ((data[index++] | (data[index++] << 8)) << 11);
             digest += digest >> 11;
         }
 
-        switch (length & 3) {
+        switch (data.length & 3) {
             case 3:
                 digest += (data[index++] | (data[index++] << 8));
                 digest ^= (digest << 16);

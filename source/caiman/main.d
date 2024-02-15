@@ -39,6 +39,7 @@ void main()
     import caiman.digest.tea;
     import caiman.digest.hight;
     import caiman.digest.cityhash;
+    import caiman.digest.gimli;
     string key128 = "9ydZafSdHSivjFAh";
     string key256 = "SpWc5m7uednxBqV2YrKk83tZ6UayFEPR";
     string key512 = "Eepf6WDvoztoKhjTfyuc3Q4AMmdyJvZpaAoHAdZ2h3KA5gdJHriTDVB8RGqpKtaJ";
@@ -48,12 +49,12 @@ void main()
     writeln("Size: ", bytes.length / 1024 / 1024, "MB");
 
     auto start = Clock.currTime();
-    HIGHT.encrypt(bytes, key128);
+    XXTEA.encrypt(bytes, key128);
     writeln(Clock.currTime() - start);
-    writeln(digest!CityHash(bytes));
+    writeln(digest!Berus(bytes, null).toHexString);
 
     start = Clock.currTime();
-    HIGHT.decrypt(bytes, key128);
+    XXTEA.decrypt(bytes, key128);
     writeln(Clock.currTime() - start);
 
     ptrdiff_t diff = tbytes.length - bytes.length;

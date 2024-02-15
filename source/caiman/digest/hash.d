@@ -4,7 +4,7 @@ module caiman.digest.hash;
 public import caiman.digest.adler32;
 public import caiman.digest.berus;
 public import caiman.digest.crc32;
-public import caiman.digest.fhkdf;
+public import caiman.digest.circe;
 public import caiman.digest.fnv1;
 public import caiman.digest.md5;
 public import caiman.digest.murmurhash;

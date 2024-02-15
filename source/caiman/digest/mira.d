@@ -1,12 +1,12 @@
-/// Implementation of Mira digesters, internally backed by `caiman.digest.fhkdf`
+/// Implementation of Mira digesters, internally backed by `caiman.digest.circe`
 module caiman.digest.mira;
 
 import core.simd;
 import caiman.digest;
-import caiman.digest.fhkdf;
+import caiman.digest.circe;
 
 /**
- * Implementation of Mira256 digester, internally backed by `caiman.digest.fhkdf`
+ * Implementation of Mira256 digester, internally backed by `caiman.digest.circe`
  *
  * Mira is an incredibly fast stream encryption algorithm based on shuffling and vector
  * xor operations on data.
@@ -44,7 +44,7 @@ pure:
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
 
-        ubyte[] keyFront = digest!FHKDF(cast(ubyte[])key, seed);
+        ubyte[] keyFront = digest!Circe(cast(ubyte[])key, seed);
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];
         ulong c = (cast(ulong*)keyFront.ptr)[2];
@@ -80,7 +80,7 @@ pure:
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
 
-        ubyte[] keyFront = digest!FHKDF(cast(ubyte[])key, seed);
+        ubyte[] keyFront = digest!Circe(cast(ubyte[])key, seed);
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];
         ulong c = (cast(ulong*)keyFront.ptr)[2];
@@ -137,7 +137,7 @@ pure:
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
             
-        ubyte[] keyFront = digest!FHKDF(cast(ubyte[])key, seed);
+        ubyte[] keyFront = digest!Circe(cast(ubyte[])key, seed);
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];
         ulong c = (cast(ulong*)keyFront.ptr)[2];
@@ -183,7 +183,7 @@ pure:
 }
 
 /**
- * Implementation of Mira512 digester, internally backed by `caiman.digest.fhkdf`
+ * Implementation of Mira512 digester, internally backed by `caiman.digest.circe`
  *
  * Mira is an incredibly fast stream encryption algorithm based on shuffling and vector
  * xor operations on data.
@@ -221,8 +221,8 @@ pure:
         if (key.length != 64)
             throw new Throwable("Key is not 512 bits!");
 
-        ubyte[] keyFront = digest!FHKDF(cast(ubyte[])key[0..32], seed);
-        ubyte[] keyBack = digest!FHKDF(cast(ubyte[])key[32..64], seed);
+        ubyte[] keyFront = digest!Circe(cast(ubyte[])key[0..32], seed);
+        ubyte[] keyBack = digest!Circe(cast(ubyte[])key[32..64], seed);
 
         ulong ap = (cast(ulong*)keyBack.ptr)[0];
         ulong bp = (cast(ulong*)keyBack.ptr)[1];
@@ -259,8 +259,8 @@ pure:
         if (key.length != 64)
             throw new Throwable("Key is not 512 bits!");
 
-        ubyte[] keyFront = digest!FHKDF(cast(ubyte[])key[0..32], seed);
-        ubyte[] keyBack = digest!FHKDF(cast(ubyte[])key[32..64], seed);
+        ubyte[] keyFront = digest!Circe(cast(ubyte[])key[0..32], seed);
+        ubyte[] keyBack = digest!Circe(cast(ubyte[])key[32..64], seed);
 
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];
@@ -322,8 +322,8 @@ pure:
         if (key.length != 64)
             throw new Throwable("Key is not 512 bits!");
         
-        ubyte[] keyFront = digest!FHKDF(cast(ubyte[])key[0..32], seed);
-        ubyte[] keyBack = digest!FHKDF(cast(ubyte[])key[32..64], seed);
+        ubyte[] keyFront = digest!Circe(cast(ubyte[])key[0..32], seed);
+        ubyte[] keyBack = digest!Circe(cast(ubyte[])key[32..64], seed);
         
         ulong a = (cast(ulong*)keyFront.ptr)[0];
         ulong b = (cast(ulong*)keyFront.ptr)[1];

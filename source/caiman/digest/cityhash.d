@@ -13,7 +13,6 @@ pure:
         ulong seed = 0x9ae16a3b2f90404f;
         ulong m = 0xc6a4a7935bd1e995;
         ulong r = 47;
-
         ulong h = seed + (data.length * m);
 
         size_t i = 0;
@@ -33,7 +32,7 @@ pure:
             ulong k = 0;
             foreach (j; 0..(data.length % 8))
                 k |= (data[i + j] << (8 * j));
-                
+
             k *= m;
             k ^= k >> r;
             k *= m;

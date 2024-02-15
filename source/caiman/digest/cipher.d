@@ -8,5 +8,4 @@ public import caiman.digest.salsa20;
 public import caiman.digest.anura;
 public import caiman.digest.tea;
 public import caiman.digest.hight;
-public import caiman.digest.kasumi;
-public import caiman.digest.cascade;
+public import caiman.digest.gimli;

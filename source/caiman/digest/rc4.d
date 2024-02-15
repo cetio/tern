@@ -3,6 +3,7 @@ module caiman.digest.rc4;
 
 import caiman.serialization;
 import caiman.digest;
+import caiman.digest.circe;
 
 /**
  * Implementation of RC4 digester.
@@ -33,7 +34,11 @@ pure:
      *  key = The encryption key.
      */
     void encrypt(ref ubyte[] data, string key) 
-    {
+    {        
+        if (key.length != 32)
+            throw new Throwable("Key must be 256 bits!");
+
+        key = cast(string)Circe.hash(cast(ubyte[])key);
         ubyte[256] S;
         ubyte[256] T;
 
@@ -54,7 +59,8 @@ pure:
 
         ubyte i = 0;
         j = 0;
-        foreach (ref b; data) {
+        foreach (ref b; data) 
+        {
             i = (i + 1) % 256;
             j = (j + S[i]) % 256;
             S[i] = S[i] ^ S[j];

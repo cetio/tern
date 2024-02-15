@@ -26,16 +26,18 @@ public:
     ubyte[] hash(ubyte[] data, ubyte[] salt) 
     {
         ulong[BLOCK_SIZE] block;
-        ulong[8] initialHash;
 
-        foreach (i; 0 .. BLOCK_SIZE)
-            block[i] = initialHash[i % 8] ^ i;
+        foreach (i; 0..BLOCK_SIZE)
+        {
+            block[i] += block[BLOCK_SIZE - 1 - i] | data[i];
+            block[BLOCK_SIZE - 1 - i] += data[i] << 2;
+        }
 
-        foreach (i, c; data)
-            block[i % BLOCK_SIZE] ^= c;
+        foreach (i, b; data)
+            block[i % BLOCK_SIZE] ^= b;
 
-        foreach (i, c; salt)
-            block[(i + BLOCK_SIZE / 2) % BLOCK_SIZE] ^= c;
+        foreach (i, b; salt)
+            block[(i + BLOCK_SIZE / 2) % BLOCK_SIZE] ^= b;
 
         void compress()
         {
@@ -44,7 +46,7 @@ public:
                 return (x + y) * (x ^ y);
             }
 
-            foreach (i; 0 .. BLOCK_SIZE / 4) 
+            foreach (i; 0..BLOCK_SIZE / 4) 
             {
                 block[i * 4] = F(block[i * 4], block[i * 4 + 1]);
                 block[i * 4 + 1] = F(block[i * 4 + 1], block[i * 4 + 2]);

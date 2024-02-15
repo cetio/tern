@@ -1,7 +1,7 @@
 module caiman.digest.salsa20;
 
 import caiman.digest;
-import caiman.digest.fhkdf;
+import caiman.digest.circe;
 
 public static @digester class Salsa20
 {
@@ -37,7 +37,7 @@ public:
         if (key.length != 32)
             throw new Throwable("Key must be 256 bits!");
 
-        key = cast(string)FHKDF.hash(cast(ubyte[])key);
+        key = cast(string)Circe.hash(cast(ubyte[])key);
 
         uint[16] state;
         state[0..4] = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
