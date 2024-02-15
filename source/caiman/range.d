@@ -9,7 +9,7 @@ import caiman.traits;
  * [] -> push(1) push(2) -> [1, 2] // Order doesn't change between LIFO vs FILO
  * [1, 2] -> pop() -> [1] // Value pushed last gets popped
  * ```
-*/
+ */
 public enum LIFO;
 /**
  * First In Last Out
@@ -18,7 +18,7 @@ public enum LIFO;
  * [] -> push(1) push(2) -> [1, 2] // Order doesn't change between LIFO vs FILO
  * [1, 2] -> pop() -> [2] // Value pushed first gets popped
  * ```
-*/
+ */
 public enum FILO;
 
 public:
@@ -82,7 +82,7 @@ P[] portionTo(P, T)(ref T arr)
  *
  * Remarks:returns:
  *  Defaults to `LIFO`
-*/
+ */
 ElementType!T pop(O = LIFO, T)(ref T arr)
     if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
 {
@@ -113,7 +113,7 @@ ElementType!T pop(O = LIFO, T)(ref T arr)
  *
  * Remarks:
  *  Defaults to `LIFO`
-*/
+ */
 ElementType!T peek(O, T)(ref T arr)
     if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
 {
@@ -147,7 +147,7 @@ void swap(T)(ref T arr, ptrdiff_t i0, ptrdiff_t i1)
  *
  * Remarks:
  *  Defaults to `LIFO`
-*/
+ */
 void swap(O = LIFO, T)(ref T arr)
     if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
 {
@@ -166,7 +166,7 @@ void swap(O = LIFO, T)(ref T arr)
  *  T = Array type being pushed to.
  *  arr = The array being pushed to.
  *  val = The value to push onto the array.
-*/
+ */
 nothrow void push(T)(ref T arr, ElementType!T val)
     if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
 {

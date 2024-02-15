@@ -9,5 +9,16 @@
 	"description": "General-purpose and diverse library intended to expand upon Phobos",
 	"license": "AGPL-3.0-only",
 	"name": "caiman",
-	"targetType": "library"
+	"targetType": "library",
+    "configurations": [
+        {
+            "name": "application"
+        },
+        {
+            "name": "library",
+            "excludedSourceFiles": [
+                "main.d"
+            ]
+        }
+    ]
 }

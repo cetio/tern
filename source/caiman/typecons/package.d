@@ -2,4 +2,5 @@
 module caiman.typecons;
 
 public import caiman.typecons.blit;
-public import caiman.typecons.wrapper;
+public import caiman.typecons.general;
+public import caiman.typecons.atomic;

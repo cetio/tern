@@ -5,7 +5,126 @@ import caiman.digest.circe;
 import caiman.serialization;
 import caiman.range;
 
-public static @digester class Anura
+// TODO: Anura256 & 512
+public static @digester class Anura256
+{
+public:
+static:
+pure:
+    void encrypt(ref ubyte[] data, string key)
+    {
+        if (key.length != 128)
+            throw new Throwable("Key is not 1024 bits!");
+
+        key = cast(string)digest!Circe(cast(ubyte[])key[0..32]);
+        ulong rola = (cast(ulong*)key.ptr)[1];
+        ulong rolb = (cast(ulong*)key.ptr)[2];
+        ulong rolc = (cast(ulong*)key.ptr)[3];
+        ulong rold = (cast(ulong*)key.ptr)[4];
+
+        ulong[8] set = [
+            rola,
+            rolb,
+            rolc,
+            rold,
+            rola << rolb,
+            rolb << rolc,
+            rolc << rold,
+            rold << rola,
+        ];
+
+        vacpp(data, 8);
+
+        foreach (i; 0..(rola % 128))
+        {
+            ptrdiff_t factor = ((set[i % 8] * i) % ((data.length / 16_384) | 2)) | 1;  
+            for (ptrdiff_t j = factor; j < data.length; j += factor)
+                data.swap(j, j - factor);
+        }
+
+        void swap(ref ulong block)
+        {
+            uint left = (cast(uint*)&block)[0];
+            (cast(uint*)&block)[0] = (cast(uint*)&block)[1];
+            (cast(uint*)&block)[1] = left;
+        }
+
+        foreach (i; 0..2)
+        {
+            foreach (j, ref block; cast(ulong[])data)
+            {
+                ptrdiff_t ri = ~i;
+                ptrdiff_t si = i % 8;
+                block += (rola << si) ^ ri;
+                block ^= (rolb << si) ^ ri;
+                swap(block);
+                block -= (rolc << si) ^ ri;
+                block ^= (rold << si) ^ ri;
+            }
+
+            foreach (j, ref block; (cast(ulong[])data)[1..$])
+                block ^= data.ptr[j - 1];
+        }
+    }
+
+    /* void encrypt(ref ubyte[] data, string key)
+    {
+        if (key.length != 32)
+            throw new Throwable("Key is not 256 bits!");
+
+        key = cast(string)digest!Circe(cast(ubyte[])key[0..32]);
+        ulong rola = (cast(ulong*)key.ptr)[1];
+        ulong rolb = (cast(ulong*)key.ptr)[2];
+        ulong rolc = (cast(ulong*)key.ptr)[3];
+        ulong rold = (cast(ulong*)key.ptr)[4];
+
+        ulong[8] set = [
+            rola,
+            rolb,
+            rolc,
+            rold,
+            rola << rolb,
+            rolb << rolc,
+            rolc << rold,
+            rold << rola,
+        ];
+
+        vacpp(data, 8);
+
+        foreach (i; 0..(roba % 128))
+        {
+            ptrdiff_t factor = ((set[i % 8] * i) % ((data.length / 16_384) | 2)) | 1;  
+            for (ptrdiff_t j = factor; j < data.length; j += factor)
+                data.swap(j, j - factor);
+        }
+
+        void swap(ref ulong block)
+        {
+            uint left = (cast(uint*)&block)[0];
+            (cast(uint*)&block)[0] = (cast(uint*)&block)[1];
+            (cast(uint*)&block)[1] = left;
+        }
+
+        foreach (i; 0..2)
+        {
+            foreach (j, ref block; cast(ulong[])data)
+            {
+                ptrdiff_t ri = ~i;
+                ptrdiff_t si = i % 8;
+                block += (rola << si) ^ ri;
+                block ^= (rolb << si) ^ ri;
+                swap(block);
+                block -= (rolc << si) ^ ri;
+                block ^= (rold << si) ^ ri;
+            }
+
+            foreach (j, ref block; (cast(ulong[])data)[1..$])
+                block ^= data.ptr[j - 1];
+        }
+    } */
+}
+
+public static @digester class Anura1024
 {
 public:
 static:

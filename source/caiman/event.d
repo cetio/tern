@@ -14,7 +14,19 @@ final:
     /// Debug only signature string
     debug string signature;
 
+    /**
+     * Subscribes `fn` to this event, making it be called when `invoke` is called.
+     *
+     * Params:
+     *  fn = Function to be subscribed.
+     */
     auto subscribe(void* fn) => this ~= fn;
+    /**
+     * Unsubscribes `fn` to this event, making it be called when `invoke` is called.
+     *
+     * Params:
+     *  fn = Function to be unsubscribed.
+     */
     auto unsubscribe(void* fn) => this -= fn;
 
     auto opOpAssign(string op, T : U*, U)(T val)

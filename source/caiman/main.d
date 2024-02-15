@@ -27,14 +27,33 @@ public @inherit!B @inherit!A class C { mixin applyInherits; }
 
 public struct D
 {
-    int a;
-
-    void test() shared => writeln(a);
+    void close()
+    {
+        writeln("aaa");
+    }
 }
 
 
 void main()
 {
+    import caiman.object;
+    /* Blind!int a;
+    writeln(a.numNextOps);
+    a = 3;
+    writeln(a.numNextOps);
+    writeln(a += 1);
+    writeln(a.numNextOps);
+    writeln(a + 1);
+    writeln(a.numNextOps);
+    writeln(a + 1);
+    writeln(a.numNextOps);
+    writeln(a + 1);
+    writeln(a.numNextOps);
+    writeln(a + 1); */
+
+    mixin(using!(D, "a"));
+    writeln(a);
+    
     import caiman.digest.anura;
     import caiman.digest.tea;
     import caiman.digest.hight;
@@ -50,12 +69,12 @@ void main()
 
     writeln(digest!Berus(bytes, null).toHexString);
     auto start = Clock.currTime();
-    Anura.encrypt(bytes, key1024);
+    Anura1024.encrypt(bytes, key1024);
     writeln(Clock.currTime() - start);
     writeln(digest!Berus(bytes, null).toHexString);
 
     start = Clock.currTime();
-    Anura.decrypt(bytes, key1024);
+    Anura1024.decrypt(bytes, key1024);
     writeln(Clock.currTime() - start);
 
     ptrdiff_t diff = tbytes.length - bytes.length;

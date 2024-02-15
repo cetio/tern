@@ -14,6 +14,7 @@ public enum ReadKind
     Fixed
 }
 
+/// Stream interface used in all implementations
 public interface IStream
 {
 public:

@@ -366,20 +366,20 @@ public template functionMap(T, bool mapOperators = false)
 {
     enum functionMap =
     {
-        string str = "import "~moduleName!T~';';
+        string str = "import "~moduleName!T~";
+            import caiman.conv;
+            import caiman.object;";
         static foreach (func; FunctionNames!T)
         {
             static if (!isDImplDefined!(TypeOf!(T, func)))
             {
                 static if (is(ReturnType!(TypeOf!(T, func)) == void))
-                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
-                        import caiman.conv;
+                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" {
                         auto orig = as!("~fullyQualifiedName!T~"); 
                         scope (exit) this.blit(orig.conv!(typeof(this)));
                         orig."~FunctionCallableSignature!(TypeOf!(T, func))~";  }\n");
                 else
-                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" { 
-                        import caiman.conv;
+                    str ~= (FunctionSignature!(TypeOf!(T, func)).replace("nothrow", "").replace("pure", "").replace("const", "")~" {
                         auto orig = as!("~fullyQualifiedName!T~"); 
                         scope (exit) this.blit(orig.conv!(typeof(this))); 
                         return orig."~FunctionCallableSignature!(TypeOf!(T, func))~"; }\n");

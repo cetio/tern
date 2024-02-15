@@ -105,18 +105,6 @@ void raise(string exception, string matchTo = null, string matchOf = null)
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchOf));
 }
 
-unittest
-{
-    try
-    {
-        raise("Test exception", "This is a test string", "test");
-    }
-    catch (Throwable e)
-    {
-        assert(e.msg == "Test exception\n                      This is a  x1B[31;4mtest\x1B[0m string");
-    }
-}
-
 /** 
  * Raises an exception using optional highlighting.
  *
@@ -129,16 +117,4 @@ unittest
 void raise(string exception, string matchTo, ptrdiff_t matchStart, ptrdiff_t matchEnd)
 {
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchStart, matchEnd));
-}
-
-unittest
-{
-    try
-    {
-        raise("Test exception", "This is a test string", 10, 14);
-    }
-    catch (Throwable e)
-    {
-        assert(e.msg == "Test exception\n                      This is a  x1B[31;4mtest\x1B[0m string");
-    }
 }

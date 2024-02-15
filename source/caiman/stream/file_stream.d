@@ -7,6 +7,7 @@ import caiman.serialization;
 import caiman.conv;
 import caiman.traits;
 import caiman.mira;
+import caiman.memory;
 
 public enum Mode
 {

@@ -3,36 +3,61 @@ module caiman.serialization;
 
 import caiman.traits;
 import caiman.conv;
+public import caiman.memory;
 
 public:
 static:
 pure:
-@trusted ubyte[] serialize(bool RAW = false, T)(T val)
+/**
+ * Recursively serializes `val` with the provided endianness.
+ *
+ * Params:
+ *  RAW = If true, arrays won't have their length serialized. Defaults to false.
+ *  val = The value to be serialized.
+ *  endianness = The endianness to be serialized to. Defaults to native.
+ * 
+ * Returns:
+ *  Serialized byte array.
+ */
+@trusted ubyte[] serialize(bool RAW = false, T)(T val, Endianness endianness = Endianness.Native)
 {
     static if (isArray!T)
     {
         ubyte[] bytes;
         static if (!RAW)
-            bytes ~= val.length.serialize;
+            bytes ~= val.length.makeEndian(endianness).serialize();
             
         foreach (u; val)
-            bytes ~= u.serialize;
+            bytes ~= u.makeEndian(endianness).serialize();
         return bytes;
     }
-    else static if (is(T == class))
+    else static if (hasChildren!T)
     {
         ubyte[] bytes;
-        foreach (field; FieldNameTuple!T)
-            bytes ~= __traits(getMember, val, field).serialize;
+        foreach (field; FieldNames!T)
+            bytes ~= __traits(getMember, val, field).makeEndian(endianness).serialize();
         return bytes;
     }
     else
     {
-        return (cast(ubyte*)&val)[0..T.sizeof].dup;
+        T tval = val.makeEndian(endianness);
+        return (cast(ubyte*)&tval)[0..T.sizeof].dup;
     }
 }
 
-@trusted deserialize(T, B)(B bytes)
+/**
+ * Recursively deserializes `val` with the provided endianness.
+ *
+ * Params:
+ *  T = Type to deserialize to.
+ *  bytes = The bytes to be deserialized.
+ *  len = The length of the deserialized data as it were if a `T[]`. Defaults to -1
+ *  endianness = The endianness to be serialized to. Defaults to native.
+ * 
+ * Returns:
+ *  The deserialized value of `T`
+ */
+@trusted deserialize(T, B)(B bytes, ptrdiff_t len = -1, Endianness endianness = Endianness.Native)
     if ((isDynamicArray!B || isStaticArray!B) && (is(ElementType!B == ubyte) || is(ElementType!B == byte)))
 {
     static if (isReferenceType!T)
@@ -49,8 +74,9 @@ pure:
     {
         static if (isDynamicArray!T && !isImmutable!(ElementType!T))
         {
-            ptrdiff_t length = deserialize!ptrdiff_t(bytes[offset..(offset += ptrdiff_t.sizeof)]);
-            ret = new T(length);
+            if (len == -1)
+                ptrdiff_t len = deserialize!ptrdiff_t(bytes[offset..(offset += ptrdiff_t.sizeof)]).makeEndian(endianness);
+            ret = new T(len);
         }
         else
         {
@@ -62,9 +88,9 @@ pure:
 
         foreach (i; 0..length)
         static if (!isImmutable!(ElementType!T))
-            ret[i] = bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T);
+            ret[i] = bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T).makeEndian(endianness);
         else
-            ret ~= bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T);
+            ret ~= bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T).makeEndian(endianness);
 
         return ret;
     }
@@ -73,8 +99,17 @@ pure:
         if (bytes.length < __traits(classInstanceSize))
             bytes ~= new ubyte[__traits(classInstanceSize) - bytes.length];
 
-        foreach (field; FieldNameTuple!T)
-            __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]);
+        foreach (field; FieldNames!T)
+            __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
+        return ret;
+    }
+    else static if (hasChildren!T)
+    {
+        if (bytes.length < T.sizeof)
+            bytes ~= new ubyte[T.sizeof - bytes.length];
+
+        foreach (field; FieldNames!T)
+            __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
         return ret;
     }
     else
@@ -82,16 +117,29 @@ pure:
         if (bytes.length < T.sizeof)
             bytes ~= new ubyte[T.sizeof - bytes.length];
 
-        return *cast(T*)&bytes[offset];
-        //return *cast(T*)(bytes[offset..(offset += T.sizeof)].ptr);
+        return (*cast(T*)bytes[offset..(offset += T.sizeof)].ptr).makeEndian(endianness);
     }
 }
 
+/**
+ * Pads `data` right to `size` with zeroes.
+ *
+ * Params:
+ *  data = The bytes to be padded.
+ *  size = The size of `data` after padding.
+ */
 void sachp(ref ubyte[] data, ptrdiff_t size)
 {
     data ~= new ubyte[size - (data.length % size)];
 }
 
+/**
+ * Pads `data` right to `size` with metadata after for later unpadding.
+ *
+ * Params:
+ *  data = The bytes to be padded.
+ *  size = The size of `data` after padding.
+ */
 void vacpp(ref ubyte[] data, ptrdiff_t size)
 {
     if (size < 8 || size > 2 ^^ 24)
@@ -103,6 +151,12 @@ void vacpp(ref ubyte[] data, ptrdiff_t size)
     data[$-8..$-5] = margin.serialize!true()[0..3];
 }
 
+/**
+ * Unpads `data` assuming it was padded previously with `vacpp`
+ *
+ * Params:
+ *  data = The bytes to be unpadded.
+ */
 void unvacpp(ref ubyte[] data) 
 {
     if (data.length < 8)

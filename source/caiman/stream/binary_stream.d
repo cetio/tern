@@ -6,6 +6,7 @@ import caiman.stream.impl;
 import caiman.serialization;
 import caiman.conv;
 import caiman.traits;
+import caiman.memory;
 
 public class BinaryStream : IStream
 {
