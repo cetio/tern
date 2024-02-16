@@ -100,7 +100,7 @@ static:
  *  - If `T` has an encrypt function present, the output will be the output of the encryption function.
  */
 public auto digest(T, ARGS...)(ARGS args)
-    if (hasMember!(T, "encrypt"))
+    if (isEncryptingDigest!T)
 {
     return T.encrypt(args);
 }
@@ -114,7 +114,7 @@ public auto digest(T, ARGS...)(ARGS args)
  *  - If `T` has a decrypt function present, the output will be the output of the decryption function.
  */
 public auto ingest(T, ARGS...)(ARGS args)
-    if (hasMember!(T, "decrypt"))
+    if (isEncryptingDigest!T)
 {
     return T.decrypt(args);
 }
@@ -128,7 +128,7 @@ public auto ingest(T, ARGS...)(ARGS args)
  *  - If `T` has an encrypt function present, the output will be the output of the encryption function.
  */
 public auto digest(T, ARGS...)(ARGS args)
-    if (hasMember!(T, "hash"))
+    if (isHashingDigest!T)
 {
     return T.hash(args);
 }
@@ -142,7 +142,7 @@ public auto digest(T, ARGS...)(ARGS args)
  *  - If `T` has a decrypt function present, the output will be the output of the decryption function.
  */
 public auto ingest(T, ARGS...)(ARGS args)
-    if (hasMember!(T, "hash"))
+    if (isHashingDigest!T)
 {
     return (serialize!true(T.hash(args))).toHexString();
 }

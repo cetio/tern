@@ -1,4 +1,4 @@
-/// Implementation of RC4 digester.
+/// Implementation of RC4 digester
 module caiman.digest.rc4;
 
 import caiman.object;

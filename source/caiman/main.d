@@ -51,10 +51,6 @@ void main()
     writeln(a.numNextOps);
     writeln(a + 1); */
 
-    Unique!(int, free) ptr = calloc(4);
-    *ptr = 17;
-    writeln(*ptr);
-    
     import caiman.digest.anura;
     import caiman.digest.tea;
     import caiman.digest.hight;
@@ -70,12 +66,12 @@ void main()
 
     writeln(digest!Berus(bytes, null).toHexString);
     auto start = Clock.currTime();
-    Anura1024.encrypt(bytes, key1024);
+    Anura256.encrypt(bytes, key256);
     writeln(Clock.currTime() - start);
     writeln(digest!Berus(bytes, null).toHexString);
 
     start = Clock.currTime();
-    Anura1024.decrypt(bytes, key1024);
+    Anura256.decrypt(bytes, key256);
     writeln(Clock.currTime() - start);
 
     ptrdiff_t diff = tbytes.length - bytes.length;

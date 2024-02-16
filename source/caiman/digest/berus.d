@@ -1,9 +1,26 @@
+/// Implementation of Berus digester
 module caiman.digest.berus;
 
 import std.conv;
 import caiman.object;
 import caiman.digest;
 
+/**
+ * Implementation of Berus digester.
+ *
+ * Berus is a modified Argon2 designed for lightweight and low-resource
+ * environments. It operates by dividing the input data into blocks, applying a series
+ * of operations, including XOR and addition, and then compressing the result.
+ *
+ * Example:
+ * ```d
+ * import caiman.digest.berus;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * ubyte[] salt = [6, 7, 8, 9, 10];
+ * auto hashValue = Berus.hash(data, salt);
+ * ```
+ */
 public static @digester class Berus
 {
 private:
@@ -14,15 +31,15 @@ pure:
 
 public:
     /**
-     * Computes the Berus digest of the given data.
-     * 
-     * Params:
-     *  data - The data to be hashed.
-     *  salt - The salt to be used in the hashing process.
-     * 
-     * Returns:
-     *  The hashed result as an array of ubytes.
-     */
+    * Computes the Berus digest of the given data.
+    * 
+    * Params:
+    *  data - The data to be hashed.
+    *  salt - The salt to be used in the hashing process.
+    * 
+    * Returns:
+    *  The hashed result as an array of ubytes.
+    */
     ubyte[] hash(ubyte[] data, ubyte[] salt) 
     {
         ulong[BLOCK_SIZE] block;

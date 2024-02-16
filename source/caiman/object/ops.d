@@ -26,28 +26,3 @@ T factory(T)()
     else 
         return T.init;
 }
-
-/// Generates a mixin for doing standard `using` behavior (from languages like C#)
-public template using(T, string name)
-{
-    enum using = 
-    {
-        static if (seqContains!("close", FunctionNames!T))
-        {
-            static assert(Parameters!(TypeOf!(T, "close")).length == 0, "Close function expected to have no parameters!");
-
-            return (fullyQualifiedName!T~" "~name~";
-                scope (exit) "~name~".close();");
-        }
-        else static if (seqContains!("dispose", FunctionNames!T))
-        {
-            static assert(Parameters!(TypeOf!(T, "close")).length == 0, "Dispose function expected to have no parameters!");
-
-            return fullyQualifiedName!T~" "~name~";
-                scope (exit) "~name~".dispose();";
-        }
-        else
-            return fullyQualifiedName!T~" "~name~";
-                scope (exit) destroy("~name~")";
-    }();
-}

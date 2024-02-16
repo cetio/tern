@@ -1,3 +1,4 @@
+/// Blitting, serialization, monitors, and general operations with objects/data
 module caiman.object;
 
 public import caiman.object.blit;

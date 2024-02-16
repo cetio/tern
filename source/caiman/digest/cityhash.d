@@ -1,13 +1,37 @@
+/// Implementation of CityHash digester
 module caiman.digest.cityhash;
 
 import caiman.digest;
 import caiman.object;
 
+/**
+ * Implementation of CityHash digester.
+ *
+ * CityHash is a family of hash functions developed by Google.
+ * It provides fast and strong hash functions for hash tables and checksums.
+ *
+ * Example:
+ * ```d
+ * import caiman.digest.cityhash;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * auto hashValue = CityHash.hash(data);
+ * ```
+ */
 public static @digester class CityHash
 {
 public:
 static:
 pure:
+    /**
+    * Computes the CityHash digest of the given data.
+    *
+    * Params:
+    *  data = The input byte array for which the CityHash digest is to be computed.
+    *
+    * Returns:
+    *  A byte array representing the computed CityHash digest.
+    */
     ubyte[] hash(ubyte[] data)
     {
         ulong seed = 0x9ae16a3b2f90404f;

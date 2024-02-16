@@ -20,9 +20,17 @@ import core.bitop;
  */
 public static @digester class MurmurHash
 {
-public:
+private:
 static:
 pure:
+    enum C1 = 0xcc9e2d51;
+    enum C2 = 0x1b873593;
+    enum R1 = 15;
+    enum R2 = 13;
+    enum M = 5;
+    enum N = 0xe6546b64;
+
+public:
     /**
     * Computes the MurmurHash digest of the given data.
     *
@@ -35,32 +43,25 @@ pure:
     */
     ubyte[] hash(ubyte[] data, uint seed = 0)
     {
-        enum uint c1 = 0xcc9e2d51;
-        enum uint c2 = 0x1b873593;
-        enum uint r1 = 15;
-        enum uint r2 = 13;
-        enum uint m = 5;
-        enum uint n = 0xe6546b64;
-
         sachp(data, 4);
 
         uint hash = seed;
         foreach (k; cast(uint[])data)
         {
-            k *= c1;
-            k = rol(k, r1);
-            k *= c2;
+            k *= C1;
+            k = rol(k, R1);
+            k *= C2;
 
             hash ^= k;
-            hash = rol(hash, r2);
-            hash = hash * m + n;
+            hash = rol(hash, R2);
+            hash = hash * M + N;
         }
 
         hash ^= data.length * 4;
         hash ^= hash >> 16;
         hash *= 0x85ebca6b;
         hash ^= hash >> 13;
-        hash *= 0xc2b2ae35;
+        hash *= 0xC2b2ae35;
         hash ^= hash >> 16;
 
         return hash.serialize!true();

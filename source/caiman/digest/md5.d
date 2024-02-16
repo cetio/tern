@@ -1,4 +1,4 @@
-/// Implementation of MD5 digester.
+/// Implementation of MD5 digester
 module caiman.digest.md5;
 
 import caiman.digest;

@@ -1,3 +1,4 @@
+/// Blitting of data from one type to another, cloning, and more
 module caiman.object.blit;
 
 import caiman.traits;

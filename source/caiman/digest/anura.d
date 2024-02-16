@@ -1,3 +1,4 @@
+/// Implementation of Anura digester
 module caiman.digest.anura;
 
 import caiman.digest;
@@ -5,16 +6,39 @@ import caiman.digest.circe;
 import caiman.object;
 import caiman.algorithm;
 
-// TODO: Anura256 & 512
+/**
+ * Implementation of Anura256 digester.
+ *
+ * Anura256 is a fast and efficient pseudo-fiestel block based block cipher 
+ * that primarily works by shuffling data around and works with blocks of 64 bits.
+ * It utilizes a 256-bit key for encryption and decryption.
+ *
+ * Example:
+ * ```d
+ * import caiman.digest.anura;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "0123456789ABCDEF0123456789ABCDEF"; // Must be 32 bytes (256 bits)
+ * Anura256.encrypt(data, key);
+ * Anura256.decrypt(data, key);
+ * ```
+ */
 public static @digester class Anura256
 {
 public:
 static:
 pure:
+    /**
+    * Encrypts the given data using Anura256 algorithm.
+    *
+    * Params:
+    *  data = The data to be encrypted.
+    *  key = The encryption key, must be 256 bits (32 bytes).
+    */
     void encrypt(ref ubyte[] data, string key)
     {
-        if (key.length != 128)
-            throw new Throwable("Key is not 1024 bits!");
+        if (key.length != 32)
+            throw new Throwable("Key is not 256 bits!");
 
         key = cast(string)digest!Circe(cast(ubyte[])key[0..32]);
         ulong rola = (cast(ulong*)key.ptr)[1];
@@ -49,7 +73,7 @@ pure:
             (cast(uint*)&block)[1] = left;
         }
 
-        foreach (i; 0..2)
+        foreach (i; 0..4)
         {
             foreach (j, ref block; cast(ulong[])data)
             {
@@ -67,7 +91,14 @@ pure:
         }
     }
 
-    /* void encrypt(ref ubyte[] data, string key)
+    /**
+    * Decrypts the given data using Anura256 algorithm.
+    *
+    * Params:
+    *  data = The data to be decrypted.
+    *  key = The decryption key, must be 256 bits (32 bytes).
+    */
+    void decrypt(ref ubyte[] data, string key)
     {
         if (key.length != 32)
             throw new Throwable("Key is not 256 bits!");
@@ -89,14 +120,8 @@ pure:
             rold << rola,
         ];
 
-        vacpp(data, 8);
-
-        foreach (i; 0..(roba % 128))
-        {
-            ptrdiff_t factor = ((set[i % 8] * i) % ((data.length / 16_384) | 2)) | 1;  
-            for (ptrdiff_t j = factor; j < data.length; j += factor)
-                data.swap(j, j - factor);
-        }
+        if (data.length % 8 != 0)
+            vacpp(data, 8);
 
         void swap(ref ulong block)
         {
@@ -105,30 +130,62 @@ pure:
             (cast(uint*)&block)[1] = left;
         }
 
-        foreach (i; 0..2)
+        foreach_reverse (i; 0..4)
         {
-            foreach (j, ref block; cast(ulong[])data)
+            foreach_reverse (j, ref block; (cast(ulong[])data)[1..$])
+                block ^= data.ptr[j - 1];
+
+            foreach_reverse (j, ref block; cast(ulong[])data)
             {
                 ptrdiff_t ri = ~i;
                 ptrdiff_t si = i % 8;
-                block += (rola << si) ^ ri;
-                block ^= (rolb << si) ^ ri;
-                swap(block);
-                block -= (rolc << si) ^ ri;
                 block ^= (rold << si) ^ ri;
+                block += (rolc << si) ^ ri;
+                swap(block);
+                block ^= (rolb << si) ^ ri;
+                block -= (rola << si) ^ ri;
             }
-
-            foreach (j, ref block; (cast(ulong[])data)[1..$])
-                block ^= data.ptr[j - 1];
         }
-    } */
+
+        foreach_reverse (i; 0..(rola % 128))
+        {
+            ptrdiff_t factor = ((set[i % 8] * i) % ((data.length / 16_384) | 2)) | 1;  
+            for (ptrdiff_t j = factor; j < data.length; j += factor)
+                data.swap(j, j - factor);
+        }
+
+        unvacpp(data);
+    }
 }
 
+/**
+ * Implementation of Anura1024 digester.
+ *
+ * Anura1024 is a variant of Anura cipher that utilizes a 1024-bit key for encryption
+ * and decryption.
+ *
+ * Example:
+ * ```d
+ * import caiman.digest.anura;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"; // Must be 128 bytes (1024 bits)
+ * Anura1024.encrypt(data, key);
+ * Anura1024.decrypt(data, key);
+ * ```
+ */
 public static @digester class Anura1024
 {
 public:
 static:
 pure:
+    /**
+    * Encrypts the given data using Anura1024 algorithm.
+    *
+    * Params:
+    *  data = The data to be encrypted.
+    *  key = The encryption key, must be 1024 bits (128 bytes).
+    */
     void encrypt(ref ubyte[] data, string key)
     {
         if (key.length != 128)
@@ -200,6 +257,13 @@ pure:
         }
     }
 
+    /**
+    * Decrypts the given data using Anura1024 algorithm.
+    *
+    * Params:
+    *  data = The data to be decrypted.
+    *  key = The decryption key, must be 1024 bits (128 bytes).
+    */
     void decrypt(ref ubyte[] data, string key)
     {
         if (key.length != 128)

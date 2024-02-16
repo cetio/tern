@@ -1,4 +1,4 @@
-/// Implementation of CRC32 digester.
+/// Implementation of CRC32 digester
 module caiman.digest.crc32;
 
 import caiman.object;

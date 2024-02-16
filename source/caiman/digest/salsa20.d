@@ -1,8 +1,26 @@
+/// Implementation of Salsa20 digester
 module caiman.digest.salsa20;
 
 import caiman.digest;
 import caiman.digest.circe;
 
+/**
+ * Implementation of Salsa20 digester.
+ *
+ * Salsa20 is a stream cipher designed to be highly efficient and secure. It operates 
+ * on 512-bit (64-byte) blocks and accepts a 256-bit (32-byte) key and a 64-bit (8-byte) 
+ * nonce.
+ *
+ * Example:
+ * ```d
+ * import caiman.digest.salsa20;
+ *
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "my_secret_key"; // Must be exactly 256 bits (32 bytes) in length.
+ * ubyte[8] nonce = [0, 0, 0, 0, 0, 0, 0, 0]; // Must be exactly 64 bits (8 bytes) in length.
+ * Salsa20.encrypt(data, key, nonce);
+ * ```
+ */
 public static @digester class Salsa20
 {
 private:
@@ -32,6 +50,14 @@ static:
     }
 
 public:
+    /**
+    * Encrypts the given byte array `data`
+    *
+    * Params:
+    *  data: Reference to the input byte array to be encrypted.
+    *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
+    *  nonce: The nonce value. Must be exactly 64 bits (8 bytes) in length.
+    */
     void encrypt(ref ubyte[] data, string key, ubyte[8] nonce, uint counter = 0)
     {
         if (key.length != 32)
@@ -64,5 +90,13 @@ public:
         }
     }
 
+    /**
+    * Decrypts the given byte array `data`
+    *
+    * Params:
+    *  data: Reference to the input byte array to be encrypted.
+    *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
+    *  nonce: The nonce value. Must be exactly 64 bits (8 bytes) in length.
+    */
     void decrypt(ref ubyte[] data, string key, ubyte[8] nonce, uint counter = 0) => encrypt(data, key, nonce, counter);
 }

@@ -1,4 +1,4 @@
-/// Implementation of Circe digester.
+/// Implementation of Circe digester
 module caiman.digest.circe;
 
 import caiman.digest;

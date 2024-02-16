@@ -1,3 +1,4 @@
+/// Various algorithms for processing arbitrary data arrays
 module caiman.algorithm;
 
 public import caiman.algorithm.filter_range;

@@ -1,13 +1,38 @@
+/// Implementation of XXHash digester
 module caiman.digest.xxhash;
 
 import caiman.object;
 import caiman.digest;
 
-public static @digester class xxHash
+/**
+ * Implementation of XXHash digester.
+ *
+ * XXHash is an extremely fast non-cryptographic hash algorithm, which offers
+ * excellent distribution, especially for small keys and values. It is designed
+ * for speed and efficiency on both little-endian and big-endian machines.
+ *
+ * Example:
+ * ```d
+ * import caiman.digest.xxhash;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * auto hashValue = XXHash.hash(data);
+ * ```
+ */
+public static @digester class XXHash
 {
 public:
 static:
 pure:
+    /**
+    * Computes the XXHash digest of the given data.
+    *
+    * Params:
+    *  data = The input byte array for which the XXHash is to be computed.
+    *
+    * Returns:
+    *  A byte array representing the computed XXHash digest.
+    */
     ubyte[] hash(ubyte[] data)
     {
         const ulong prime1 = 11_400_714_785_074_694_791;
