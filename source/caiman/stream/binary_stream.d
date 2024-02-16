@@ -2,12 +2,13 @@
 // TODO: Pattern/value scan
 module caiman.stream.binary_stream;
 
-import caiman.stream.impl;
+public import caiman.stream.impl;
 import caiman.serialization;
 import caiman.conv;
 import caiman.traits;
 import caiman.memory;
 
+/// Binary stream implementation backed by an array.
 public class BinaryStream : IStream
 {
 public:

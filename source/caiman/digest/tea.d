@@ -1,7 +1,7 @@
 module caiman.digest.tea;
 
 import caiman.digest;
-import caiman.range;
+import caiman.algorithm;
 import caiman.serialization;
 
 public static @digester class TEA

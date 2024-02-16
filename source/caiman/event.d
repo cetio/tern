@@ -1,4 +1,4 @@
-/// Event subscription manager for arbitrary function pointers
+/// Event subscription management
 module caiman.event;
 
 import caiman.traits;

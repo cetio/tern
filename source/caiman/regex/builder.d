@@ -5,7 +5,7 @@ import std.conv;
 import std.ascii;
 import std.algorithm;
 import caiman.state;
-// TODO: Use caiman.error
+// TODO: Use caiman.exception
 
 // Tokens
 package enum : ubyte

@@ -1,3 +1,4 @@
+/// Stream interface and enums for stream implementations
 module caiman.stream.impl;
 
 public enum Seek

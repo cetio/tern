@@ -1,4 +1,5 @@
-module caiman.range;
+/// Various algorithms for processing arrays
+module caiman.algorithm;
 
 import caiman.traits;
 

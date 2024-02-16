@@ -1,3 +1,4 @@
+/// Shallow and deep cloning, type data blitting, data verification, and more
 module caiman.object;
 
 import caiman.traits;

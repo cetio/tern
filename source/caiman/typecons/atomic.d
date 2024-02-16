@@ -1,3 +1,4 @@
+/// Intrinsic atomic type wrapping and side-channel blinding
 module caiman.typecons.atomic;
 
 public import core.atomic;
@@ -5,6 +6,18 @@ import core.sync.mutex;
 import caiman.traits;
 import caiman.meta;
 import caiman.conv;
+
+public alias a8 = Atomic!ubyte;
+public alias a16 = Atomic!ushort;
+public alias a32 = Atomic!uint;
+public alias a64 = Atomic!ulong;
+public alias af16 = Atomic!float;
+public alias af32 = Atomic!double;
+
+public alias b8 = Blind!ubyte;
+public alias b16 = Blind!ushort;
+public alias b32 = Blind!uint;
+public alias b64 = Blind!ulong;
 
 /**
  * Wraps `T` to make every operation atomic, if possible.
@@ -26,7 +39,7 @@ final:
 
     this(T val)
     {
-        this.value = cast(shared(T))val;
+        value = cast(shared(T))val;
     }
 
     auto opAssign(A)(A ahs) shared
@@ -83,21 +96,23 @@ final:
     static if (!isScalarType!T)
     auto opEquals(A)(A ahs)
     {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value == ahs;");
+        if (mutex is null)
+            mutex = new shared Mutex();
+
+        mutex.lock();
+        scope (exit) mutex.unlock();
+        return value == ahs;
     }
 
     static if (!isScalarType!T)
     auto opEquals(A)(A ahs) shared
     {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value == ahs;");
+        if (mutex is null)
+            mutex = new shared Mutex();
+            
+        mutex.lock();
+        scope (exit) mutex.unlock();
+        return value == ahs;
     }
 
     static if (isScalarType!T)
@@ -113,23 +128,25 @@ final:
     }
 
     static if (!isScalarType!T)
-    int opCmp(R)(const R other)
+    int opCmp(A)(const A ahs)
     {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value.opCmp(other);");
+        if (mutex is null)
+            mutex = new shared Mutex();
+            
+        mutex.lock();
+        scope (exit) mutex.unlock();
+        return value.opCmp(ahs);
     }
 
     static if (!isScalarType!T)
-    int opCmp(R)(const R other) shared
+    int opCmp(A)(const A ahs) shared
     {
-        mixin("if (mutex is null)
-                mutex = new shared Mutex();
-            mutex.lock();
-            scope (exit) mutex.unlock();
-            return value.opCmp(other);");
+        if (mutex is null)
+            mutex = new shared Mutex();
+
+        mutex.lock();
+        scope (exit) mutex.unlock();
+        return value.opCmp(ahs);
     }
 
     public auto opOpAssign(string op, R)(R rhs) shared
@@ -138,11 +155,12 @@ final:
             return value.atomicOp!(op~'=')(cast(shared(T))rhs);
         else static if (op == "~")
         {
-            mixin("if (mutex is null)
+            if (mutex is null)
                     mutex = new shared Mutex();
-                mutex.lock();
-                scope (exit) mutex.unlock();
-                return value ~= rhs;");
+                    
+            mutex.lock();
+            scope (exit) mutex.unlock();
+            return value ~= rhs;
         }
         else
         {
@@ -334,12 +352,14 @@ final:
 
     string toString() const shared
     {
-        return value.to!string;
+        return to!string(value);
     }
 }
 
 /**
  * Prevents timing and power side channel attacks by obfuscating the processing of `T`
+ *
+ * This also makes `T` atomic.
  *
  * Remarks:
  *  - This obviously has performance impacts and is designed to be used in cryptography.
@@ -355,6 +375,11 @@ public struct Blind(T)
 public:
 final:
     ulong basis = uint.max;
+
+    this(T val)
+    {
+        value = val;
+    }
 
     ulong numNextOps()
     {
@@ -385,16 +410,16 @@ final:
         return this;
     }
 
+    Blind!T opImplicitCastFrom(A)(A ahs) shared
+    {
+        return Blind!(cast(T)ahs);
+    }
+
     auto opAssign(A)(A ahs) shared
     {
         scope (exit) obscure();
         value = ahs;
         return this;
-    }
-        
-    Blind!T opImplicitCastFrom(A)(A ahs)
-    {
-        return Blind!T(cast(T)ahs);
     }
 
     Blind!T opImplicitCastFrom(A)(A ahs) shared
@@ -471,11 +496,11 @@ final:
 
     string toString() const
     {
-        return value.to!string;
+        return to!string(value);
     }
 
     string toString() const shared
     {
-        return value.to!string;
+        return to!string(value);
     }
 }

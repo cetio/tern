@@ -1,13 +1,14 @@
 /// Thread-safe atomic stream implementation using `IStream`
 module caiman.stream.atomic_stream;
 
-import caiman.stream.impl;
+public import caiman.stream.impl;
 import caiman.typecons;
 import caiman.serialization;
 import caiman.conv;
 import caiman.traits;
 import caiman.memory;
 
+/// Thread-safe implementation of `BinaryStream`
 public class AtomicStream : IStream
 {
 public:
@@ -20,10 +21,10 @@ shared:
     shared this(T)(T data, Endianness endianness = Endianness.Native)
     {
         if (isArray!T)
-            this.data = atomic(cast(ubyte[])data);
+            this.data = cast(ubyte[])data;
         else
-            this.data = atomic(data.serialize());
-        this.endianness = atomic(endianness);
+            this.data = data.serialize();
+        this.endianness = endianness;
     }
 
     /**

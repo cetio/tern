@@ -2,7 +2,7 @@
 module caiman.digest.circe;
 
 import caiman.digest;
-import caiman.range;
+import caiman.algorithm;
 import caiman.serialization;
 
 /** 

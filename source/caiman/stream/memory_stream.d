@@ -2,11 +2,11 @@
 // TODO: Pattern/value scan
 module caiman.stream.memory_stream;
 
-import caiman.stream.impl;
-import caiman.serialization;
+public import caiman.stream.impl;
 import caiman.conv;
 import caiman.traits;
 
+/// Memory stream implementation backed by a pointer, has no bounds checking.
 public class MemoryStream : IStream
 {
 public:

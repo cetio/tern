@@ -51,8 +51,8 @@ void main()
     writeln(a.numNextOps);
     writeln(a + 1); */
 
-    Nullable!int a = null;
-    writeln(a);
+    b32 a = 0;
+    writeln(a + 4);
     
     import caiman.digest.anura;
     import caiman.digest.tea;

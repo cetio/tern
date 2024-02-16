@@ -272,7 +272,6 @@ final:
         return Nullable!A(cast(A)value);
     }
 
-// TODO: Implement elsewhere
     Nullable!T opImplicitCastFrom(A)(A ahs)
     {
         static if (is(A == NULL))
@@ -434,7 +433,7 @@ final:
         if (ptr == null)
             return "null";
 
-        return value.to!string;
+        return to!string(value);
     }
 
     string toString() const shared
@@ -442,7 +441,7 @@ final:
         if (ptr == null)
             return "null";
 
-        return value.to!string;
+        return to!string(value);
     }
 
     bool isNull()

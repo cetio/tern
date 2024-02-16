@@ -1,5 +1,5 @@
 /// Simple highlighting and throwable raising aimed at parsers
-module caiman.error;
+module caiman.exception;
 
 import std.algorithm;
 import std.array;

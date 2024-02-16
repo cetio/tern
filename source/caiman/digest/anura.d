@@ -3,7 +3,7 @@ module caiman.digest.anura;
 import caiman.digest;
 import caiman.digest.circe;
 import caiman.serialization;
-import caiman.range;
+import caiman.algorithm;
 
 // TODO: Anura256 & 512
 public static @digester class Anura256
