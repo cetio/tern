@@ -1,7 +1,7 @@
 module caiman.digest.berus;
 
 import std.conv;
-import caiman.serialization;
+import caiman.object;
 import caiman.digest;
 
 public static @digester class Berus

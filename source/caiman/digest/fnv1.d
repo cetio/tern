@@ -1,7 +1,7 @@
 /// Implementation of FNV1 digester.
 module caiman.digest.fnv1;
 
-import caiman.serialization;
+import caiman.object;
 import caiman.digest;
 
 /**

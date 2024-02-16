@@ -1,8 +1,6 @@
-/// Shallow and deep cloning, type data blitting, data verification, and more
-module caiman.object;
+module caiman.object.blit;
 
 import caiman.traits;
-import caiman.meta;
 
 public:
 static:
@@ -18,25 +16,37 @@ static:
  * Example:
  * ```d
  * A a;
- * A b = a.dup();
+ * A b = a.sdup();
  * ```
  */
 pragma(inline)
-@trusted T dup(T)(T val)
-    if (!__traits(compiles, object.dup(val)))
+@trusted T sdup(T)(T val)
+    if (!isArray!T && !isAssignableTo!(T, Object))
 {
-    // Cloned when passed as a parameter
     return val;
 }
 
-/// ditto
+/**
+ * Shallow clones a value.
+ *
+ * Params:
+ *  val = The value to be shallow cloned.
+ *
+ * Returns:
+ *  A shallow clone of the provided value.
+ *
+ * Example:
+ * ```d
+ * A a;
+ * A b = a.sdup();
+ * ```
+ */
 pragma(inline)
-@trusted T dup(T)(T val)
-    if (__traits(compiles, object.dup(val)))
+@trusted T sdup(T)(T val)
+    if (isArray!T || isAssignableTo!(T, Object))
 {
     return object.dup(val);
 }
-
 
 /**
  * Deep clones a value.
@@ -61,10 +71,7 @@ pragma(inline)
         return val;
     else
     {
-        static if (isReferenceType!T)
-            T ret = new T();
-        else 
-            T ret;
+        T ret = factory!T;
         static foreach (field; FieldNames!T)
         {
             static if (isMutable!(TypeOf!(T, field)))
@@ -127,44 +134,4 @@ pragma(inline)
                 __traits(getMember, lhs, field) = cast(TypeOf!(F, field))__traits(getMember, rhs, field);
         }
     }
-}
-
-/**
- * Checks if `val` is actually a valid, non-null class, and has a valid vtable.
- *
- * Params:
- *  val = The value to check if null.
- *
- * Returns:
- *  True if `val` is null or has an invalid vtable.
- */
-@trusted bool isNull(T)(auto ref T val)
-    if (is(T == class))
-{
-    return val is null || *cast(void**)val is null;
-}
-
-/// Generates a mixin for doing standard `using` behavior (from languages like C#)
-public template using(T, string name)
-{
-    enum using = 
-    {
-        static if (seqContains!("close", FunctionNames!T))
-        {
-            static assert(Parameters!(TypeOf!(T, "close")).length == 0, "Close function expected to have no parameters!");
-
-            return (fullyQualifiedName!T~" "~name~";
-                scope (exit) "~name~".close();");
-        }
-        else static if (seqContains!("dispose", FunctionNames!T))
-        {
-            static assert(Parameters!(TypeOf!(T, "close")).length == 0, "Dispose function expected to have no parameters!");
-
-            return fullyQualifiedName!T~" "~name~";
-                scope (exit) "~name~".dispose();";
-        }
-        else
-            return fullyQualifiedName!T~" "~name~";
-                scope (exit) destroy("~name~")";
-    }();
 }

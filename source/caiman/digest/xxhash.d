@@ -1,6 +1,6 @@
 module caiman.digest.xxhash;
 
-import caiman.serialization;
+import caiman.object;
 import caiman.digest;
 
 public static @digester class xxHash

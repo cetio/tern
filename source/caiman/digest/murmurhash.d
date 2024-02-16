@@ -2,8 +2,9 @@
 module caiman.digest.murmurhash;
 
 import caiman.memory;
-import caiman.serialization;
+import caiman.object;
 import caiman.digest;
+import core.bitop;
 
 /**
  * Implementation of MurmurHash digester.
@@ -19,15 +20,9 @@ import caiman.digest;
  */
 public static @digester class MurmurHash
 {
-private:
+public:
 static:
 pure:
-    uint rotl(uint a, uint b)
-    {
-        return (a << b) | (a >> (32 - b));
-    }
-
-public:
     /**
     * Computes the MurmurHash digest of the given data.
     *
@@ -53,11 +48,11 @@ public:
         foreach (k; cast(uint[])data)
         {
             k *= c1;
-            k = rotl(k, r1);
+            k = rol(k, r1);
             k *= c2;
 
             hash ^= k;
-            hash = rotl(hash, r2);
+            hash = rol(hash, r2);
             hash = hash * m + n;
         }
 

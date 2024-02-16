@@ -2,7 +2,7 @@ module caiman.digest.hight;
 
 import caiman.digest;
 import caiman.algorithm;
-import caiman.serialization;
+import caiman.object;
 
 public static @digester class HIGHT
 {

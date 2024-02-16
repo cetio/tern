@@ -1,5 +1,5 @@
 /// Various algorithms for processing arrays
-module caiman.algorithm;
+module caiman.algorithm.searching;
 
 import caiman.traits;
 

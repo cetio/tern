@@ -3,7 +3,7 @@ module caiman.digest.circe;
 
 import caiman.digest;
 import caiman.algorithm;
-import caiman.serialization;
+import caiman.object;
 
 /** 
  * Implementation of Circe digester.

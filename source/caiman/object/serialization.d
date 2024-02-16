@@ -1,8 +1,9 @@
 /// General-purpose binary serializer and deserializer for arbitrary data types
-module caiman.serialization;
+module caiman.object.serialization;
 
 import caiman.traits;
 import caiman.conv;
+import caiman.object;
 public import caiman.memory;
 
 public:
@@ -60,15 +61,7 @@ pure:
 @trusted deserialize(T, B)(B bytes, ptrdiff_t len = -1, Endianness endianness = Endianness.Native)
     if ((isDynamicArray!B || isStaticArray!B) && (is(ElementType!B == ubyte) || is(ElementType!B == byte)))
 {
-    static if (isReferenceType!T)
-    {
-        static if (isArray!T)
-            T ret = new T(0);
-        else
-            T ret = new T();
-    }
-    else
-        T ret;
+    T ret = factory!T;
     ptrdiff_t offset;
     static if (isArray!T)
     {

@@ -234,7 +234,7 @@ public struct Nullable(T)
 
 public:
 final:
-    alias NULL = typeof(null);
+    private alias NULL = typeof(null);
     T* ptr;
 
     this(T val)

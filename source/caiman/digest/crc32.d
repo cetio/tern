@@ -1,7 +1,7 @@
 /// Implementation of CRC32 digester.
 module caiman.digest.crc32;
 
-import caiman.serialization;
+import caiman.object;
 import caiman.digest;
 
 /**

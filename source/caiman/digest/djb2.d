@@ -1,7 +1,7 @@
 module caiman.digest.djb2;
 
 import caiman.digest;
-import caiman.serialization;
+import caiman.object;
 
 public static @digester class DJB2
 {

@@ -3,7 +3,7 @@ module caiman.stream.atomic_stream;
 
 public import caiman.stream.impl;
 import caiman.typecons;
-import caiman.serialization;
+import caiman.object;
 import caiman.conv;
 import caiman.traits;
 import caiman.memory;

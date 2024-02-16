@@ -3,7 +3,7 @@
 import std.stdio;
 import caiman.typecons;
 import caiman.stream.impl;
-import caiman.serialization;
+import caiman.object;
 import caiman.conv;
 import caiman.traits;
 import caiman.mira;

@@ -1,7 +1,7 @@
 /// Implementation of RC4 digester.
 module caiman.digest.rc4;
 
-import caiman.serialization;
+import caiman.object;
 import caiman.digest;
 import caiman.digest.circe;
 

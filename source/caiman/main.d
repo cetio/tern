@@ -51,8 +51,9 @@ void main()
     writeln(a.numNextOps);
     writeln(a + 1); */
 
-    b32 a = 0;
-    writeln(a + 4);
+    Unique!(int, free) ptr = calloc(4);
+    *ptr = 17;
+    writeln(*ptr);
     
     import caiman.digest.anura;
     import caiman.digest.tea;

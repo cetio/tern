@@ -5,6 +5,7 @@ import caiman.traits;
 import caiman.meta;
 import std.conv;
 import caiman.memory;
+import caiman.object;
 
 public:
 static:
@@ -139,10 +140,7 @@ pragma(inline)
 @trusted auto ref T conv(T, F)(F val)
     if (!isArray!T && !isAssociativeArray!T)
 {
-    static if (isReferenceType!T)
-        T ret = new T();
-    else 
-        T ret;
+    T ret = factory!T;
     static foreach (field; FieldNames!F)
     {
         static if (hasMember!(T, field) && !isImmutable!(__traits(getMember, T, field)) && !isImmutable!(__traits(getMember, F, field)))

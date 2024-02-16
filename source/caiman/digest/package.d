@@ -3,7 +3,7 @@ module caiman.digest;
 
 import std.meta;
 import caiman.traits;
-import caiman.serialization;
+import caiman.object;
 import caiman.meta;
 
 public enum digester;
