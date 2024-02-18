@@ -9,6 +9,7 @@
 	"description": "General-purpose and diverse library intended to expand upon Phobos",
 	"license": "AGPL-3.0-only",
 	"name": "tern",
+    "targetType": "library",
     "configurations": [
         {
             "name": "application"
