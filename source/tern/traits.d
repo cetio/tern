@@ -65,7 +65,7 @@ public alias isDManyThing(alias F) = Alias!(isFunction!F && (__traits(identifier
 public alias isStatic(alias F) = Alias!(isField!F && !isEnum!F && __traits(compiles, { auto _ = __traits(getMember, __traits(parent, F), __traits(identifier, F)); }));
 /// True if `F` is an enum field.
 public alias isEnum(alias F) = Alias!(__traits(compiles, { enum _ = __traits(getMember, __traits(parent, F), __traits(identifier, F)); }));
-
+/// True if `A` is an implementation defined alias (ie: __ctor, std, factory, etc.)
 public template isDImplDefined(alias A)
 {
     static if ((isModule!A || (isType!A && !isIntrinsicType!A)) && (getPackage!A.stringof == "package std" || getPackage!A.stringof == "package rt" || getPackage!A.stringof == "package core"))

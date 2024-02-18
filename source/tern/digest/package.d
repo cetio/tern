@@ -6,10 +6,14 @@ import tern.traits;
 import tern.object;
 import tern.meta;
 
+/// Attribute for marking a class as a digester, must implement `encrypt` or `hash  `
 public enum digester;
 
+/// True if `T` is a digester of any kind.
 public alias isDigest(T) = Alias!(seqContains!(digester, __traits(getAttributes, T)));
+/// True if `T` is an encrypting digester.
 public alias isEncryptingDigest(T) = Alias!(isDigest!T && hasStaticMember!(T, "encrypt"));
+/// True if `T` is an hashing digester.
 public alias isHashingDigest(T) = Alias!(isDigest!T && hasStaticMember!(T, "hash"));
 
 /* public class Digest(T, IV...)

@@ -15,21 +15,22 @@ public enum exempt;
 
 /** 
  * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type.  
+ *
  * This is an attribute and should be used like `@inherit!T`
  *
- *  Example:
- *  ```d
- *  struct A {int b; int x() => b; }
+ * Example:
+ * ```d
+ * struct A {int b; int x() => b; }
  *
- *  interface B { string y(); }
+ * interface B { string y(); }
  *
- *  @inherit!A @inherit!B struct C 
- *  {
- *   mixin apply;
+ * @inherit!A @inherit!B struct C 
+ * {
+ *     mixin apply;
  *
- *   string y() => "yohoho!";
- *  }
- *  ```
+ *     string y() => "yohoho!";
+ * }
+ * ```
  */
 public template inherit(T)
     if (hasChildren!T)
@@ -38,22 +39,23 @@ public template inherit(T)
 }
 
 /** 
- * Sets up all inherits for the type that mixes this in.  
+ * Sets up all inherits for the type that mixes this in. 
+ * 
  * Must set inherited types by using `inherit(T)` beforehand.
  *
- *  Example:
- *  ```d
- *  struct A {int b; int x() => b; }
+ * Example:
+ * ```d
+ * struct A {int b; int x() => b; }
  *
- *  interface B { string y(); }
+ * interface B { string y(); }
  *
- *  @inherit!A @inherit!B struct C 
- *  {
- *   mixin applyInherits;
+ * @inherit!A @inherit!B struct C 
+ * {
+ *     mixin apply;
  *
- *   string y() => "yohoho!";
- *  }
- *  ```
+ *     string y() => "yohoho!";
+ * }
+ * ```
  */
 // TODO: Use opDispatch to allow for multiple class/struct inherits
 //       Find a faster way to do this, do not regenerate every call

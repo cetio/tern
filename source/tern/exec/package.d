@@ -7,10 +7,10 @@ import tern.traits;
 import tern.object;
 import tern.state;
 import std.string;
-public import tern.exec.pe;
-public import tern.exec.elf;
-public import tern.exec.hook;
-public import tern.exec.syscall;
+public import tern.exec.pe; /// 
+public import tern.exec.elf; /// 
+public import tern.exec.hook; /// 
+public import tern.exec.syscall; /// 
 
 public struct ClrMetadata
 {

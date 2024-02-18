@@ -1,14 +1,38 @@
+/// Implementation of TEA digesters
 module tern.digest.tea;
 
 import tern.digest;
 import tern.algorithm;
 import tern.object;
 
+/**
+ * Implementation of Tiny Encryption Algorithm (TEA) digester.
+ *
+ * TEA is a symmetric block cipher with a block size of 64 bits and a key size of 128 bits.
+ * It operates on 64-bit blocks using a Feistel network structure. TEA is designed to be fast
+ * and simple, yet difficult to cryptanalyze.
+ *
+ * Example:
+ * ```d
+ * import tern.digest.tea;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "my_secret_key";
+ * TEA.encrypt(data, key);
+ * ```
+ */
 public static @digester class TEA
 {
 public:
 static:
 pure:
+    /**
+     * Encrypts the given byte array `data` using TEA algorithm.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be encrypted.
+     *  key = The encryption key. Must be 128 bits (16 characters).
+     */
     void encrypt(ref ubyte[] data, string key) 
     {
         if (key.length != 16)
@@ -41,6 +65,13 @@ pure:
         }
     }
 
+    /**
+     * Decrypts the given byte array `data` using TEA algorithm.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be decrypted.
+     *  key = The decryption key. Must be 128 bits (16 characters).
+     */
     void decrypt(ref ubyte[] data, string key) 
     {
         if (key.length != 16)
@@ -77,11 +108,33 @@ pure:
     }
 }
 
+/**
+ * Implementation of eXtended Tiny Encryption Algorithm (XTEA) digester.
+ *
+ * XTEA is an extension of TEA with a larger block size (64 bits) and a more complex key schedule.
+ * It offers higher security than TEA, making it suitable for applications requiring stronger encryption.
+ *
+ * Example:
+ * ```d
+ * import tern.digest.tea;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "my_secret_key";
+ * XTEA.encrypt(data, key);
+ * ```
+ */
 public static @digester class XTEA 
 {
 public:
 static:
 pure:
+    /**
+     * Encrypts the given byte array `data` using XTEA algorithm.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be encrypted.
+     *  key = The encryption key. Must be 128 bits (16 characters).
+     */
     void encrypt(ref ubyte[] data, string key) 
     {
         if (key.length != 16)
@@ -113,6 +166,13 @@ pure:
         }
     }
 
+    /**
+     * Decrypts the given byte array `data` using XTEA algorithm.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be decrypted.
+     *  key = The decryption key. Must be 128 bits (16 characters).
+     */
     void decrypt(ref ubyte[] data, string key) 
     {
         if (key.length != 16)
@@ -148,11 +208,33 @@ pure:
     }
 }
 
+/**
+ * Implementation of XXTEA (Corrected Block TEA) digester.
+ *
+ * XXTEA is a corrected version of XTEA with a fixed block size of 64 bits and a simpler key schedule.
+ * It is designed to be more resistant against certain types of attacks compared to XTEA.
+ *
+ * Example:
+ * ```d
+ * import tern.digest.tea;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "my_secret_key";
+ * XXTEA.encrypt(data, key);
+ * ```
+ */
 public static @digester class XXTEA 
 {
 public:
 static:
 pure:
+    /**
+     * Encrypts the given byte array `data` using XXTEA algorithm.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be encrypted.
+     *  key = The encryption key. Must be 128 bits (16 characters).
+     */
     void encrypt(ref ubyte[] data, string key) 
     {
         if (key.length != 16)
@@ -184,6 +266,13 @@ pure:
         }
     }
 
+    /**
+     * Decrypts the given byte array `data` using XXTEA algorithm.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be decrypted.
+     *  key = The decryption key. Must be 128 bits (16 characters).
+     */
     void decrypt(ref ubyte[] data, string key) 
     {
         if (key.length != 16)

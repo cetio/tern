@@ -1,3 +1,4 @@
+/// General-purpose data/object operations
 module tern.object.ops;
 
 import tern.traits;
@@ -17,6 +18,7 @@ import tern.traits;
     return val is null || *cast(void**)val is null;
 }
 
+/// Creates a new instance of `T` dynamically based on its traits.
 T factory(T)()
 {
     static if (isDynamicArray!T)
