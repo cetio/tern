@@ -367,7 +367,6 @@ shared(Atomic!T) atomic(T)(T val)
  *  - This obviously has performance impacts and is designed to be used in cryptography.
  *  - Only supports integral types for simplicity.
  */
- // TODO: This is NOT cryptographically secure
 public struct Blind(T)
     if (isIntegral!T)
 {
@@ -376,7 +375,7 @@ public struct Blind(T)
 
 public:
 final:
-    ulong basis = uint.max;
+    ulong state = uint.max;
 
     this(T val)
     {
@@ -385,8 +384,8 @@ final:
 
     ulong numNextOps()
     {
-        ulong t = basis;
-        ulong ops = 3;
+        ulong t = state;
+        ulong ops = 4;
         while (t % 32 != 0)
         {
             ops++;
@@ -397,12 +396,13 @@ final:
 
     void obscure()
     {
-        while (basis % 32 != 0)
-            basis -= 3;
+        while (state % 32 != 0)
+            state -= 3;
 
-        basis += value;
-        basis ^= 0xFFAC1ABB9;
-        basis ^^= (value % basis) | 4;
+        state ^= state >> 12;
+        state ^= state << 25;
+        state ^= state >> 27;
+        state *= (0x2545F4914F6CDD1D ^ value);
     }
 
     auto opAssign(A)(A ahs)

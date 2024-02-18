@@ -49,7 +49,7 @@ final:
      * Returns:
      *  True if there are at least size elements left to read from the current position. 
      */
-    bool mayRead(size_t size)
+    bool mayRead(size_t size = 1)
     {
         return position + size > data.length;
     }
@@ -60,9 +60,9 @@ final:
      * Params:
      *   T = The size of type to move the position by.
      */
-    void step(T)()
+    void step(T)(size_t count = 1)
     {
-        position += T.sizeof;
+        position += T.sizeof * count;
     }
 
     /** 

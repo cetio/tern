@@ -1,0 +1,2 @@
+module avocet.mips;
+
