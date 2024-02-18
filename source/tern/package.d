@@ -1,4 +1,4 @@
-/// The Tern library
+/// Tern core library
 module tern;
 
 public import tern.algorithm;

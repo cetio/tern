@@ -1,5 +1,5 @@
 /// Wrappers for atomics and specific side-channel attack mitigation
-module tern.typecons.channel;
+module tern.typecons.atomic;
 
 public import core.atomic;
 import core.sync.mutex;

@@ -1,10 +1,30 @@
-/// Constructions for `SumType`, `UnionType`, and `VadType` (variadic)
+/// Constructions for `Box`, `SumType`, `UnionType`, and `VadType` (variadic)
 module tern.typecons.variant;
 
 import std.traits;
 import std.conv;
 import tern.codegen;
 import tern.meta;
+
+private template supportedTypes()
+{
+    alias coreTypes = AliasSeq!(ubyte, byte, ushort, short, uint, int, ulong, long, bool, float, double, string, char, wstring, wchar, dstring, dchar,
+        ubyte[], byte[], ushort[], short[], uint[], int[], ulong[], long[], float[], double[], string[], wstring[], dstring[]);
+    alias supportedTypes = AliasSeq!();
+
+    static foreach (i; 1..256)
+    {
+        static foreach (T; coreTypes)
+            supportedTypes = AliasSeq!(supportedTypes, mixin(fullyQualifiedName!T~"["~i.to!string~"]"));
+    }
+}
+
+public struct Box
+{
+private:
+final:
+
+}
 
 // TODO: Fix
 /* public struct SumType(T...)
