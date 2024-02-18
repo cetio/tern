@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/tern
+tern.so
+tern.dylib
+tern.dll
+tern.a
+tern.lib
+tern-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst

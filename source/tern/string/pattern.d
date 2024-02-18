@@ -1,0 +1,2 @@
+module tern.string.pattern;
+
