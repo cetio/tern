@@ -1,5 +1,5 @@
-/// Intrinsic atomic type wrapping and side-channel blinding
-module tern.typecons.atomic;
+/// Wrappers for atomics and specific side-channel attack mitigation
+module tern.typecons.channel;
 
 public import core.atomic;
 import core.sync.mutex;
@@ -360,8 +360,6 @@ shared(Atomic!T) atomic(T)(T val)
 
 /**
  * Prevents timing and power side channel attacks by obfuscating the processing of `T`
- *
- * This also makes `T` atomic.
  *
  * Remarks:
  *  - This obviously has performance impacts and is designed to be used in cryptography.

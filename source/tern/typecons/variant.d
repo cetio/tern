@@ -1,3 +1,4 @@
+/// Constructions for `SumType`, `UnionType`, and `VadType` (variadic)
 module tern.typecons.variant;
 
 import std.traits;

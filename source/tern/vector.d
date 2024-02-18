@@ -1,3 +1,4 @@
+/// Arbitrary vector implementation and utilities for working with vectors
 module tern.vector;
 
 /// Arbitrary vector implementation, allows any length vector less than or equal to 256 bits and can be interacted with as an array.

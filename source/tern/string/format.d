@@ -1,3 +1,4 @@
+/// Utilities for formatting and manipulating data to or from strings
 module tern.string.format;
 
 import std.string;

@@ -1,3 +1,4 @@
+/// Highlighting, cases, colors, etc.
 module tern.string.lettering;
 
 // TODO:

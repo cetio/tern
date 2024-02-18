@@ -1,2 +1,0 @@
-module tern.algorithm.enumerable;
-

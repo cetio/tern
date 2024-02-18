@@ -1,0 +1,4 @@
+codegen iterate over array and infer:
+(size_t, T) == i, u
+(size_t, A, B) = i, u + prev
+(size_t, A, B, C) = i, u + prev + last succeeded (filter only?)
