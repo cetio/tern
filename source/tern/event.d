@@ -4,14 +4,14 @@ module tern.event;
 import tern.traits;
 import std.array;
 
-/// Event subscription manager for arbitrary function pointers
+/// Event subscription manager for arbitrary function pointers.
 public struct Event
 {
 public:
 final:
-    /// Current function pointer subscribed
+    /// Current function pointer subscribed.
     void* fn;
-    /// Debug only signature string
+    /// Debug only signature string.
     debug string signature;
 
     /**
@@ -51,6 +51,7 @@ final:
         return this;
     }
 
+    /// Invokes the function subscribed to this event with the given signature.
     auto invoke(T = void, ARGS...)(ARGS args)
     {
         if (fn == null)
@@ -59,6 +60,7 @@ final:
         return (cast(T function(ARGS))fn)(args);
     }
 
+    /// Wrapper to `invoke` as void.
     auto opCall(ARGS...)(ARGS args)
     {
         if (fn == null)

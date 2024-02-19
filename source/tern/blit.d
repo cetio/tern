@@ -1,5 +1,5 @@
 /// Blitting of data from one type to another, cloning, and more
-module tern.object.blit;
+module tern.blit;
 
 import tern.traits;
 import tern.meta;
@@ -292,4 +292,15 @@ pragma(inline)
     foreach (i, u; val)
         ret[i] = u.to!U;
     return ret;
+}
+
+/// Creates a new instance of `T` dynamically based on its traits.
+T factory(T)()
+{
+    static if (isDynamicArray!T)
+        return new T(0);
+    else static if (isReferenceType!T)
+        return new T();
+    else 
+        return T.init;
 }

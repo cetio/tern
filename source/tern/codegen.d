@@ -5,7 +5,7 @@ import std.array;
 import std.ascii;
 import std.algorithm;
 import tern.traits;
-import tern.object;
+import tern.serialization;
 import tern.string;
 
 /// Attribute signifying an enum uses flags
@@ -224,8 +224,7 @@ public template functionMap(T, bool mapOperators = false)
     enum functionMap =
     {
         string str = "import "~moduleName!T~";
-            import tern.object;
-            import tern.object;";
+            import tern.blit;";
         static foreach (func; FunctionNames!T)
         {
             static if (!isDImplDefined!(TypeOf!(T, func)))

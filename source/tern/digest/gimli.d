@@ -3,7 +3,7 @@ module tern.digest.gimli;
 
 import tern.digest;
 import tern.algorithm;
-import tern.object;
+import tern.serialization;
 
 /**
  * Implementation of Gimli digester.

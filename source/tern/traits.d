@@ -6,7 +6,7 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import tern.meta;
-import tern.object;
+import tern.serialization;
 public import std.traits;
 
 public:

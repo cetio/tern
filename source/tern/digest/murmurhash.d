@@ -2,7 +2,7 @@
 module tern.digest.murmurhash;
 
 import tern.memory;
-import tern.object;
+import tern.serialization;
 import tern.digest;
 import core.bitop;
 

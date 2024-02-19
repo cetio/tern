@@ -1,12 +1,15 @@
-/// Wrappers for atomics and specific side-channel attack mitigation
-module tern.typecons.atomic;
+/// Wrappers for thread and side-channel [mitigation] behavior
+module tern.typecons.thread;
 
 public import core.atomic;
 import core.sync.mutex;
 import core.thread;
 import tern.traits;
 import tern.meta;
-import tern.object;
+import tern.serialization;
+import core.builtins;
+import core.simd;
+import std.conv;
 
 public alias a8 = shared Atomic!ubyte;
 public alias a16 = shared Atomic!ushort;
@@ -19,6 +22,47 @@ public alias b8 = Blind!ubyte;
 public alias b16 = Blind!ushort;
 public alias b32 = Blind!uint;
 public alias b64 = Blind!ulong;
+
+// TODO: Prefetch again after expand/shrink
+/* public struct Cache(T)
+    if (isDynamicArray!T)
+{
+    T array;
+    alias array this;
+
+public:
+final:
+    this(T arr)
+    {
+        array = arr;
+
+        version(GDC)
+        {
+            __builtin_prefetch(array.ptr, 0, 3);
+            static if (!isImmutable!T)
+                __builtin_prefetch(array.ptr, 1, 3);
+        }
+        else version (LDC)
+        {
+            llvm_prefetch(array.ptr, 0, 3, 1);
+            static if (!isImmutable!T)
+                llvm_prefetch(array.ptr, 1, 3, 1);
+        }
+        else
+        {
+            prefetch!(false, 3)(array.ptr);
+            static if (!isImmutable!T)
+                prefetch!(true, 3)(array.ptr);
+        }
+    }
+}
+
+/// Helper function for creating a cache
+Cache!T cache(T)(T arr)
+    if (isDynamicArray!T)
+{
+    return Cache!T(arr);
+} */
 
 /**
  * Wraps `T` to make every operation atomic, if possible.

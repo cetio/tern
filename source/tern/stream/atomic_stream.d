@@ -3,8 +3,8 @@ module tern.stream.atomic_stream;
 
 public import tern.stream.impl;
 import tern.typecons;
-import tern.object;
-import tern.object;
+import tern.serialization;
+import tern.serialization;
 import tern.traits;
 import tern.memory;
 
@@ -65,7 +65,7 @@ shared:
     {
         position += T.sizeof * count;
     }
-    
+
     /** 
      * Moves the position in the stream forward by one until `val` is peeked.
      *

@@ -3,7 +3,7 @@ module tern.digest.tea;
 
 import tern.digest;
 import tern.algorithm;
-import tern.object;
+import tern.serialization;
 
 /**
  * Implementation of Tiny Encryption Algorithm (TEA) digester.

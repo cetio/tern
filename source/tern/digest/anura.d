@@ -3,7 +3,7 @@ module tern.digest.anura;
 
 import tern.digest;
 import tern.digest.circe;
-import tern.object;
+import tern.serialization;
 import tern.algorithm;
 
 /**

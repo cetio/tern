@@ -1,7 +1,7 @@
 /// General-purpose wrapper/construct types for interacting with types
 module tern.typecons.general;
 
-import tern.object;
+import tern.serialization;
 import tern.traits;
 import tern.meta;
 

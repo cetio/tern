@@ -2,7 +2,7 @@
 module tern.digest.cityhash;
 
 import tern.digest;
-import tern.object;
+import tern.serialization;
 
 /**
  * Implementation of CityHash digester.

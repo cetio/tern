@@ -1,7 +1,7 @@
 /// Implementation of SuperFastHash digester
 module tern.digest.superfasthash;
 
-import tern.object;
+import tern.serialization;
 import tern.digest;
 
 /**

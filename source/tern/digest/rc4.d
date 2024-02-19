@@ -1,7 +1,7 @@
 /// Implementation of RC4 digester
 module tern.digest.rc4;
 
-import tern.object;
+import tern.serialization;
 import tern.digest;
 import tern.digest.circe;
 

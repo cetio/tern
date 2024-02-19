@@ -12,14 +12,14 @@
     "configurations": [
         {
             "name": "application",
-            "targetType": "executable"
+            "targetType": "executable",
+            "sourceFiles": [
+                "main.d"
+            ]
         },
         {
             "name": "library",
-            "targetType": "library",
-            "excludedSourceFiles": [
-                "main.d"
-            ]
+            "targetType": "library"
         }
     ]
 }

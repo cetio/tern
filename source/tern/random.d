@@ -24,7 +24,7 @@ public alias randomBool(uint max, uint seed = uint.max, uint R0 = __LINE__, stri
 public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
     if (is(T == float) || is(T == double))
 {
-    public pure T random()
+    pure T random()
     {
         return random!(ulong, cast(ulong)(min * cast(T)1000), cast(ulong)(max * cast(T)1000), seed, R0, R1, R2, R3) / cast(T)1000;
     }
@@ -41,7 +41,7 @@ public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__
 public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
     if (isIntegral!T)
 {
-    public pure T random()
+    pure T random()
     {
         static if (min == max)
             return min;

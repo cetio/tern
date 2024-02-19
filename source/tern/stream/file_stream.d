@@ -1,13 +1,12 @@
-/* module tern.stream.file_stream;
+module tern.stream.file_stream;
 
 import std.stdio;
 import tern.typecons;
 import tern.stream.impl;
-import tern.object;
-import tern.object;
+import tern.serialization;
 import tern.traits;
-import tern.mira;
 import tern.memory;
+import tern.digest.mira;
 
 public enum Mode
 {
@@ -105,7 +104,7 @@ public:
     {
         ubyte[T.sizeof] buff;
         file.rawRead(buff);
-        return buff.deserialize!T;
+        return (cast(ubyte[])buff).deserialize!T;
     }
 
     T[] read(T)(size_t count)
@@ -128,7 +127,7 @@ public:
         scope(exit) file.seek(position);
         ubyte[T.sizeof] buff;
         file.rawRead(buff);
-        return buff.deserialize!T;
+        return (cast(ubyte[])buff).deserialize!T;
     }
 
     T[] peek(T)(size_t count)
@@ -252,23 +251,23 @@ public:
         }
     }
 
-    void encrypt(size_t size)
+    void encrypt(size_t size, string key)
     {
         if (!mayRead(size))
-            encrypt(size - 1);
+            encrypt(this.size, key);
 
         ubyte[] buff = peek!ubyte(size);
-        Mira.encrypt(buff, "9G7o6mcmxMFfAv0jOedyx1JWnGqRNk0g");
+        Mira256.encrypt(buff, key);
         write!(ubyte[], false)(buff);
     }
 
-    void decrypt(size_t size)
+    void decrypt(size_t size, string key)
     {
         if (!mayRead(size))
-            decrypt(size - 1);
+            decrypt(this.size, key);
 
         ubyte[] buff = peek!ubyte(size);
-        Mira.decrypt(buff, "9G7o6mcmxMFfAv0jOedyx1JWnGqRNk0g");
+        Mira256.decrypt(buff, key);
         write!(ubyte[], false)(buff);
     }
-} */
+}

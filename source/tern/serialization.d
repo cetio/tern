@@ -1,8 +1,8 @@
 /// General-purpose binary serializer and deserializer for arbitrary data types
-module tern.object.serialization;
+module tern.serialization;
 
 import tern.traits;
-import tern.object;
+import tern.blit;
 public import tern.memory;
 
 public:
@@ -58,7 +58,7 @@ pure:
  *  The deserialized value of `T`
  */
 @trusted deserialize(T, B)(B bytes, size_t len = -1, Endianness endianness = Endianness.Native)
-    if ((isDynamicArray!B || isStaticArray!B) && (is(ElementType!B == ubyte) || is(ElementType!B == byte)))
+    if (isDynamicArray!B && (is(ElementType!B == ubyte) || is(ElementType!B == byte)))
 {
     T ret = factory!T;
     size_t offset;
@@ -70,7 +70,7 @@ pure:
                 size_t len = deserialize!size_t(bytes[offset..(offset += size_t.sizeof)]).makeEndian(endianness);
             ret = new T(len);
         }
-        else
+        else static if (isStaticArray!T)
         {
             size_t length = Length!T;
         }
