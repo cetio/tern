@@ -2,11 +2,11 @@ module tern.stream.file_stream;
 
 import std.stdio;
 import tern.typecons;
-import tern.stream.impl;
 import tern.serialization;
 import tern.traits;
 import tern.memory;
 import tern.digest.mira;
+public import tern.stream.impl;
 
 public enum Mode
 {
@@ -95,7 +95,7 @@ public:
         return buff;
     }
 
-    ubyte[] readAllText(CHAR = char)()
+    immutable(CHAR)[] readAllText(CHAR = char)()
     {
         return cast(immutable(CHAR)[])readAllBytes;
     }
@@ -109,10 +109,19 @@ public:
 
     T[] read(T)(size_t count)
     {
-        T[] items;
-        foreach (i; 0..count)
-            items ~= read!T;
-        return items;
+        ubyte[] buff = new ubyte[T.sizeof * count + size_t.sizeof];
+        file.rawRead(buff);
+        return (cast(ubyte[])buff).deserialize!T;
+    }
+        
+    T[] readRaw(T)(size_t count)
+    {
+        ubyte[] buff = new ubyte[T.sizeof * count];
+        file.rawRead(buff);
+        ubyte[] ret = new ubyte[(T.sizeof * count) + size_t.sizeof];
+        ret[size_t.sizeof..$] = buff;
+        ret[0..size_t.sizeof] = (cast(ubyte*)&count)[0..size_t.sizeof];
+        return (cast(ubyte[])ret).deserialize!T;
     }
 
     T read(T)()
@@ -134,10 +143,21 @@ public:
     {
         size_t position = file.tell();
         scope(exit) file.seek(position);
-        T[] items;
-        foreach (i; 0..count)
-            items ~= read!T;
-        return items;
+        ubyte[] buff = new ubyte[T.sizeof * count + size_t.sizeof];
+        file.rawRead(buff);
+        return (cast(ubyte[])buff).deserialize!T;
+    }
+        
+    T[] peekRaw(T)(size_t count)
+    {
+        size_t position = file.tell();
+        scope(exit) file.seek(position);
+        ubyte[] buff = new ubyte[T.sizeof * count];
+        file.rawRead(buff);
+        ubyte[] ret = new ubyte[(T.sizeof * count) + size_t.sizeof];
+        ret[size_t.sizeof..$] = buff;
+        ret[0..size_t.sizeof] = (cast(ubyte*)&count)[0..size_t.sizeof];
+        return (cast(ubyte[])ret).deserialize!T;
     }
 
     T read(T)()
@@ -148,10 +168,10 @@ public:
         return read!T(read7EncodedInt());
     }
 
-    void write(T)(T val)
+    void write(bool RAW = false, T)(T val)
         if (!isArray!T)
     {
-        file.rawWrite(val.serialize());
+        file.rawWrite(val.serialize!RAW);
     }
 
     void write(T, bool PREFIXED = true)(T val)
@@ -163,12 +183,12 @@ public:
         file.rawWrite(val.serialize()[8..$]);
     }
 
-    void put(T)(T val)
+    void put(bool RAW = false, T)(T val)
         if (!isArray!T)
     {
         size_t position = file.tell();
         scope(exit) file.seek(position);
-        file.rawWrite(val.serialize());
+        file.rawWrite(val.serialize!RAW);
     }
 
     void put(T, bool PREFIXED = true)(T val)
