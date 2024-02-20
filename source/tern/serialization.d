@@ -67,12 +67,12 @@ pure:
         static if (isDynamicArray!T && !isImmutable!(ElementType!T))
         {
             if (len == -1)
-                size_t len = deserialize!size_t(bytes[offset..(offset += size_t.sizeof)]).makeEndian(endianness);
+                len = deserialize!size_t(bytes[offset..(offset += size_t.sizeof)]).makeEndian(endianness);
             ret = new T(len);
         }
         else static if (isStaticArray!T)
         {
-            size_t len = Length!T;
+            len = Length!T;
         }
 
         if (bytes.length < len * ElementType!T.sizeof)
