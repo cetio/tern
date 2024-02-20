@@ -119,7 +119,7 @@ pragma(inline)
  *  lhs = Side to have values blitted to.
  *  rhs = Side to have values blitted from.
  */
-@trusted void blit(T, F)(auto ref F lhs, T rhs)
+@trusted void blit(T, F)(ref F lhs, T rhs)
     if ((!isIntrinsicType!F && !isIntrinsicType!T) || (isArray!T && isArray!F && !isAssociativeArray!T))
 {
     static if (isArray!F && isArray!T)

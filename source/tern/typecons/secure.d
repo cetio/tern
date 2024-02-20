@@ -1,5 +1,5 @@
 /// Wrappers for thread and side-channel [mitigation] behavior
-module tern.typecons.thread;
+module tern.typecons.secure;
 
 public import core.atomic;
 import core.sync.mutex;

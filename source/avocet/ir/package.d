@@ -1,3 +1,5 @@
+module avocet.ir;
+
 /+ module avocet.ir;
 
 import std.string;

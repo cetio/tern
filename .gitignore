@@ -14,3 +14,4 @@ tern-test-*
 *.o
 *.obj
 *.lst
+main.d

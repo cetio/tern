@@ -1,9 +1,10 @@
 module avocet.x86;
 
 // TODO: Improve inference
+//       Rewrite
+
 import std.bitmanip;
 import std.algorithm;
-import std.array;
 import std.string;
 import std.conv;
 import tern.exception;
@@ -193,6 +194,10 @@ public:
             "add r16, r/m16": [0x03],
             "add r32, r/m32": [0x03],
             "add r64, r/m64": [0x03],
+            "mul r/m8": [0xF6],
+            "mul r/m16": [0xF7],
+            "mul r/m32": [0xF7],
+            "mul r/m64": [0xF7],
         ];
         r8 = [
             "ah": 0,
@@ -486,11 +491,15 @@ public:
                 }
                 else if (literal in r128)
                 {
-                    raise("Unsupported 128-bit register!", tinst, literal);
+                    regind ~= r128[literal];
+                    regstr ~= literal;
+                    inst ~= " r128,";
                 }
                 else if (literal in r256)
                 {
-                    raise("Unsupported 256-bit register!", tinst, literal);
+                    regind ~= r256[literal];
+                    regstr ~= literal;
+                    inst ~= " r256,";
                 }
                 else if (literal.canFind('['))
                 {
