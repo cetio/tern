@@ -72,13 +72,13 @@ pure:
         }
         else static if (isStaticArray!T)
         {
-            size_t length = Length!T;
+            size_t len = Length!T;
         }
 
-        if (bytes.length < length * ElementType!T.sizeof)
-            bytes ~= new ubyte[(length * ElementType!T.sizeof) - bytes.length];
+        if (bytes.length < len * ElementType!T.sizeof)
+            bytes ~= new ubyte[(len * ElementType!T.sizeof) - bytes.length];
 
-        foreach (i; 0..length)
+        foreach (i; 0..len)
         static if (!isImmutable!(ElementType!T))
             ret[i] = bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T).makeEndian(endianness);
         else
