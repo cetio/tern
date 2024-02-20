@@ -111,7 +111,7 @@ public:
     {
         ubyte[] buff = new ubyte[T.sizeof * count + size_t.sizeof];
         file.rawRead(buff);
-        return (cast(ubyte[])buff).deserialize!T;
+        return (cast(ubyte[])buff).deserialize!(T[]);
     }
         
     T[] readRaw(T)(size_t count)
@@ -121,7 +121,7 @@ public:
         ubyte[] ret = new ubyte[(T.sizeof * count) + size_t.sizeof];
         ret[size_t.sizeof..$] = buff;
         ret[0..size_t.sizeof] = (cast(ubyte*)&count)[0..size_t.sizeof];
-        return (cast(ubyte[])ret).deserialize!T;
+        return (cast(ubyte[])ret).deserialize!(T[]);
     }
 
     T read(T)()
@@ -145,7 +145,7 @@ public:
         scope(exit) file.seek(position);
         ubyte[] buff = new ubyte[T.sizeof * count + size_t.sizeof];
         file.rawRead(buff);
-        return (cast(ubyte[])buff).deserialize!T;
+        return (cast(ubyte[])buff).deserialize!(T[]);
     }
         
     T[] peekRaw(T)(size_t count)
@@ -157,7 +157,7 @@ public:
         ubyte[] ret = new ubyte[(T.sizeof * count) + size_t.sizeof];
         ret[size_t.sizeof..$] = buff;
         ret[0..size_t.sizeof] = (cast(ubyte*)&count)[0..size_t.sizeof];
-        return (cast(ubyte[])ret).deserialize!T;
+        return (cast(ubyte[])ret).deserialize!(T[]);
     }
 
     T read(T)()
