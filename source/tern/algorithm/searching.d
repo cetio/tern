@@ -41,13 +41,16 @@ T[] portionBy(T)(ref T arr, size_t blockSize, bool pad = true)
  *  `arr` portioned into blocks of `blockSize`
  */
 P[] portionTo(P, T)(ref T arr)
-    if (isDynamicArray!T)
+    if (isArray!T)
 {
-    arr ~= new ElementType!T[P.sizeof - (arr.length % P.sizeof)];
+    static if (!isStaticArray!T)
+        arr ~= new ElementType!T[P.sizeof - (arr.length % P.sizeof)];
+    else
+        static assert(Length!T % P.sizeof == 0, "Static array cannot be portioned, does not align to size!");
     
     P[] ret;
     foreach (i; 0..((arr.length / P.sizeof) - 1))
-        ret ~= *cast(P*)(arr[(i * P.sizeof)..((i + 1) * P.sizeof)].ptr);
+        ret ~= *cast(P*)(&arr[(i * P.sizeof)]);
     return ret;
 }
 

@@ -4,13 +4,18 @@ module tern.typecons.security;
 public import core.atomic;
 import core.sync.mutex;
 import core.thread;
+import core.builtins;
+import core.simd;
+
+import std.conv;
+import std.array;
+
 import tern.traits;
 import tern.meta;
 import tern.serialization;
-import core.builtins;
-import core.simd;
-import std.conv;
-import std.array;
+import tern.typecons;
+import tern.digest;
+import tern.digest.mira;
 
 public alias a8 = shared Atomic!ubyte;
 public alias a16 = shared Atomic!ushort;
@@ -537,4 +542,132 @@ unittest
     assert(a.numNextOps() > 4);
     a++;
     assert(a == 11);
+}
+
+/**
+ * Wraps a type and automatically encrypts the data when possible, decrypting as needed.  
+ * 
+ * Defaults to using Mira256 as encryption, can be changed but must be a streaming cipher.
+ */
+public struct Opaque(T, string KEY, DIGEST = Mira256)
+    if (isEncryptingDigest!DIGEST)
+{
+    Nullable!T value;
+    alias value this;
+
+public:
+final:
+    this(T val)
+    {
+        value = val;
+        digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+    }
+
+    auto opAssign(A)(A ahs)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        value = ahs;
+        return this;
+    }
+
+    auto opAssign(A)(A ahs) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        value = ahs;
+        return this;
+    }
+
+    auto opOpAssign(string op, A)(A ahs)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        mixin("value "~op~"= ahs;");
+        return this;
+    }
+
+    auto opBinary(string op, R)(const R rhs)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("Opaque!(T, KEY, DIGEST)(value "~op~" rhs)");
+    }
+
+    auto opBinary(string op, R)(const R rhs) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("Opaque!(T, KEY, DIGEST)(value "~op~" rhs)");
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("Opaque!(T, KEY, DIGEST)(lhs "~op~" value)");
+    }
+
+    auto opBinaryRight(string op, L)(const L lhs) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("Opaque!(T, KEY, DIGEST)(lhs "~op~" value)");
+    }
+
+    auto opUnary(string op)() 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("Opaque!(T, KEY, DIGEST)("~op~"value)");
+    }
+
+    auto opUnary(string op)() shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("Opaque!(T, KEY, DIGEST)("~op~"value)");
+    }
+
+    bool opEquals(A)(const A ahs)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value == ahs;
+    }
+
+    bool opEquals(A)(const A ahs) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value == ahs;
+    }
+
+    int opCmp(A)(const A ahs)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return cast(int)(value - ahs);
+    }
+
+    int opCmp(A)(const A ahs) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return cast(int)(value - ahs);
+    }
+
+    string toString() const
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return to!string(value);
+    }
+
+    string toString() const shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return to!string(value);
+    }
 }

@@ -122,7 +122,7 @@ pure:
  */
 void sachp(ref ubyte[] data, size_t size)
 {
-    data ~= new ubyte[size - (data.length % size)];
+    data ~= new ubyte[data.length % size == 0 ? 0 : size - (data.length % size)];
 }
 
 /**
@@ -138,7 +138,7 @@ void vacpp(ref ubyte[] data, size_t size)
         throw new Throwable("Invalid vacpp padding size!");
 
     size_t margin = size - (data.length % size) + size;
-    data ~= new ubyte[margin];
+    data ~= new ubyte[margin == size ? 0 : margin];
     data[$-5..$] = cast(ubyte[])"VacPp";
     data[$-8..$-5] = margin.serialize!true()[0..3];
 }

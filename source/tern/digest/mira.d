@@ -24,47 +24,6 @@ public:
 static:
 pure:
     /**
-    * Computes a sane hash value of the key and calculates the number of shuffles.
-    *
-    * This method takes an input byte array `data`, a string `key`, an unsigned long `seed`, 
-    * and returns a string representing the sane hash value of the key. Additionally, it 
-    * outputs the number of shuffles performed during the operation.
-    *
-    * Params:
-    *  data = The input byte array.
-    *  key = The encryption key as a string. Must be either 256 or 512 bits.
-    *  seed = An unsigned long value used as a seed for the hashing operation.
-    *  numShuffles = An output parameter representing the number of shuffles performed during the operation.
-    *
-    * Returns:
-    *  A string representing the sane hash value of the key.
-    */
-    string getSaneKeyHash(ubyte[] data, string key, ulong seed, out size_t numShuffles)
-    {
-        if (key.length != 32)
-            throw new Throwable("Key is not 256 bits!");
-
-        ubyte[] keyFront = digest!Circe(cast(ubyte[])key, seed);
-        ulong a = (cast(ulong*)keyFront.ptr)[0];
-        ulong b = (cast(ulong*)keyFront.ptr)[1];
-        ulong c = (cast(ulong*)keyFront.ptr)[2];
-        ulong d = (cast(ulong*)keyFront.ptr)[3];
-
-        for (size_t s; s < data.length; s += (a + b + c + d) % ((data.length / 16_384) | 2))
-            numShuffles++;
-
-        string sane;
-        foreach (_c; key)
-        {
-            if (_c <= ubyte.max / 2)
-                sane ~= 'a' + (_c % 26);
-            else
-                sane ~= '0' + (_c % 10);
-        }
-        return sane;
-    }
-
-    /**
     * Encrypts the given byte array `data`
     *
     * This method encrypts the data using the Mira algorithm with the specified encryption `key`
@@ -200,49 +159,6 @@ public static @digester class Mira512
 public:
 static:
 pure:
-    /**
-    * Computes a sane hash value of the key and calculates the number of shuffles.
-    *
-    * This method takes an input byte array `data`, a string `key`, an unsigned long `seed`, 
-    * and returns a string representing the sane hash value of the key. Additionally, it 
-    * outputs the number of shuffles performed during the operation.
-    *
-    * Params:
-    *  data = The input byte array.
-    *  key = The encryption key as a string. Must be either 256 or 512 bits.
-    *  seed = An unsigned long value used as a seed for the hashing operation.
-    *  numShuffles = An output parameter representing the number of shuffles performed during the operation.
-    *
-    * Returns:
-    *  A string representing the sane hash value of the key.
-    */
-    string getSaneKeyHash(ubyte[] data, string key, ulong seed, out size_t numShuffles)
-    {
-        if (key.length != 64)
-            throw new Throwable("Key is not 512 bits!");
-
-        ubyte[] keyFront = digest!Circe(cast(ubyte[])key[0..32], seed);
-        ubyte[] keyBack = digest!Circe(cast(ubyte[])key[32..64], seed);
-
-        ulong ap = (cast(ulong*)keyBack.ptr)[0];
-        ulong bp = (cast(ulong*)keyBack.ptr)[1];
-        ulong cp = (cast(ulong*)keyBack.ptr)[2];
-        ulong dp = (cast(ulong*)keyBack.ptr)[3];
-
-        for (size_t s; s < data.length; s += (ap + bp + cp + dp) % ((data.length / 16_384) | 2))
-            numShuffles++;
-
-        string sane;
-        foreach (_c; keyFront~keyBack)
-        {
-            if (_c <= ubyte.max / 2)
-                sane ~= 'a' + (_c % 26);
-            else
-                sane ~= '0' + (_c % 10);
-        }
-        return sane;
-    }
-
     /**
     * Encrypts the given byte array `data`
     *

@@ -4,6 +4,7 @@ module tern.typecons.general;
 import tern.serialization;
 import tern.traits;
 import tern.meta;
+import std.conv;
 
 /// Implements all functions of an abstract class with an default/empty function.
 public class BlackHole(T)

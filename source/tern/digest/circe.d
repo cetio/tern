@@ -1,6 +1,7 @@
 /// Implementation of Circe digester
 module tern.digest.circe;
 
+// TODO: This is not cryptographically secure
 import tern.digest;
 import tern.algorithm;
 import tern.serialization;
@@ -38,19 +39,17 @@ pure:
     pragma(inline)
     ubyte[] hash(ubyte[] data, ulong seed = 0)
     {
+        if (data.length != 32)
+            throw new Throwable("Circe only operates on 32 bytes of data (256 bits!)");
+            
         ubyte[32] dst;
-        sachp(data, 32);
-
-        foreach (block; data.portionTo!(ubyte[32]))
+        foreach (k; 0..32)
         {
-            foreach (k; 0..32)
+            foreach (v; 0..32)
             {
-                foreach (v; 0..32)
-                {
-                    dst[k] += block[k] ^ seed;
-                    dst[31 - k] = cast(ubyte)(dst[31 - k] * block[v]);
-                    dst[31 - k] ^= dst[k] & block[k];
-                }
+                dst[v] -= data[k] ^= seed;
+                dst[31 - k] *= data[31 - v];
+                dst[31 - k] -= dst[k] &= data[k];
             }
         }
         return dst.dup;

@@ -60,7 +60,7 @@ public:
      *  nonce: The nonce value. Must be exactly 96 bits (12 bytes) in length.
      *  counter: The initial counter value. Defaults to 0.
      */
-    void encrypt(ref ubyte[] data, string key, ubyte[12] nonce, uint counter = 0)
+    void encrypt(ref ubyte[] data, string key, ubyte[12] nonce = (ubyte[12]).init, uint counter = 0)
     {
         if (key.length != 32)
             throw new Throwable("Key must be 256 bits!");
@@ -101,5 +101,5 @@ public:
      *  nonce: The nonce value. Must be exactly 96 bits (12 bytes) in length.
      *  counter: The initial counter value. Defaults to 0.
      */
-    void decrypt(ref ubyte[] data, string key, ubyte[12] nonce, uint counter = 0) => encrypt(data, key, nonce, counter);
+    void decrypt(ref ubyte[] data, string key, ubyte[12] nonce = (ubyte[12]).init, uint counter = 0) => encrypt(data, key, nonce, counter);
 }
