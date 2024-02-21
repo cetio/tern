@@ -20,36 +20,14 @@ static:
  * Example:
  * ```d
  * A a;
- * A b = a.sdup();
+ * A b = a.dup();
  * ```
  */
 pragma(inline)
-@trusted T sdup(T)(T val)
+@trusted T dup(T)(T val)
     if (!isArray!T && !isAssignableTo!(T, Object))
 {
     return val;
-}
-
-/**
- * Shallow clones a value.
- *
- * Params:
- *  val = The value to be shallow cloned.
- *
- * Returns:
- *  A shallow clone of the provided value.
- *
- * Example:
- * ```d
- * A a;
- * A b = a.sdup();
- * ```
- */
-pragma(inline)
-@trusted T sdup(T)(T val)
-    if (isArray!T || isAssignableTo!(T, Object))
-{
-    return object.dup(val);
 }
 
 /**
@@ -216,8 +194,7 @@ pragma(inline)
     else static if (canConv!(F, T))
         return val.conv!T;
     else
-    // TODO: Switch back to 0
-        static assert(1, "Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
+        static assert(0, "Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
 }
 
 /// ditto

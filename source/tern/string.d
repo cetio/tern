@@ -1,7 +1,8 @@
-/// Highlighting, cases, colors, etc.
-module tern.string.lettering;
+/// Highlighting, case conversions, parsing, and more
+module tern.string;
 
-// TODO:
+import std.string;
+import std.algorithm;
 import std.array;
 import tern.traits;
 
@@ -107,6 +108,75 @@ string toPascalCase(string str)
     return cast(string)ret;
 }
 
+string toSnakeCase(string str)
+{
+    char[] ret;
+    foreach (c; str)
+    {
+        if (c.isUpper)
+        {
+            if (!ret.empty && ret[$-1] != '_')
+                ret ~= '_';
+            ret ~= c.toLower;
+        }
+        else
+        {
+            ret ~= c;
+        }
+    }
+    return cast(string)ret;
+}
+
+string toKebabCase(string str)
+{
+    char[] ret;
+    foreach (c; str)
+    {
+        if (c.isUpper)
+        {
+            if (!ret.empty && ret[$-1] != '-')
+                ret ~= '-';
+            ret ~= c.toLower;
+        }
+        else
+        {
+            ret ~= c;
+        }
+    }
+    return cast(string)ret;
+}
+
+string mangle(string str) 
+{
+    size_t idx = str.lastIndexOf('.');
+    if (idx != -1)
+        str = str[(idx + 1)..$];
+
+    str = str.replace("*", "PTR")
+        .replace("[", "OPBRK")
+        .replace("]", "CLBRK")
+        .replace("(", "OPPAR")
+        .replace(")", "CLPAR")
+        .replace(",", "COMMA")
+        .replace("!", "EXCLM");
+
+    return cast(string)str.filter!(c => isAlphaNum(c) || c == '_').array;
+}
+
+string padLeft(string str, size_t length, char padding = ' ')
+{
+    while (str.length < length)
+        str = padding~str;
+    return str;
+}
+
+string padRight(string str, size_t length, char padding = ' ')
+{
+    while (str.length < length)
+        str = str~padding;
+    return str;
+}
+
 /** 
  * Highlights `matchOf` in `matchTo` with `color`
  *
@@ -194,67 +264,3 @@ bool isLower(string str)
     }
     return true;
 }
-
-/* size_t indexOf(string str, char c)
-{
-    foreach (i, _c; str)
-    {
-        if (_c == c)
-            return i;
-    }
-    return -1;
-}
-
-size_t lastIndexOf(string str, char c)
-{
-    foreach_reverse (i, _c; str)
-    {
-        if (_c == c)
-            return i;
-    }
-    return -1;
-}
-
-size_t indexOf(string str, string substr) 
-{
-    if (substr.length > str.length)
-        return -1;
-
-    foreach (i; 0..(str.length - substr.length))
-    {
-        bool found = true;
-        foreach (j, c; substr)
-        {
-            if (str[i + j] != c) 
-            {
-                found = false;
-                break;
-            }
-        }
-        if (found)
-            return i;
-    }
-    return -1;
-}
-
-size_t lastIndexOf(string str, string substr) 
-{
-    if (substr.length > str.length)
-        return -1;
-
-    foreach_reverse (i; 0 .. (str.length - substr.length + 1)) 
-    {
-        bool found = true;
-        foreach (j, c; substr) 
-        {
-            if (str[i + j] != c) 
-            {
-                found = false;
-                break;
-            }
-        }
-        if (found)
-            return i;
-    }
-    return -1;
-} */

@@ -2,17 +2,21 @@
 module tern.algorithm.lazy_map;
 
 import tern.traits;
+import std.range.primitives;
 
 public struct LazyMap(alias F, T)
+    if (isInputRange!T)
 {
 public:
 final:
 pure:
     T array;
+    size_t length;
 
     this(T arr)
     {
         array = arr;
+        length = array.length;
     }
 
     T opSlice(ptrdiff_t start, ptrdiff_t end)

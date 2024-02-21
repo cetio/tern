@@ -278,6 +278,7 @@ Nullable!T nullable(T)(NULL val)
     return Nullable!T(null);
 }
 
+/// Wraps a type as a static field, allowing only a single shared instance of `T` at any given time.
 public struct Singleton(T)
 {
     static T value;
@@ -289,4 +290,10 @@ final:
     {
         value = val;
     }
+}
+
+/// Helper function for creating a singleton.
+Singleton!T singleton(T)(T val)
+{
+    return Singleton!T(val);
 }

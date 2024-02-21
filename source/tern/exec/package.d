@@ -6,6 +6,7 @@ import tern.stream;
 import tern.traits;
 import tern.serialization;
 import tern.state;
+import tern.blit;
 import std.string;
 public import tern.exec.pe;
 public import tern.exec.elf;
@@ -100,8 +101,7 @@ final:
         }
         else if (type == ImageType.PE32)
         {
-            // TODO: Revert
-            ///optionalImage = stream.read!PE32Image.to!OptionalImage;
+            optionalImage = stream.read!PE32Image.to!OptionalImage;
         }
         else if (type == ImageType.PE64)
         {

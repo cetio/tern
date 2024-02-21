@@ -2,59 +2,68 @@
 module tern.algorithm.iteration;
 
 import tern.traits;
+import std.range.primitives;
+public import tern.algorithm.lazy_filter;
+public import tern.algorithm.lazy_map;
 
 public:
-static:
-size_t indexOf(A, B)(A arr, B elem)
-    if (is(ElementType!A == B))
+LazyMap!(F, T) map(alias F, T)(T arr)
+    if (isArray!T)
 {
-    foreach (i, u; arr)
-    {
-        if (u == elem)
-            return i;
-    }
-    return -1;
+    return LazyMap!(F, T)(arr);
 }
 
-size_t lastIndexOf(A, B)(A arr, B elem)
-    if (is(ElementType!A == B))
+unittest
 {
-    foreach_reverse (i, u; arr)
-    {
-        if (u == elem)
-            return i;
-    }
-    return -1;
+    int[] arr = [1, 2, 3];
+    assert(arr.map!(x => x > 2)[0] == false);
+    assert(arr.map!(x => x > 2)[2] == true);
 }
 
-size_t indexOf(A)(A arr, A subarr)
+LazyFilter!(F, T) filter(alias F, T)(T arr)
+    if (isArray!T)
 {
-    if (subarr.length > arr.length)
-        return -1;
-
-    foreach (i, u; arr)
-    {
-        if (arr[i..i + subarr.length] == subarr)
-            return i;
-    }
-    return -1;
+    return LazyFilter!(F, T)(arr);
 }
 
-size_t lastIndexOf(A)(A arr, A subarr)
+unittest
 {
-    if (subarr.length > arr.length)
-        return -1;
-
-    foreach_reverse (i, u; arr)
-    {
-        if (i + subarr.length > arr.length)
-            continue;
-
-        if (arr[i .. i + subarr.length] == subarr)
-            return i;
-    }
-    return -1;
+    int[] arr = [1, 2, 3];
+    assert(arr.filter!(x => x > 2)[0] == 3);
 }
 
-bool contains(A, B)(A arr, B elem) if (is(ElementType!A == B)) => indexOf(arr, elem) != -1;
-bool contains(A)(A arr, A subarr) => indexOf(arr, subarr) != -1;
+size_t levenshteinDistance(A, B)(A str1, B str2)
+    if (isSomeString!A && isSomeString!B)
+{
+    auto m = str1.length + 1;
+    auto n = str2.length + 1;
+
+    size_t[][] dp;
+
+    dp.length = m;
+    foreach (i; 0..m)
+        dp[i].length = n;
+
+    foreach (i; 0..m)
+        dp[i][0] = i;
+
+    foreach (j; 0..n)
+        dp[0][j] = j;
+
+    foreach (i; 1..m)
+    {
+        foreach (j; 1..n)
+        {
+            int cost = (str1[i - 1] == str2[j - 1]) ? 0 : 1;
+            dp[i][j] = dp[i - 1][j] + 1;
+
+            if (dp[i][j - 1] + 1 < dp[i][j])
+                dp[i][j] = dp[i][j - 1] + 1;
+
+            if (dp[i - 1][j - 1] + cost < dp[i][j])
+                dp[i][j] = dp[i - 1][j - 1] + cost;
+        }
+    }
+
+    return dp[m - 1][n - 1];
+}

@@ -1,5 +1,5 @@
 /// Wrappers for thread and side-channel [mitigation] behavior
-module tern.typecons.secure;
+module tern.typecons.security;
 
 public import core.atomic;
 import core.sync.mutex;
@@ -10,6 +10,7 @@ import tern.serialization;
 import core.builtins;
 import core.simd;
 import std.conv;
+import std.array;
 
 public alias a8 = shared Atomic!ubyte;
 public alias a16 = shared Atomic!ushort;
@@ -22,47 +23,6 @@ public alias b8 = Blind!ubyte;
 public alias b16 = Blind!ushort;
 public alias b32 = Blind!uint;
 public alias b64 = Blind!ulong;
-
-// TODO: Prefetch again after expand/shrink
-/* public struct Cache(T)
-    if (isDynamicArray!T)
-{
-    T array;
-    alias array this;
-
-public:
-final:
-    this(T arr)
-    {
-        array = arr;
-
-        version(GDC)
-        {
-            __builtin_prefetch(array.ptr, 0, 3);
-            static if (!isImmutable!T)
-                __builtin_prefetch(array.ptr, 1, 3);
-        }
-        else version (LDC)
-        {
-            llvm_prefetch(array.ptr, 0, 3, 1);
-            static if (!isImmutable!T)
-                llvm_prefetch(array.ptr, 1, 3, 1);
-        }
-        else
-        {
-            prefetch!(false, 3)(array.ptr);
-            static if (!isImmutable!T)
-                prefetch!(true, 3)(array.ptr);
-        }
-    }
-}
-
-/// Helper function for creating a cache
-Cache!T cache(T)(T arr)
-    if (isDynamicArray!T)
-{
-    return Cache!T(arr);
-} */
 
 /**
  * Wraps `T` to make every operation atomic, if possible.
@@ -109,7 +69,17 @@ final:
 
     auto opUnary(string op)() shared
     {
-        static if (isScalarType!T)
+        static if (op == "--" || op == "++")
+            return opOpAssign!(op[0..1])(1);
+        else static if (op == "*")
+        {
+            if (mutex is null)
+                mutex = new shared Mutex();
+            mutex.lock();
+            scope (exit) mutex.unlock();
+            return *value;
+        }
+        else static if (isScalarType!T)
             return mixin("Atomic!(T, M)("~op~"value.atomicLoad!M())");
         else
         {
@@ -399,7 +369,23 @@ final:
 /// Helper function for creating an atomic
 shared(Atomic!T) atomic(T)(T val)
 {
-    return Atomic!T(cast(shared(T))val);
+    return Atomic!T(val);
+}
+
+unittest
+{
+    auto a = atomic(10);
+    a++;
+    assert(a == 11);
+
+    auto b = atomic(10);
+    b += 1.0;
+    assert(b.value == 11);
+
+    auto c = atomic([1, 2, 3]);
+    c[0] = c[0] + 1;
+    assert(c[0] == 2);
+    assert(c[0..$] == cast(shared(int[]))[2, 2, 3]);
 }
 
 /**
@@ -543,4 +529,12 @@ final:
 Blind!T blind(T)(T val)
 {
     return Blind!T(val);
+}
+
+unittest
+{
+    auto a = blind(10);
+    assert(a.numNextOps() > 4);
+    a++;
+    assert(a == 11);
 }

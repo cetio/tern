@@ -1,13 +1,14 @@
 module main;
 
-import tern;
+//import tern;
 import std.stdio;
-import std.datetime;
 import avocet;
+
+import tern.algorithm.iteration;
+import tern.algorithm.lazy_filter;
 
 void main()
 {
-    writeln(X86.assemble("
-        mul rax
-    ").toHexString);
+    float[] a = [1, 2, 3];
+    writeln(a.map!(x => x > 1)[0]);
 }

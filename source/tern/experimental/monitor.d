@@ -1,5 +1,5 @@
 /// Access to creation and deletion of object monitors abstracted out by the runtime
-module tern.monitor;
+module tern.experimental.monitor;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string;
 import core.sync.mutex;

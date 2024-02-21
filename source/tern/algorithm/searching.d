@@ -51,37 +51,58 @@ P[] portionTo(P, T)(ref T arr)
     return ret;
 }
 
-size_t levenshteinDistance(string str1, string str2)
+size_t indexOf(A, B)(A arr, B elem)
+    if (isInputRange!A && is(ElementType!A == B))
 {
-    auto m = str1.length + 1;
-    auto n = str2.length + 1;
-
-    size_t[][] dp;
-
-    dp.length = m;
-    foreach (i; 0..m)
-        dp[i].length = n;
-
-    for (auto i = 0; i < m; ++i)
-        dp[i][0] = i;
-
-    for (auto j = 0; j < n; ++j)
-        dp[0][j] = j;
-
-    for (auto i = 1; i < m; ++i)
+    foreach (i, u; arr)
     {
-        for (auto j = 1; j < n; ++j)
-        {
-            int cost = (str1[i - 1] == str2[j - 1]) ? 0 : 1;
-            dp[i][j] = dp[i - 1][j] + 1;
-
-            if (dp[i][j - 1] + 1 < dp[i][j])
-                dp[i][j] = dp[i][j - 1] + 1;
-
-            if (dp[i - 1][j - 1] + cost < dp[i][j])
-                dp[i][j] = dp[i - 1][j - 1] + cost;
-        }
+        if (u == elem)
+            return i;
     }
-
-    return dp[m - 1][n - 1];
+    return -1;
 }
+
+size_t lastIndexOf(A, B)(A arr, B elem)
+    if (isBidirectionalRange!A && is(ElementType!A == B))
+{
+    foreach_reverse (i, u; arr)
+    {
+        if (u == elem)
+            return i;
+    }
+    return -1;
+}
+
+size_t indexOf(A)(A arr, A subarr)
+    if (isInputRange!A)
+{
+    if (subarr.length > arr.length)
+        return -1;
+
+    foreach (i, u; arr)
+    {
+        if (arr[i..i + subarr.length] == subarr)
+            return i;
+    }
+    return -1;
+}
+
+size_t lastIndexOf(A)(A arr, A subarr)
+    if (isBidirectionalRange!A)
+{
+    if (subarr.length > arr.length)
+        return -1;
+
+    foreach_reverse (i, u; arr)
+    {
+        if (i + subarr.length > arr.length)
+            continue;
+
+        if (arr[i .. i + subarr.length] == subarr)
+            return i;
+    }
+    return -1;
+}
+
+bool contains(A, B)(A arr, B elem) if (isInputRange!A && is(ElementType!A == B)) => indexOf(arr, elem) != -1;
+bool contains(A)(A arr, A subarr) if (isInputRange!A) => indexOf(arr, subarr) != -1;

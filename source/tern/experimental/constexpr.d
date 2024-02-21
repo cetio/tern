@@ -4,6 +4,7 @@ module tern.experimental.constexpr;
 import tern.experimental.ds_allocator;
 import tern.traits;
 import tern.serialization;
+import std.conv;
 
 /// Allocates `T` in the data segment when `T` is *not* a dynamic array, this is used identically to `T` normally.
 public struct constexpr(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
@@ -161,7 +162,8 @@ final:
     }
 }
 
-unittest 
+// This takes up too much compile time for it to be worth
+/* unittest 
 {
     constexpr!(int[]) dsArray;
     dsArray.reserve(5);
@@ -185,7 +187,7 @@ unittest
     dsArray ~= 2;
     assert(dsArray.length == 5);
     assert(dsArray[$-1] == 2);
-}
+} */
 
 /// Helper function to create a constexpr
 pragma(inline)

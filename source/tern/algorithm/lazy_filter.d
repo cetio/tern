@@ -4,15 +4,33 @@ module tern.algorithm.lazy_filter;
 import tern.traits;
 
 public struct LazyFilter(alias F, T)
+    if (isArray!T)
 {
-public:
+private:
 final:
 pure:
+    size_t _length = -1;
+
+public:
     T array;
 
     this(T arr)
     {
         array = arr;
+    }
+
+    size_t length()
+    {
+        if (_length != -1)
+            return _length;
+
+        _length = 0;
+        foreach (u; array)
+        {
+            if (F(u))
+                _length++;
+        }
+        return _length;
     }
 
     T opSlice(ptrdiff_t start, ptrdiff_t end)

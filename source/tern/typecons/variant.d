@@ -1,10 +1,11 @@
 /// Constructions for `SumType`, `UnionType`, and `VadType` (variadic)
 module tern.typecons.variant;
 
-import std.traits;
 import std.conv;
 import tern.codegen;
 import tern.meta;
+import tern.traits;
+import tern.blit;
 
 // TODO: Fix
 /* public struct SumType(T...)
