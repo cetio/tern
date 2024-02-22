@@ -185,7 +185,6 @@ unittest
  * Creates a string representing `A` using the given separator.  
  * Avoids weird behavior with `stringof` by not using `stringof` for values.
  */
-// TODO: Use enum format in traits too
 public template seqStringOf(string SEPARATOR, A...)
 {
     enum seqStringOf =

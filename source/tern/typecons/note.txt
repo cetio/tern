@@ -1,1 +1,0 @@
-opaque: scrambles all data of a type to make it hard to modify the memory of?

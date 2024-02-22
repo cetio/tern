@@ -1,6 +1,7 @@
 /// General-purpose binary serializer and deserializer for arbitrary data types
 module tern.serialization;
 
+// TODO: Refactor
 import tern.traits;
 import tern.blit;
 public import tern.memory;

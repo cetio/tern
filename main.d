@@ -10,10 +10,10 @@ import tern.algorithm.lazy_filter;
 void main()
 {
     import tern.digest.chacha20;
-    Opaque!(int, "xNYCfQA64hwq5GjMWHvaemB2tVgTrZsS") a = 0;
+    Opaque!(int, "xnYCfQA64hwq5GjMWHvaemB2tVgTrZsS", Anura256) a = 1;
     writeln(a.value); // 1
-    Opaque!(int, "xNYCfQA64hwq5GjMWHvaemB2tVgTrzsS") b = 0;
-    writeln(b.value); // 1
-    Opaque!(int, "xnYCfQA64hwq5GjMWHvaemB2tVgTrZss") c = 0;
-    writeln(c.value); // 1
+    Opaque!(int, "xnYCfQA64hwq5GjMWHvaemB2tVgTrZss") b = 1;
+    writeln(b); // 1
+    Opaque!(int, "xnYCfQA64hwq5GjMWHvaemB2tVgTrzss") c = 0;
+    writeln(c); // 1
 }

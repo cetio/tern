@@ -265,6 +265,11 @@ final:
     {
         ptr = null;
     }
+
+    void unnullify()
+    {
+        ptr = &value;
+    }
 }
 
 /// Helper function for creating a nullable.
@@ -277,6 +282,23 @@ Nullable!T nullable(T)(T val)
 Nullable!T nullable(T)(NULL val)
 {
     return Nullable!T(null);
+}
+
+unittest 
+{
+    Nullable!uint a;
+    assert(a == null);
+    a = 2;
+    assert(a++ == 2);
+    assert(++a == 4);
+
+    Nullable!(uint[]) b;
+    b.unnullify();
+    b ~= 1;
+    assert(b == [1]);
+
+    Nullable!(short*) c = cast(short*)&a;
+    assert(c[0] == cast(const(short))4);
 }
 
 /// Wraps a type as a static field, allowing only a single shared instance of `T` at any given time.

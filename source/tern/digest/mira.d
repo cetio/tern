@@ -1,4 +1,4 @@
-/// Implementation of Mira digesters, internally backed by `tern.digest.circe`
+/// Implementation of Mira digesters
 module tern.digest.mira;
 
 import core.simd;
@@ -78,6 +78,13 @@ pure:
             _b ^= (c << si) ^ ri;
             _b ^= (d << si) ^ ri;
         }
+
+        for (size_t i = factor; i < data.length; i += factor)
+        {
+            ubyte b0 = data[i];
+            data[i] = data[i - factor];
+            data[i - factor] = b0;
+        }
     }
 
     /**
@@ -105,6 +112,16 @@ pure:
         size_t factor = ((a + b + c + d) % ((data.length / 16_384) | 2)) | 1;
         size_t rlen = data.length - (data.length % 16);
 
+        size_t s = factor;
+        for (; s < data.length; s += factor) { }
+        s -= factor;
+        for (; s >= factor; s -= factor)
+        {
+            ubyte b0 = data[s];
+            data[s] = data[s - factor];
+            data[s - factor] = b0;
+        }
+
         ulong2* vptr = cast(ulong2*)data.ptr;
         foreach (i; 0..(data.length / 16))
         {
@@ -129,7 +146,7 @@ pure:
             _b -= factor;
         }
 
-        size_t s = factor;
+        s = factor;
         for (; s < data.length; s += factor) { }
         s -= factor;
         for (; s >= factor; s -= factor)

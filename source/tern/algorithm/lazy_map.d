@@ -7,10 +7,12 @@ import std.range.primitives;
 public struct LazyMap(alias F, T)
     if (isInputRange!T)
 {
+    T array;
+    alias array this;
+    
 public:
 final:
 pure:
-    T array;
     size_t length;
 
     this(T arr)

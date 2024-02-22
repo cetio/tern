@@ -6,14 +6,15 @@ import tern.traits;
 public struct LazyFilter(alias F, T)
     if (isArray!T)
 {
+    T array;
+    alias array this;
+
 private:
 final:
 pure:
     size_t _length = -1;
 
 public:
-    T array;
-
     this(T arr)
     {
         array = arr;

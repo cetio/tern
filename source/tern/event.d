@@ -9,9 +9,7 @@ public struct Event
 {
 public:
 final:
-    /// Current function pointer subscribed.
     void* fn;
-    /// Debug only signature string.
     debug string signature;
 
     /**

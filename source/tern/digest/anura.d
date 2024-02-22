@@ -58,7 +58,11 @@ pure:
             rold << rola,
         ];
 
+        import std.stdio;
+        debug writeln(data.length);
         vacpp(data, 8);
+        import std.stdio;
+        debug writeln(data.length);
 
         foreach (i; 0..(rola % 128))
         {
@@ -76,10 +80,10 @@ pure:
 
         foreach (i; 0..4)
         {
-            foreach (j, ref block; cast(ulong[])data)
+            foreach (j, ref block; data.portionTo!(ulong))
             {
-                size_t ri = ~i;
-                size_t si = i % 8;
+                size_t ri = ~j;
+                size_t si = j % 8;
                 block += (rola << si) ^ ri;
                 block ^= (rolb << si) ^ ri;
                 swap(block);
@@ -88,7 +92,7 @@ pure:
             }
 
             foreach (j, ref block; (cast(ulong[])data)[1..$])
-                block ^= data.ptr[j - 1];
+                block ^= data[j];
         }
     }
 
@@ -134,12 +138,12 @@ pure:
         foreach_reverse (i; 0..4)
         {
             foreach_reverse (j, ref block; (cast(ulong[])data)[1..$])
-                block ^= data.ptr[j - 1];
+                block ^= data[j];
 
             foreach_reverse (j, ref block; cast(ulong[])data)
             {
-                size_t ri = ~i;
-                size_t si = i % 8;
+                size_t ri = ~j;
+                size_t si = j % 8;
                 block ^= (rold << si) ^ ri;
                 block += (rolc << si) ^ ri;
                 swap(block);

@@ -1,6 +1,7 @@
 /// Thread-safe atomic stream implementation using `IStream`
 module tern.stream.atomic_stream;
 
+// TODO: Serialization
 public import tern.stream.impl;
 import tern.typecons;
 import tern.serialization;

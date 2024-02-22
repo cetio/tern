@@ -133,6 +133,9 @@ public template canConv(F, T, bool EXPLICIT = false)
         static if (isImplement!(T, F))
             return true;
 
+        static if (EXPLICIT && (is(T == class) != is(F == class)))
+            return false;
+
         static if (isArray!F || isArray!T)
         {
             static if (isAssociativeArray!F || isAssociativeArray!T)

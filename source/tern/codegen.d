@@ -44,22 +44,19 @@ public template inherit(T)
  * Must set inherited types by using `inherit(T)` beforehand.
  *
  * Example:
- * ```d
- * struct A {int b; int x() => b; }
+ *  ```d
+ *  struct A {int b; int x() => b; }
  *
- * interface B { string y(); }
+ *  interface B { string y(); }
  *
- * @inherit!A @inherit!B struct C 
- * {
- *     mixin apply;
+ *  @inherit!A @inherit!B struct C 
+ *  {
+ *      mixin apply;
  *
- *     string y() => "yohoho!";
- * }
+ *      string y() => "yohoho!";
+ *  }
  * ```
  */
-// TODO: Use opDispatch to allow for multiple class/struct inherits
-//       Find a faster way to do this, do not regenerate every call
-//       Apply changes on parent to self
 public template applyInherits()
 {
     static foreach (i, A; seqFilter!(isType, __traits(getAttributes, typeof(this))))

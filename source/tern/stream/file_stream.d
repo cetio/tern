@@ -68,7 +68,7 @@ public:
         return position + T.sizeof < size;
     }
 
-    bool mayRead(size_t size)
+    bool mayRead(size_t size = 1)
     {
         return position + size < this.size;
     }
@@ -78,7 +78,7 @@ public:
         file.seek(T.sizeof, SEEK_CUR);
     }
 
-    void seek(Seek SEEK)(size_t offset)
+    void seek(Seek SEEK = Seek.Start)(size_t offset)
     {
         if (SEEK == Seek.Current)
             file.seek(offset, SEEK_CUR);
