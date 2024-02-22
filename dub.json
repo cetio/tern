@@ -12,10 +12,7 @@
     "configurations": [
         {
             "name": "application",
-            "targetType": "executable",
-            "sourceFiles": [
-                "main.d"
-            ]
+            "targetType": "executable"
         },
         {
             "name": "library",

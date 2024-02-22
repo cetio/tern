@@ -1,3 +1,4 @@
+/// Wrappers for automatically managing memory
 module tern.typecons.automem;
 
 import tern.typecons.security;
@@ -7,9 +8,9 @@ import std.experimental.allocator;
 import std.typecons;
 import std.conv;
 
-/// Automatically releases a pointer of type `T` when exiting scope, assumes no ownership is passed.
 private alias NULL = typeof(null);
-public struct Unique(T, alias FREE = typeof(null))
+/// Automatically releases a pointer of type `T` when exiting scope, assumes no ownership is passed.
+public class Unique(T, alias FREE = typeof(null))
 {
     T* ptr;
     alias ptr this;
@@ -26,6 +27,7 @@ final:
         static assert(0, "Cannot reassign a Unique!");
     }
 
+    /// Releases/frees this manager. Implementation defined.
     void release()
     {
         void[] arr;
@@ -54,11 +56,11 @@ final:
 /// Helper function for creating a unique.
 Unique!T unique(T : U*, U)(T ptr)
 {
-    return Unique!T(ptr);
+    return new Unique!T(ptr);
 }
 
 /// Automatically releases a pointer of type `T` when exiting scope, allows any kind of ownership, but does not ref count.
-public struct Scoped(T, alias FREE = typeof(null))
+public class Scoped(T, alias FREE = typeof(null))
 {
     T* ptr;
     alias ptr this;
@@ -70,6 +72,7 @@ final:
         this.ptr = cast(T*)ptr;
     }
 
+    /// Releases/frees this manager. Implementation defined.
     void release()
     {
         void[] arr;
@@ -98,11 +101,11 @@ final:
 /// Helper function for creating a scoped.
 Scoped!T scoped(T : U*, U)(T ptr)
 {
-    return Scoped!T(ptr);
+    return new Scoped!T(ptr);
 }
 
 /// Counts references to the origin `RefCounted` and only releases if all references have also destructed.
-public struct RefCounted(T, alias FREE = typeof(null))
+public class RefCounted(T, alias FREE = typeof(null))
 {
     T* ptr;
     alias ptr this;
@@ -150,6 +153,7 @@ final:
         return this;
     }
 
+    /// Releases/frees this manager. Implementation defined.
     void release()
     {
         (*pref)--;
@@ -187,7 +191,7 @@ RefCounted!T refCounted(T : U*, U)(T ptr)
 
 private void*[] tracking;
 /// Stores all pointers and sweeps through the array after a `Tracked` destructs.
-public struct Tracked(T, alias FREE = typeof(null))
+public class Tracked(T, alias FREE = typeof(null))
     if (is(T == class))
 {
     T* ptr;
@@ -232,11 +236,11 @@ final:
 Tracked!T tracked(T : U*, U)(T ptr)
     if (is(T == class))
 {
-    return Tracked!T(ptr);
+    return new Tracked!T(ptr);
 }
 
 /// Automatically disposing wrapper, will attempt to dispose by calling `close`, `dispose`, or `destroy` if all else fails.
-public struct Disposable(T)
+public class Disposable(T)
 {
     T value;
     alias value this;
@@ -248,6 +252,7 @@ final:
         value = val;
     }
 
+    /// Releases/frees this manager. Implementation defined.
     void release()
     {
         static if (seqContains!("close", FunctionNames!T))
@@ -273,5 +278,5 @@ final:
 /// Helper function for creating a disposable.
 Disposable!T disposable(T)(T val)
 {
-    return Disposable!T(val);
+    return new Disposable!T(val);
 }

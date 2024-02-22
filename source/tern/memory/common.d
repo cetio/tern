@@ -1,17 +1,8 @@
-/// General-purpose and hardware-accelerated memory operations and allocation functions
-module tern.memory;
+module tern.memory.common;
 
 import std.traits;
 import core.simd;
 import tern.experimental.heap_allocator;
-import std.algorithm;
-
-public enum Endianness
-{
-    Native,
-    LittleEndian,
-    BigEndian
-}
 
 public:
 static:
@@ -178,53 +169,3 @@ unittest
  *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
 @trusted void zeroSecureMemory(void* ptr, size_t length) => memset(ptr, length, 0);
-
-/**
-* Swaps the endianness of the provided value, if applicable.
-*
-* Params:
-*  val = The value to swap endianness.
-*  endianness = The desired endianness.
-*
-* Returns:
-*   The value with swapped endianness.
-*/
-@trusted T makeEndian(T)(T val, Endianness endianness)
-{
-    version (LittleEndian)
-    {
-        if (endianness == Endianness.BigEndian)
-        {
-            static if (is(T == class))
-                (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].reverse();
-            else
-                (cast(ubyte*)&val)[0..T.sizeof].reverse();
-        }
-    }
-    else version (BigEndian)
-    {
-        if (endianness == Endianness.LittleEndian)
-        {
-            static if (is(T == class))
-                (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].reverse();
-            else
-                (cast(ubyte*)&val)[0..T.sizeof].reverse();
-        }
-    }
-    return val;
-}
-
-/**
- * Checks if `val` is actually a valid, non-null class, and has a valid vtable.
- *
- * Params:
- *  val = The value to check if null.
- *
- * Returns:
- *  True if `val` is null or has an invalid vtable.
- */
-@trusted bool isNull(T)(auto ref T val)
-    if (is(T == class) || isPointer!T)
-{
-    return val is null || *cast(void**)val is null;
-}

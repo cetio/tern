@@ -1,3 +1,4 @@
+/// Reimplementation of `core.atomic` with support for all data types
 module tern.atomic;
 
 import core.atomic;
@@ -13,12 +14,14 @@ shared static this()
     mutex = new shared Mutex();
 }
 
+/// Inserts a load/store memory fence, ensuring that all loads and stores before this call happen before any loads and stores after.
 pragma(inline)
 void fence()
 {
     atomicFence();
 }
 
+/// Atomically loads the value of `rhs`
 pragma(inline)
 auto atomicLoad(R)(ref shared R rhs)
 {
@@ -32,12 +35,32 @@ auto atomicLoad(R)(ref shared R rhs)
     }
 }
 
+/// Atomically loads an array element in the value of `rhs`
+pragma(inline)
+auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs)
+{
+    mutex.lock();
+    scope (exit) mutex.unlock();
+    return rhs[ELEM];
+}
+
+/// Atomically loads a field element in the value of `rhs`
+pragma(inline)
+auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
+{
+    mutex.lock();
+    scope (exit) mutex.unlock();
+    return mixin("rhs."~ELEM);
+}
+
 unittest
 {
     shared int val = 10;
     assert(val.atomicLoad == 10);
 }
 
+/// Atomically stores `lhs` in `rhs`
+pragma(inline)
 void atomicStore(R, L)(ref shared R rhs, L lhs)
 {
     static if (isScalarType!R)
@@ -50,6 +73,24 @@ void atomicStore(R, L)(ref shared R rhs, L lhs)
     }
 }
 
+/// Atomically stores the array element `lhs` in an array element of `rhs`
+pragma(inline)
+auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs, L lhs)
+{
+    mutex.lock();
+    scope (exit) mutex.unlock();
+    return rhs[ELEM] = lhs;
+}
+
+/// Atomically stores the field element `lhs` in a field element of `rhs`
+pragma(inline)
+auto atomicLoadElem(string ELEM, R)(ref shared R rhs, L lhs)
+{
+    mutex.lock();
+    scope (exit) mutex.unlock();
+    return mixin("rhs."~ELEM~" = lhs");
+}
+
 unittest
 {
     shared int val = 10;
@@ -57,6 +98,8 @@ unittest
     assert(val.atomicLoad == 7);
 }
 
+/// Atomically exchanges `rhs` and `lhs`
+pragma(inline)
 void atomicExchange(R, L)(ref shared R rhs, L lhs)
 {
     static if (isScalarType!R)
@@ -79,6 +122,8 @@ unittest
     assert(val.atomicLoad == 1);
 }
 
+/// Performs an atomic operation `op` on `rhs` and `lhs`
+pragma(inline)
 auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
 {
     static if (isScalarType!R)

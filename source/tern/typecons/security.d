@@ -647,14 +647,150 @@ final:
     {
         ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
         scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return cast(int)(value - ahs);
+
+        static if (isScalarType!A)
+            return cast(int)(value - ahs);
+        else
+            return value.opCmp(ahs);
     }
 
     int opCmp(A)(const A ahs) shared
     {
         ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
         scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return cast(int)(value - ahs);
+
+        static if (isScalarType!A)
+            return cast(int)(value - ahs);
+        else
+            return value.opCmp(ahs);
+    }
+
+    static if (isArray!T)
+    ref auto opIndex(size_t index)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[index];
+    }
+
+    static if (isArray!T)
+    ref auto opIndex(size_t index) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[index];
+    }
+
+    static if (isArray!T)
+    auto opIndexAssign(A)(A ahs, size_t index) 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[index] = ahs;
+    }
+
+    static if (isArray!T)
+    auto opIndexAssign(A)(A ahs, size_t index) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[index] = ahs;
+    }
+
+    static if (isArray!T)
+    auto opIndexUnary(string op)(size_t index) 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin(op~"value[index]");
+    }
+
+    static if (isArray!T)
+    auto opIndexUnary(string op)(size_t index) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin(op~"value[index]");
+    }
+
+    static if (isArray!T)
+    auto opIndexOpAssign(string op, T)(T value, size_t index) 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("value[index] "~op~"= ahs");
+    }
+
+    static if (isArray!T)
+    auto opIndexOpAssign(string op, T)(T value, size_t index) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("value[index] "~op~"= ahs");
+    }
+
+    static if (isArray!T)
+    auto opSlice(size_t start, size_t end)
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[start..end];
+    }
+
+    static if (isArray!T)
+    auto opSlice(size_t start, size_t end) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[start..end];
+    }
+
+    static if (isArray!T)
+    auto opSliceUnary(string op)(size_t start, size_t end) 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin(op~"value[start..end]");
+    }
+
+    static if (isArray!T)
+    auto opSliceUnary(string op)(size_t start, size_t end) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin(op~"value[start..end]");
+    }
+
+    static if (isArray!T)
+    auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[start..end] = ahs;
+    }
+
+    static if (isArray!T)
+    auto opSliceAssign(A)(A ahs, size_t start, size_t end) shared 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return value[start..end] = ahs;
+    }
+
+    static if (isArray!T)
+    auto opSliceOpAssign(string op, A)(A ahs, size_t start, size_t end) 
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("value[start..end] "~op~"= ahs");
+    }
+
+    static if (isArray!T)
+    auto opSliceOpAssign(string op, A)(A ahs, size_t start, size_t end) shared
+    {
+        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
+        return mixin("value[start..end] "~op~"= ahs");
     }
 
     string toString() const

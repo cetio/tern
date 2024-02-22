@@ -4,6 +4,7 @@ module tern.digest.mira;
 import core.simd;
 import tern.digest;
 import tern.digest.circe;
+import tern.algorithm;
 
 /**
  * Implementation of Mira256 digester, internally backed by `tern.digest.circe`
@@ -55,17 +56,20 @@ pure:
             data[i - factor] = b0;
         }
 
-        ulong2* vptr = cast(ulong2*)data.ptr;
-        foreach (i; 0..(data.length / 16))
+            import std.stdio;
+            debug writeln(&data[0]);
+        foreach (i, ref vec; data.portionTo!ulong2)
         {
             size_t ri = ~i;
             size_t si = i % 8;
-            *vptr += factor;
-            *vptr ^= (a << si) ^ ri; 
-            *vptr ^= (b << si) ^ ri;
-            *vptr ^= (c << si) ^ ri; 
-            *vptr ^= (d << si) ^ ri;
-            vptr += 1;
+            vec += factor;
+            vec ^= (a << si) ^ i; 
+            vec ^= (b << si) + ri;
+            vec ^= (c << si) * ri;
+            vec ^= (d << si) - ri;
+            vec[1] ^= vec[0] << 8;
+            import std.stdio;
+            debug writeln(&vec);
         }
 
         foreach (i, ref _b; data[rlen..$])
@@ -73,10 +77,10 @@ pure:
             size_t ri = ~i;
             size_t si = i % 8;
             _b += factor;
-            _b ^= (a << si) ^ ri;
-            _b ^= (b << si) ^ ri;
-            _b ^= (c << si) ^ ri;
-            _b ^= (d << si) ^ ri;
+            _b ^= (a << si) ^ i;
+            _b ^= (b << si) + ri;
+            _b ^= (c << si) * ri;
+            _b ^= (d << si) - ri;
         }
 
         for (size_t i = factor; i < data.length; i += factor)
@@ -139,10 +143,10 @@ pure:
         {
             size_t ri = ~i;
             size_t si = i % 8;
-            _b ^= (a << si) ^ ri;
-            _b ^= (b << si) ^ ri;
-            _b ^= (c << si) ^ ri;
-            _b ^= (d << si) ^ ri;
+            _b ^= (d << si) - ri;
+            _b ^= (c << si) * ri;
+            _b ^= (b << si) + ri;
+            _b ^= (a << si) ^ i;
             _b -= factor;
         }
 
