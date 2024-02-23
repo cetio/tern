@@ -15,6 +15,7 @@ public import tern.typecons;
 public import tern.atomic;
 public import tern.blit;
 public import tern.codegen;
+public import tern.compression;
 public import tern.event;
 public import tern.exception;
 public import tern.hresult;
