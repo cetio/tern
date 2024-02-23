@@ -26,23 +26,26 @@ pure:
     {
         ubyte[] bytes;
         static if (!RAW)
-            bytes ~= val.length.makeEndian(endianness).serialize();
+            bytes ~= val.length.makeEndian(endianness).serialize!RAW();
             
         foreach (u; val)
-            bytes ~= u.makeEndian(endianness).serialize();
+            bytes ~= u.makeEndian(endianness).serialize!RAW();
         return bytes;
     }
     else static if (hasChildren!T)
     {
         ubyte[] bytes;
         foreach (field; FieldNames!T)
-            bytes ~= __traits(getMember, val, field).makeEndian(endianness).serialize();
+        {
+            static if (!isEnum!(__traits(getMember, T, field)))
+                bytes ~= __traits(getMember, val, field).makeEndian(endianness).serialize!RAW();
+        }
         return bytes;
     }
     else
     {
-        T tval = val.makeEndian(endianness);
-        return (cast(ubyte*)&tval)[0..T.sizeof].dup;
+        T t = val.makeEndian(endianness);
+        return (cast(ubyte*)&t)[0..T.sizeof].dup;
     }
 }
 
@@ -93,7 +96,10 @@ pure:
             bytes ~= new ubyte[__traits(classInstanceSize) - bytes.length];
 
         foreach (field; FieldNames!T)
-            __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
+        {
+            static if (!isImmutable!(__traits(getMember, T, field)))
+                __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
+        }
         return ret;
     }
     else static if (hasChildren!T)
@@ -102,7 +108,10 @@ pure:
             bytes ~= new ubyte[T.sizeof - bytes.length];
 
         foreach (field; FieldNames!T)
-            __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
+        {
+            static if (!isImmutable!(__traits(getMember, T, field)))
+                __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
+        }
         return ret;
     }
     else
