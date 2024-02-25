@@ -1,6 +1,7 @@
 module tern.bitop;
 
-public import core.bitop;
+public import core.bitop : bitswap, bsf, bsr, bswap, bt, btc, btr, bts, byteswap, inp, inpl, inpw, outp, outpl, outpw, popcnt, rol, ror;
+import tern.memory;
 
 public:
 static:
@@ -50,19 +51,21 @@ Tuple!(A, B) moduloCarry(A, B, C)(A hi, B lo, C divi)
     return tuple(cast(A)(remainder >> (B.sizeof * 8 - 1)), cast(B)remainder);
 }
 
-string toBitString(ubyte[] bytes)
+@trusted bool[] getBits(T)(T val)
 {
-    string ret;
-    foreach_reverse (b; bytes)
+    bool[] ret;
+    foreach_reverse (i, b; val.getBytes())
     {
-        foreach_reverse (i; 0..7)
-            ret ~= (((b >> i) & 1) ? "1" : "0");
+        foreach_reverse (j; 0..7)
+            ret ~= (((b >> j) & 1) ? true : false);
     }
     return ret;
 }
 
-// rol
-// ror
-// shl
-// shr
-// bits
+string toBitString(bool[] bits)
+{
+    string ret;
+    foreach (b; bits)
+        ret ~= b ? '1' : '0';
+    return ret;
+}

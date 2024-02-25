@@ -324,6 +324,7 @@ Singleton!T singleton(T)(T val)
 }
 
 // TODO: Reconstruction
+/// Highly mutable enumerable for working with any indexable or sliceable type.
 public struct Enumerable(T)
 {
     T value;
@@ -333,6 +334,7 @@ public:
 final:
     this(T val)
     {
+        // TODO: This isn't very efficient
         value = val.ddup;
     }
 
@@ -382,7 +384,7 @@ final:
     auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
     {
         static if (__traits(compiles, { auto _ = (value[start..end] = ahs); }))
-            return value[index] = ahs;
+            return value[start..end] = ahs;
         else static if (__traits(compiles, { auto _ = value[start]; }))
         {
             copy(cast(void*)ahs.ptr, cast(void*)&value[start], typeof(ahs[0]).sizeof * ahs.length);

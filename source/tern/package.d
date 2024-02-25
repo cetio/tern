@@ -13,6 +13,7 @@ public import tern.stream;
 public import tern.string;
 public import tern.typecons;
 public import tern.atomic;
+public import tern.bitop;
 public import tern.blit;
 public import tern.codegen;
 public import tern.event;

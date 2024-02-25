@@ -1,11 +1,41 @@
-module tern.memory.common;
+/// General-purpose memory optimized memory utilities. For memory management, see `tern.typecons.automem`
+module tern.memory;
 
-import std.traits;
+public import core.lifetime : emplace, copyEmplace, move, moveEmplace;
+import std.algorithm;
+import tern.traits;
 import core.simd;
 import tern.experimental.heap_allocator;
 
+public enum Endianness
+{
+    Native,
+    LittleEndian,
+    BigEndian
+}
+
 public:
 static:
+/**
+ * Gets all bytes of `val` non-recursively but dynamically based on type.
+ * 
+ * Params:
+ *  val = The value to extract all bytes from.
+ *
+ * Remarks:
+ *  - Classes will return their instance data.
+ *  - Arrays will return their element data.
+ */
+pure @trusted ubyte[] getBytes(T)(T val)
+{
+    static if (is(T == class))
+        (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].dup;
+    else static if (isArray!T)
+        return (cast(ubyte*)val.ptr)[0..(ElementType!T.sizeof * val.length)].dup;
+    else
+        return (cast(ubyte*)&val)[0..T.sizeof].dup;
+}
+
 @nogc:
 /**
  * Allocates an entry of `size` 
@@ -169,3 +199,53 @@ unittest
  *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
  */
 @trusted void zeroSecureMemory(void* ptr, size_t length) => memset(ptr, length, 0);
+
+/**
+ * Swaps the endianness of the provided value, if applicable.
+ *
+ * Params:
+ *  val = The value to swap endianness.
+ *  endianness = The desired endianness.
+ *
+ * Returns:
+ *  The value with swapped endianness.
+ */
+@trusted T makeEndian(T)(T val, Endianness endianness)
+{
+    version (LittleEndian)
+    {
+        if (endianness == Endianness.BigEndian)
+        {
+            static if (is(T == class))
+                (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].reverse();
+            else
+                (cast(ubyte*)&val)[0..T.sizeof].reverse();
+        }
+    }
+    else version (BigEndian)
+    {
+        if (endianness == Endianness.LittleEndian)
+        {
+            static if (is(T == class))
+                (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].reverse();
+            else
+                (cast(ubyte*)&val)[0..T.sizeof].reverse();
+        }
+    }
+    return val;
+}
+
+/**
+ * Checks if `val` is actually a valid, non-null class, and has a valid vtable.
+ *
+ * Params:
+ *  val = The value to check if null.
+ *
+ * Returns:
+ *  True if `val` is null or has an invalid vtable.
+ */
+@trusted bool isNull(T)(T val)
+    if (is(T == class) || isPointer!T)
+{
+    return val is null || *cast(void**)val is null;
+}

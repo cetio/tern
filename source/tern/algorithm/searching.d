@@ -59,10 +59,12 @@ P[] portionTo(P, T)(ref T arr)
 size_t indexOf(A, B)(A arr, B elem)
     if (isInputRange!A && !isInputRange!B)
 {
-    foreach (i, u; arr)
+    size_t index;
+    foreach (u; arr)
     {
-        if (u == elem)
-            return i;
+        if (arr[index] == elem)
+            return --index;
+        index++;
     }
     return -1;
 }
@@ -70,10 +72,11 @@ size_t indexOf(A, B)(A arr, B elem)
 size_t lastIndexOf(A, B)(A arr, B elem)
     if (isBidirectionalRange!A && !isInputRange!B)
 {
-    foreach_reverse (i, u; arr)
+    size_t index;
+    foreach_reverse (u; arr)
     {
-        if (u == elem)
-            return i;
+        if (arr[index] == elem)
+            return --index;
     }
     return -1;
 }
@@ -84,10 +87,15 @@ size_t indexOf(A, B)(A arr, B subarr)
     if (subarr.length > arr.length)
         return -1;
 
-    foreach (i, u; arr)
+    size_t index;
+    foreach (u; arr)
     {
-        if (arr[i..i + subarr.length] == subarr)
-            return i;
+        if (index + subarr.length > arr.length)
+            return -1;
+
+        if (arr[index..(index + subarr.length)] == subarr)
+            return index;
+        index++;
     }
     return -1;
 }
@@ -98,16 +106,19 @@ size_t lastIndexOf(A, B)(A arr, B subarr)
     if (subarr.length > arr.length)
         return -1;
 
-    foreach_reverse (i, u; arr)
+    size_t index = arr.length;
+    foreach_reverse (u; arr)
     {
-        if (i + subarr.length > arr.length)
+        if (index + subarr.length > arr.length)
             continue;
 
-        if (arr[i .. i + subarr.length] == subarr)
-            return i;
+        if (arr[index..(index + subarr.length)] == subarr)
+            return index;
+        index--;
     }
     return -1;
 }
+
 
 bool contains(A, B)(A arr, B elem) if (isInputRange!A && !isInputRange!B) => indexOf(arr, elem) != -1;
 bool contains(A, B)(A arr, B subarr) if (isInputRange!A && isInputRange!B) => indexOf(arr, subarr) != -1;

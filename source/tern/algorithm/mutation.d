@@ -143,40 +143,38 @@ nothrow void push(T)(ref T arr, ElementType!T val)
 A replace(A, B, C)(A arr, B from, C to)
     if (isInputRange!A && !isInputRange!B && !isInputRange!C)
 {
-    A ret = arr.dup;
+    Enumerable!A ret = arr;
     size_t index = arr.indexOf(from);
     while (index != -1)
     {
-        if (ret[index] == from)
-            ret[index] = to;
+        ret[index] = to;
         index = ret.indexOf(from);
     }
-    return cast(A)ret;
+    return ret.value;
 }
 
 A replace(A, B, C)(A arr, B from, C to)
     if (isInputRange!A && isInputRange!B && isInputRange!C)
 {
-    Enumerable!A ret = cast(Enumerable!A)arr.dup;
+    Enumerable!A ret = arr;
     size_t index = arr.indexOf(from);
     while (index != -1)
     {
-        if (ret.length - index >= from.length ||
-            ret.length - index >= to.length)
-            continue;
-
-        if (ret[index..(index + from.length)] == from)
+        if (to.length == from.length)
+            ret[index..(index + to.length)] = to;
+        else
         {
-            foreach (i; index..(index + to.length))
-                ret[i] = to[i];
+            ret[index..(index + from.length)] = to[0..from.length];
+            foreach (u; to[from.length..$])
+                ret ~= u;
         }
         index = ret.indexOf(from);
     }
-    return cast(A)ret;
+    return ret.value;
 }
 
-LazySubstitute!(T) substitute(T, )(T arr, ElementType!T from, ElementType!T to)
-    if (isInputRange!T)
+LazySubstitute!(A, B, C) substitute(A, B, C)(A arr, B from, C to)
+    if (isInputRange!A)
 {
-    return LazySubstitute!(T)(arr, from, to);
+    return LazySubstitute!(A, B, C)(arr, from, to);
 }

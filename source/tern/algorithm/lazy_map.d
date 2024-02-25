@@ -2,7 +2,8 @@
 module tern.algorithm.lazy_map;
 
 import tern.traits;
-import std.range.primitives;
+import std.range.primitives : isInputRange;
+import std.conv;
 
 public struct LazyMap(alias F, T)
     if (isInputRange!T)
@@ -12,6 +13,11 @@ public struct LazyMap(alias F, T)
     
 public:
 final:
+    string toString()
+    {
+        return this[0..length].to!string;
+    }
+    
 pure:
     size_t length;
 
@@ -26,7 +32,7 @@ pure:
         T slice;
         foreach (ref u; array)
         {
-            slice ~= opIndex(++start);        
+            slice ~= opIndex(start++);        
 
             if (start >= end)
                 break;

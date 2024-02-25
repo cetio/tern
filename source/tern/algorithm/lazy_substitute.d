@@ -1,21 +1,28 @@
 module tern.algorithm.lazy_substitute;
 
 import tern.traits;
+import std.range.primitives : isInputRange;
+import std.conv;
 
-public struct LazySubstitute(T)
-    if (isInputRange!T)
+public struct LazySubstitute(A, B, C)
+    if (isInputRange!A)
 {
-    T array;
+    A array;
     alias array this;
     
 public:
 final:
+    string toString()
+    {
+        return this[0..length].to!string;
+    }
+    
 pure:
     size_t length;
-    ElementType!T from;
-    ElementType!T to;
+    B from;
+    C to;
 
-    this(T arr, ElementType!T from, ElementType!T to)
+    this(A arr, B from, C to)
     {
         array = arr;
         length = array.length;
@@ -23,12 +30,12 @@ pure:
         this.to = to;
     }
 
-    T opSlice(ptrdiff_t start, ptrdiff_t end)
+    A opSlice(ptrdiff_t start, ptrdiff_t end)
     {
-        T slice;
+        A slice;
         foreach (ref u; array)
         {
-            slice ~= opIndex(++start);        
+            slice ~= opIndex(start++);        
 
             if (start >= end)
                 break;
@@ -36,12 +43,12 @@ pure:
         return slice;
     }
 
-    auto opSliceAssign(A)(A ahs, ptrdiff_t start, ptrdiff_t end) 
+    auto opSliceAssign(T)(T ahs, ptrdiff_t start, ptrdiff_t end) 
     {
-        T slice;
+        A slice;
         foreach (ref u; array)
         {
-            slice ~= opIndex(ahs[start], ++start);        
+            slice ~= opIndex(ahs[start], start++);        
 
             if (start >= end)
                 break;
@@ -57,7 +64,7 @@ pure:
             return array[index];
     }
 
-    auto opIndexAssign(A)(A ahs, ptrdiff_t index) 
+    auto opIndexAssign(T)(T ahs, ptrdiff_t index) 
     {
         return array[index] = ahs;
     }

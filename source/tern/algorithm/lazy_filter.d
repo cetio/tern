@@ -2,19 +2,26 @@
 module tern.algorithm.lazy_filter;
 
 import tern.traits;
+import std.range.primitives : isInputRange;
+import std.conv;
 
 public struct LazyFilter(alias F, T)
-    if (isArray!T)
+    if (isInputRange!T)
 {
     T array;
     alias array this;
 
 private:
 final:
-pure:
     size_t _length = -1;
 
 public:
+    string toString()
+    {
+        return this[0..length].to!string;
+    }
+
+pure:
     this(T arr)
     {
         array = arr;
@@ -39,7 +46,7 @@ public:
         T slice;
         foreach (ref u; array)
         {
-            slice ~= opIndex(++start);        
+            slice ~= opIndex(start++);        
 
             if (start >= end)
                 break;
@@ -52,7 +59,7 @@ public:
         T slice;
         foreach (ref u; array)
         {
-            slice ~= opIndex(ahs[start], ++start);        
+            slice ~= opIndex(ahs[start], start++);        
 
             if (start >= end)
                 break;
