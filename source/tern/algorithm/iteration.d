@@ -2,13 +2,13 @@
 module tern.algorithm.iteration;
 
 import tern.traits;
-import std.range.primitives;
+import std.range.primitives : isBidirectionalRange, isInputRange;
 public import tern.algorithm.lazy_filter;
 public import tern.algorithm.lazy_map;
 
 public:
 LazyMap!(F, T) map(alias F, T)(T arr)
-    if (isArray!T)
+    if (isInputRange!T)
 {
     return LazyMap!(F, T)(arr);
 }
@@ -21,7 +21,7 @@ unittest
 }
 
 LazyFilter!(F, T) filter(alias F, T)(T arr)
-    if (isArray!T)
+    if (isInputRange!T)
 {
     return LazyFilter!(F, T)(arr);
 }
@@ -66,4 +66,13 @@ size_t levenshteinDistance(A, B)(A str1, B str2)
     }
 
     return dp[m - 1][n - 1];
+}
+
+A join(A, B)(A[] arrs, B by)
+    if (isInputRange!A)
+{
+    A ret;
+    foreach (arr; arrs)
+        ret ~= arr~by;
+    return ret;
 }

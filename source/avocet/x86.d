@@ -8,7 +8,7 @@ import std.algorithm;
 import std.string;
 import std.conv;
 import tern.exception;
-import tern.algorithm;
+import tern.algorithm : levenshteinDistance;
 
 public static class X86
 {
@@ -802,7 +802,7 @@ public:
 
                     foreach (key; idre.keys~imrm.keys) 
                     {
-                        long distance = tern.algorithm.levenshteinDistance(inst, key);
+                        long distance = levenshteinDistance(inst, key);
                         if (distance < minDistance) 
                         {
                             minDistance = distance;

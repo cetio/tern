@@ -239,7 +239,6 @@ public template functionMap(T, bool mapOperators = false)
             }
         }
         static if (mapOperators)
-        // TODO: Fix for classes
             str ~= "public auto opOpAssign(string op, ORASS)(ORASS rhs)
                 {
                     auto orig = as!("~fullyQualifiedName!T~");

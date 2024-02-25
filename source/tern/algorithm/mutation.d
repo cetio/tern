@@ -2,7 +2,10 @@
 module tern.algorithm.mutation;
 
 import tern.traits;
-import tern.algorithm;
+import tern.typecons;
+import tern.algorithm.searching;
+import tern.algorithm.lazy_substitute;
+import std.range.primitives : isBidirectionalRange, isInputRange;
 
 /**
  * Last In First Out
@@ -135,4 +138,45 @@ nothrow void push(T)(ref T arr, ElementType!T val)
     if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
 {
     arr ~= val;
+}
+
+A replace(A, B, C)(A arr, B from, C to)
+    if (isInputRange!A && !isInputRange!B && !isInputRange!C)
+{
+    A ret = arr.dup;
+    size_t index = arr.indexOf(from);
+    while (index != -1)
+    {
+        if (ret[index] == from)
+            ret[index] = to;
+        index = ret.indexOf(from);
+    }
+    return cast(A)ret;
+}
+
+A replace(A, B, C)(A arr, B from, C to)
+    if (isInputRange!A && isInputRange!B && isInputRange!C)
+{
+    Enumerable!A ret = cast(Enumerable!A)arr.dup;
+    size_t index = arr.indexOf(from);
+    while (index != -1)
+    {
+        if (ret.length - index >= from.length ||
+            ret.length - index >= to.length)
+            continue;
+
+        if (ret[index..(index + from.length)] == from)
+        {
+            foreach (i; index..(index + to.length))
+                ret[i] = to[i];
+        }
+        index = ret.indexOf(from);
+    }
+    return cast(A)ret;
+}
+
+LazySubstitute!(T) substitute(T, )(T arr, ElementType!T from, ElementType!T to)
+    if (isInputRange!T)
+{
+    return LazySubstitute!(T)(arr, from, to);
 }

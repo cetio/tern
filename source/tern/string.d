@@ -1,9 +1,7 @@
 /// Highlighting, case conversions, parsing, and more
 module tern.string;
 
-import std.string;
-import std.algorithm;
-import std.array;
+public import tern.algorithm;
 import tern.traits;
 
 public enum AnsiColor 
@@ -115,7 +113,7 @@ string toSnakeCase(string str)
     {
         if (c.isUpper)
         {
-            if (!ret.empty && ret[$-1] != '_')
+            if (ret.length > 0 && ret[$-1] != '_')
                 ret ~= '_';
             ret ~= c.toLower;
         }
@@ -134,7 +132,7 @@ string toKebabCase(string str)
     {
         if (c.isUpper)
         {
-            if (!ret.empty && ret[$-1] != '-')
+            if (ret.length > 0 && ret[$-1] != '-')
                 ret ~= '-';
             ret ~= c.toLower;
         }

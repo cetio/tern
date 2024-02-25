@@ -47,12 +47,12 @@ public:
         return slice;
     }
 
-    auto opSliceAssign(T)(T val, ptrdiff_t start, ptrdiff_t end) 
+    auto opSliceAssign(A)(A ahs, ptrdiff_t start, ptrdiff_t end) 
     {
         T slice;
         foreach (ref u; array)
         {
-            slice ~= opIndex(val[start], ++start);        
+            slice ~= opIndex(ahs[start], ++start);        
 
             if (start >= end)
                 break;
@@ -72,15 +72,20 @@ public:
         throw new Throwable("Lazy filter index out of bounds!");
     }
 
-    auto opIndexAssign(T)(T val, ptrdiff_t index) 
+    auto opIndexAssign(A)(A ahs, ptrdiff_t index) 
     {
         foreach (ref u; array)
         {
             if (F(u) && index <= 0)
-                return u = val;
+                return u = ahs;
             else
                 index--;
         }
         throw new Throwable("Lazy filter index out of bounds!");
+    }
+
+    size_t opDollar()
+    {
+        return length;
     }
 }

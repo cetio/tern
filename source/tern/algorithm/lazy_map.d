@@ -39,4 +39,9 @@ pure:
         return F(array[index]);
         throw new Throwable("Lazy filter index out of bounds!");
     }
+
+    size_t opDollar()
+    {
+        return length;
+    }
 }

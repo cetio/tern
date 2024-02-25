@@ -1,4 +1,4 @@
-module tern.compression;
+module tern.varint;
 
 import std.traits;
 import std.conv;

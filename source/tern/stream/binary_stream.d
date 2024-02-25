@@ -1,5 +1,4 @@
 /// Performant binary stream implementation using `IStream`
-// TODO: Pattern/value scan
 module tern.stream.binary_stream;
 
 public import tern.stream.impl;

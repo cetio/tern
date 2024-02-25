@@ -1,7 +1,6 @@
 /// Implementation of Circe digester
 module tern.digest.circe;
 
-// TODO: This is not cryptographically secure
 import tern.digest;
 import tern.algorithm;
 import tern.serialization;

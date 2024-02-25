@@ -1,5 +1,4 @@
 /// Barebones memory stream implementation using `IStream` without any bounds checking
-// TODO: Pattern/value scan
 module tern.stream.memory_stream;
 
 public import tern.stream.impl;

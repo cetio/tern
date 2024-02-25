@@ -74,7 +74,7 @@ pragma(inline)
     if (isArray!T && !isAssociativeArray!T)
 {
     T ret;
-    static foreach (u; arr)
+    foreach (u; arr)
         ret ~= u.ddup();
     return ret;
 }
@@ -85,7 +85,7 @@ pragma(inline)
     if (isAssociativeArray!T)
 {
     T ret;
-    static foreach (key, value; arr)
+    foreach (key, value; arr)
         ret[key.ddup()] = value.ddup();
     return ret;
 }

@@ -2,6 +2,8 @@
 module tern.algorithm.searching;
 
 import tern.traits;
+import tern.meta;
+import std.range.primitives : isBidirectionalRange, isInputRange;
 
 public:
 static:
@@ -55,7 +57,7 @@ P[] portionTo(P, T)(ref T arr)
 }
 
 size_t indexOf(A, B)(A arr, B elem)
-    if (isInputRange!A && is(ElementType!A == B))
+    if (isInputRange!A && !isInputRange!B)
 {
     foreach (i, u; arr)
     {
@@ -66,7 +68,7 @@ size_t indexOf(A, B)(A arr, B elem)
 }
 
 size_t lastIndexOf(A, B)(A arr, B elem)
-    if (isBidirectionalRange!A && is(ElementType!A == B))
+    if (isBidirectionalRange!A && !isInputRange!B)
 {
     foreach_reverse (i, u; arr)
     {
@@ -76,8 +78,8 @@ size_t lastIndexOf(A, B)(A arr, B elem)
     return -1;
 }
 
-size_t indexOf(A)(A arr, A subarr)
-    if (isInputRange!A)
+size_t indexOf(A, B)(A arr, B subarr)
+    if (isInputRange!A && isInputRange!B)
 {
     if (subarr.length > arr.length)
         return -1;
@@ -90,8 +92,8 @@ size_t indexOf(A)(A arr, A subarr)
     return -1;
 }
 
-size_t lastIndexOf(A)(A arr, A subarr)
-    if (isBidirectionalRange!A)
+size_t lastIndexOf(A, B)(A arr, B subarr)
+    if (isBidirectionalRange!A && isBidirectionalRange!B)
 {
     if (subarr.length > arr.length)
         return -1;
@@ -107,5 +109,10 @@ size_t lastIndexOf(A)(A arr, A subarr)
     return -1;
 }
 
-bool contains(A, B)(A arr, B elem) if (isInputRange!A && is(ElementType!A == B)) => indexOf(arr, elem) != -1;
-bool contains(A)(A arr, A subarr) if (isInputRange!A) => indexOf(arr, subarr) != -1;
+bool contains(A, B)(A arr, B elem) if (isInputRange!A && !isInputRange!B) => indexOf(arr, elem) != -1;
+bool contains(A, B)(A arr, B subarr) if (isInputRange!A && isInputRange!B) => indexOf(arr, subarr) != -1;
+
+bool startsWith(A, B)(A arr, B elem) if (isInputRange!A && !isInputRange!B) => arr.length >= 1 && arr[0..1].contains(elem);
+bool startsWith(A, B)(A arr, B subarr) if (isInputRange!A && isInputRange!B) => arr.length >= subarr.length && arr[0..subarr.length].contains(subarr);
+bool endsWith(A, B)(A arr, B elem) if (isInputRange!A && !isInputRange!B) => arr.length >= 1 && arr[$-1..$].contains(elem);
+bool endsWith(A, B)(A arr, B subarr) if (isInputRange!A && isInputRange!B) => arr.length >= subarr.length && arr[$-subarr.length..$].contains(subarr);

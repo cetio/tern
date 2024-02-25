@@ -793,6 +793,18 @@ final:
         return mixin("value[start..end] "~op~"= ahs");
     }
 
+    static if (isArray!T)
+    size_t opDollar()
+    {
+        return value.length;
+    }
+
+    static if (isArray!T)
+    size_t opDollar(size_t DIM : 0)()
+    {
+        return value[DIM].length;
+    }
+
     string toString() const
     {
         ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);

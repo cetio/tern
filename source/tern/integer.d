@@ -3,16 +3,143 @@ module tern.integer;
 
 import std.conv;
 import std.traits;
-import std.bitmanip;
+import tern.math;
 
+/// Represents the shorthand for an integer
 public alias utri = UInt!24;
-public alias tri = UInt!24;
+/// ditto
+public alias tri = Int!24;
+/// ditto
 public alias upent = UInt!40;
+/// ditto
 public alias pent = Int!40;
+/// ditto
 public alias usex = UInt!48;
+/// ditto
 public alias sex = Int!48;
+/// ditto
 public alias uhept = UInt!56;
+/// ditto
 public alias hept = Int!56;
+
+/// Represents the shorthand for a non-promoting integer
+public alias npubyte = UInt!8;
+/// ditto
+public alias npbyte = Int!8;
+/// ditto
+public alias npushort = UInt!16;
+/// ditto
+public alias npshort = Int!16;
+/// ditto
+public alias nputri = UInt!24;
+/// ditto
+public alias nptri = Int!24;
+/// ditto
+public alias npuint = UInt!32;
+/// ditto
+public alias npint = Int!32;
+/// ditto
+public alias npupent = UInt!40;
+/// ditto
+public alias nppent = Int!40;
+/// ditto
+public alias npusex = UInt!48;
+/// ditto
+public alias npsex = Int!48;
+/// ditto
+public alias npuhept = UInt!56;
+/// ditto
+public alias nphept = Int!56;
+/// ditto
+public alias npulong = UInt!64;
+/// ditto
+public alias nplong = Int!64;
+
+/* public struct udodeca
+{
+private:
+final:
+    uint hi;
+    ulong lo;
+
+public:
+    string toString()
+    {
+        auto temp = this;
+
+        string ret;
+        while (temp != 0)
+        {
+            ret = cast(char)('0' + cast(uint)(temp % 10))~ret;
+            temp /= 10;
+        }
+        return ret;
+    }
+
+@nogc:
+    this(T)(T val)
+        if (isIntegral!T)
+    {
+        hi = cast(uint)(val >> (T.sizeof * 4));
+        lo = cast(ulong)(val & (T.max / 2));
+    }
+
+    this(uint hi, ulong lo)
+    {
+        this.hi = hi;
+        this.lo = lo;
+    }
+
+    auto opCast(T)() const
+    {
+        return cast(T)((cast(T)hi << (T.sizeof * 4)) | lo);
+    }
+
+    auto opBinary(string op, R)(const R rhs)
+    {
+        static if (op == "*")
+        {
+            auto ret = mulCarry(hi, lo, rhs);
+            return udodeca(ret[0], ret[1]);
+        }
+        else static if (op == "/")
+        {
+            auto ret = divCarry(hi, lo, rhs);
+            return udodeca(ret[0], ret[1]);
+        }
+        else static if (op == "%")
+        {
+            auto ret = moduloCarry(hi, lo, rhs);
+            return udodeca(ret[0], ret[1]);
+        }
+        else static if (op == "+")
+        {
+            auto ret = addCarry(hi, lo, rhs);
+            return udodeca(ret[0], ret[1]);
+        }
+        else static if (op == "-")
+        {
+            auto ret = addCarry(hi, lo, rhs);
+            return udodeca(ret[0], ret[1]);
+        }
+    }
+
+    auto opOpAssign(string op, A)(A ahs)
+    {
+        this = mixin("this "~op~" ahs");
+        return this;
+    }
+
+    auto opEquals(A)(A ahs)
+    {
+        return cast(ulong)((this - ahs)) == 0;
+    }
+
+    int opCmp(A)(A ahs)
+    {
+        return cast(int)(this - ahs);
+    }
+} */
 
 /// Represents an arbitrary unsigned integer of `SIZE`
 public struct UInt(size_t SIZE)

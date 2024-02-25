@@ -1,113 +1,15 @@
 /// Simple math functions and expression simplifier
 module tern.math;
 
-import std.algorithm;
-import std.math;
-import std.range;
+// TODO: Refactor simpl
 import std.conv;
-import std.ascii;
+import std.traits;
+import tern.string;
+import std.string : split;
 
 public:
 static:
 pure:
-/**
- * Calculates the factorial of an integer.
- *
- * Params:
- *   n = Integer for which factorial is to be calculated.
- *
- * Returns:
- *   Factorial of the input integer.
- */
-ulong factorial(int n)
-{
-    ulong result = 1;
-    foreach (i; 2 .. n + 1)
-        result *= i;
-    return result;
-}
-
-/**
- * Calculates the greatest common divisor (GCD) of two integers.
- *
- * Params:
- *   a = First integer.
- *   b = Second integer.
- *
- * Returns:
- *   GCD of the two input integers.
- */
-int gcd(int a, int b)
-{
-    while (b)
-    {
-        int temp = b;
-        b = a % b;
-        a = temp;
-    }
-    return abs(a);
-}
-
-/**
- * Calculates the least common multiple (LCM) of two integers.
- *
- * Params:
- *   a = First integer.
- *   b = Second integer.
- *
- * Returns:
- *   LCM of the two input integers.
- */
-int lcm(int a, int b)
-{
-    return (a * b) / gcd(a, b);
-}
-
-/**
- * Aligns a number to another number upwards.
- *
- * Params:
- *   value = The value to be aligned.
- *   alignment = The alignment value.
- *
- * Returns:
- *   The aligned value.
- */
-int falign(int value, int alignment)
-{
-    return value + (alignment - (value % alignment));
-}
-
-/**
- * Calculates the transpose of a matrix.
- *
- * Params:
- *   matrix = The matrix to be transposed.
- *
- * Returns:
- *   Transposed matrix.
- */
-double[][] transpose(double[][] matrix)
-{
-    if (matrix.empty || matrix[0].empty)
-        return [];
-
-    auto rows = matrix.length;
-    auto cols = matrix[0].length;
-
-    double[][] result;
-    result.length = cols;
-    foreach (colIdx; 0 .. cols)
-    {
-        result[colIdx].length = rows;
-        foreach (rowIdx; 0 .. rows)
-        {
-            result[colIdx][rowIdx] = matrix[rowIdx][colIdx];
-        }
-    }
-    return result;
-}
-
 /**
  * Simplifies a simple (does not contain functions) arithmetic expression.
  *
@@ -118,7 +20,7 @@ double[][] transpose(double[][] matrix)
  * Returns:
  *  The simplified arithmetic expression.
  */
-string simplifyEq(string exp, string op)
+string simpl(string exp, string op)
 {
     immutable uint[string] priority = [
         "*": 0,
@@ -170,7 +72,7 @@ string simplifyEq(string exp, string op)
         if (words[i][0] == '(')
         {
             size_t end = findMatchingParenthesis(i);
-            exp = exp.replace(words[i..end].join(' '), simplifyEq(words[i..end].join(' ')[1..$-1]));
+            exp = exp.replace(words[i..end].join(' '), simpl(words[i..end].join(' ')[1..$-1]));
             i = end - 1;
         }
     }
@@ -299,18 +201,18 @@ string simplifyEq(string exp, string op)
  * Example:
  *  ```d
  *  // Simplify an arithmetic expression
- *  auto result = simplifyEq("(5 + 3) * 2");
+ *  auto result = simpl("(5 + 3) * 2");
  *  assert(result == "16");
  *
  *  // Simplify a more complex expression
  *  auto expr = "3 * (4 + 2) / 3";
- *  auto simplifiedExpr = simplifyEq(expr);
+ *  auto simplifiedExpr = simpl(expr);
  *  assert(simplifiedExpr == "6");
  *  ```
  */
-string simplifyEq(string exp)
+string simpl(string exp)
 {
     static foreach (op; ["*", "^^", "/", "%", "+", "-", "<<", ">>", "<", "<=", ">", ">=", "==", "!=", "&", "|", "&&", "||"])
-        exp = simplifyEq(exp, op);
+        exp = simpl(exp, op);
     return exp;
 }

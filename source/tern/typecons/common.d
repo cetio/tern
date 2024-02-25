@@ -4,6 +4,8 @@ module tern.typecons.common;
 import tern.serialization;
 import tern.traits;
 import tern.meta;
+import tern.memory;
+import tern.blit : ddup;
 import std.conv;
 
 /// Implements all functions of an abstract class with an default/empty function.
@@ -319,4 +321,135 @@ final:
 Singleton!T singleton(T)(T val)
 {
     return Singleton!T(val);
+}
+
+// TODO: Reconstruction
+public struct Enumerable(T)
+{
+    T value;
+    alias value this;
+
+public:
+final:
+    this(T val)
+    {
+        value = val.ddup;
+    }
+
+    auto opAssign(T)(T val)
+    {
+        return value = val.ddup;
+    }
+
+    A opCast(A)()
+    {
+        return cast(A)value;
+    }
+    
+    size_t length()
+    {
+        static if (__traits(compiles, { auto _ = opDollar(); }))
+            return opDollar();
+        static assert("Enumerable!"~T.stringof~" has no length!");
+    }
+
+    ref auto opIndex(size_t index)
+    {
+        static if (__traits(compiles, { auto _ = value[0]; }))
+            return value[index];
+        static assert("Enumerable!"~T.stringof~" has no indexing!");
+    }
+
+    auto opIndexAssign(A)(A ahs, size_t index)
+    {
+        static if (__traits(compiles, { auto _ = (value[0] = ahs); }))
+            return value[index] = ahs;
+        else static if (__traits(compiles, { auto _ = value[0]; }))
+        {
+            copy(cast(void*)&ahs, cast(void*)&value[index], A.sizeof);
+            return value[index];
+        }
+        static assert("Enumerable!"~T.stringof~" has no indexing!");
+    }
+
+    auto opSlice(size_t start, size_t end)
+    {
+        static if (__traits(compiles, { auto _ = value[start..end]; }))
+            return value[start..end];
+        static assert("Enumerable!"~T.stringof~" has no slicing!");
+    }
+
+    auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
+    {
+        static if (__traits(compiles, { auto _ = (value[start..end] = ahs); }))
+            return value[index] = ahs;
+        else static if (__traits(compiles, { auto _ = value[start]; }))
+        {
+            copy(cast(void*)ahs.ptr, cast(void*)&value[start], typeof(ahs[0]).sizeof * ahs.length);
+            return value[start..end];
+        }
+        return value;
+    }
+
+    size_t opDollar(size_t DIM : 0)()
+    {
+        static if (__traits(compiles, { auto _ = value.opDollar!DIM; }))
+            return value.opDollar!DIM;
+        else static if (DIM == 0)
+            return opDollar();
+        else
+        {
+            size_t length;
+            foreach (u; value[DIM])
+                length++;
+            return length;
+        }
+        static assert("Enumerable!"~T.stringof~" has no length!");
+    }
+
+    size_t opDollar()
+    {
+        static if (__traits(compiles, { auto _ = value.opDollar(); }))
+            return value.opDollar();
+        else static if (__traits(compiles, { auto _ = value.length; }))
+            return value.length;
+        else
+        {
+            size_t length;
+            foreach (u; value)
+                length++;
+            return length;
+        }
+        static assert("Enumerable!"~T.stringof~" has no length!");
+    }
+
+    auto front()
+    {
+        return this[0];
+    }
+
+    auto back()
+    {
+        return this[$-1];
+    }
+
+    void popFront()
+    {
+        value = this[1..$];
+    }
+
+    void popBack()
+    {
+        value = this[0..$-1];
+    }
+
+    bool empty()
+    {
+        return length == 0;
+    }
+
+    string toString()
+    {
+        return value.to!string;
+    }
 }
