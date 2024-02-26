@@ -128,8 +128,65 @@ ElementType!T sum(T)(T arr)
     return sum;
 }
 
-ElementType!T average(T)(T arr)
+ElementType!T mean(T)(T arr)
     if (isIndexable!T && isIntegral!(ElementType!T))
 {
     return arr.sum / arr.loadLength;
+}
+
+auto fold(alias F, T)(T arr)
+    if (isIndexable!T && isCallable!F)
+{
+    auto ret = F(arr[0], arr[1]);
+    foreach (u; arr[2..$])
+        F(u, ret);
+}
+
+ElementType!T[] uniq(T)(T arr)
+    if (isIndexable!T)
+{
+    bool[ElementType!T] ret;
+    foreach (u; arr)
+    {
+        if (u !in ret)
+            ret[u] = true;
+    }
+    return ret.keys;
+}
+
+ElementType!T lastOrDefault(alias F, T)(T arr)
+    if (isIndexable!T && isCallable!F)
+{
+    auto ret = arr.filter!F;
+    return ret.length == 0 ? factory!T : ret[$-1];
+}
+
+ElementType!T firstOrDefault(alias F, T)(T arr)
+    if (isIndexable!T && isCallable!F)
+{
+    auto ret = arr.filter!F;
+    return ret.length == 0 ? factory!T : ret[0];
+}
+
+T repeat(T)(T arr, size_t iter)
+{
+    T ret = arr;
+    foreach (i; 0..iter)
+        ret ~= arr;
+    return ret;
+}
+
+size_t difference(A, B)(A comparer, B comparee)
+    if (isIndexable!A && isIndexable!B)
+{
+    size_t ret = comparer.loadLength - comparee.length;
+    foreach (i; 0..comparee.loadLength)
+    {
+        if (i >= comparer.length)
+            return ret;
+
+        if (comparee[i] != comparer[i])
+            ret++;
+    }
+    return ret;
 }

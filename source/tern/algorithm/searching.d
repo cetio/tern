@@ -4,6 +4,7 @@ module tern.algorithm.searching;
 import tern.traits;
 import tern.meta;
 import tern.blit;
+import tern.algorithm.iteration;
 
 public:
 static:
@@ -139,6 +140,9 @@ bool contains(alias F, A)(A arr) if (isIndexable!A && isCallable!F) => arr.index
 bool canFind(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => indexOf(arr, elem) != -1;
 bool canFind(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => indexOf(arr, subarr) != -1;
 bool canFind(alias F, A)(A arr) if (isIndexable!A && isCallable!F) => arr.indexOf!F != -1;
+
+size_t all(alias F, A)(A arr) if (isForward!A) => arr.filter!F.length == arr.loadLength;
+size_t any(alias F, A)(A arr) if (isForward!A) => arr.indexOf!F != -1;
 
 bool startsWith(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => arr.length >= 1 && arr[0..1].contains(elem);
 bool startsWith(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.length >= subarr.length && arr[0..subarr.length].contains(subarr);

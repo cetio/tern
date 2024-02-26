@@ -181,6 +181,24 @@ unittest
     static assert(seqIndexOf!(string, Seq) == 2);
 }
 
+/// True if all elements in `A` meet the first given predicate.
+public template seqAll(A...)
+{
+    enum seqAll =
+    {
+        return seqFilter!A.length == A.length - 1;
+    }();
+}
+
+/// True if any elements in `A` meet the first given predicate.
+public template seqAny(A...)
+{
+    enum seqAny =
+    {
+        return seqFilter!A.length != 0;
+    }();
+}
+
 /** 
  * Creates a string representing `A` using the given separator.  
  * Avoids weird behavior with `stringof` by not using `stringof` for values.

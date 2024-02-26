@@ -254,3 +254,11 @@ void insert(A, B)(ref A arr, size_t i, B elem)
         ret = ret[0..i]~cast(ElementType!A)elem~ret[(i + 1)..$];
     arr = ret.value;
 }
+
+void copy(A, B)(A src, ref B dst)
+{
+    Enumerable!A esrc = src;
+    Enumerable!B edst = dst;
+    edst[0..$] = esrc[0..$];
+    dst = edst.value;
+}

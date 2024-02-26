@@ -10,6 +10,7 @@ version (Windows)
 }
 else version (linux)
 {
+    import std.process;
     import std.file;
 }
 
@@ -135,10 +136,24 @@ else version (linux)
         return readText(r"/sys/class/dmi/id/board_serial");
     }
 
+    /// Retrieves the chassis serial number. Will never return null.
+    string chassisSerial()
+    {
+        return readText(r"/sys/class/dmi/id/chassis_serial");
+    }
+
+    /// Retrieves the disk serial number. May fail and return null.
+    string diskSerial()
+    {
+        auto process = pipeProcess(command, Redirect.stdout);
+        scope (exit) process.close();
+        return process.read().idup;
+    }
+
     /// Summation of all serials hashes into a single hardware id. Could be an invalid identifier but unlikely.
     string hardwareId()
     {
-        ubyte[] serials = cast(ubyte[])moboSerial();
+        ubyte[] serials = cast(ubyte[])moboSerial()~cast(ubyte[])chassisSerial()~cast(ubyte[])diskSerial();
         return digest!SHA1(serials).toHexString().toLower();
     }
 }
