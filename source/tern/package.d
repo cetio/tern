@@ -29,4 +29,3 @@ public import tern.state;
 public import tern.string;
 public import tern.traits;
 public import tern.varint;
-public import tern.vector;

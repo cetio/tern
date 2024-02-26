@@ -5,7 +5,7 @@ import tern.serialization;
 import tern.traits;
 import tern.meta;
 import tern.memory;
-import tern.blit : ddup;
+import tern.blit : qdup;
 import std.conv;
 
 /// Implements all functions of an abstract class with an default/empty function.
@@ -323,7 +323,6 @@ Singleton!T singleton(T)(T val)
     return Singleton!T(val);
 }
 
-// TODO: Reconstruction
 /// Highly mutable enumerable for working with any indexable or sliceable type.
 public struct Enumerable(T)
 {
@@ -334,13 +333,12 @@ public:
 final:
     this(T val)
     {
-        // TODO: This isn't very efficient
-        value = val.ddup;
+        value = val.qdup;
     }
 
     auto opAssign(T)(T val)
     {
-        return value = val.ddup;
+        return value = val.qdup;
     }
 
     A opCast(A)()

@@ -1,7 +1,6 @@
 /// General-purpose binary serializer and deserializer for arbitrary data types
 module tern.serialization;
 
-// TODO: Refactor
 import tern.traits;
 import tern.blit;
 public import tern.memory;
@@ -120,6 +119,49 @@ pure:
             bytes ~= new ubyte[T.sizeof - bytes.length];
 
         return (*cast(T*)bytes[offset..(offset += T.sizeof)].ptr).makeEndian(endianness);
+    }
+}
+
+/**
+ * Gets all bytes of `val` non-recursively but dynamically based on type.
+ * 
+ * Params:
+ *  val = The value to extract all bytes from.
+ *
+ * Remarks:
+ *  - Classes will return their instance data.
+ *  - Arrays will return their element data.
+ */
+@trusted ubyte[] softSerialize(T)(T val)
+{
+    static if (is(T == class))
+        (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].dup;
+    else static if (isArray!T)
+        return (cast(ubyte*)val.ptr)[0..(ElementType!T.sizeof * val.length)].dup;
+    else
+        return (cast(ubyte*)&val)[0..T.sizeof].dup;
+}
+
+@trusted T softDeserialize(T)(ubyte[] bytes)
+{
+    T ret = factory!T;
+    static if (is(T == class))
+    {
+        copy(cast(void*)bytes.ptr, *cast(void**)ret, __traits(classInstanceSize, T));
+        return ret;
+    }
+    else static if (isArray!T)
+    {
+        static if (isDynamicArray!T)
+            ret ~= new ElementType!T[bytes.length / ElementType!T.sizeof];
+
+        copy(cast(void*)bytes.ptr, cast(void*)ret.ptr, bytes.length);
+        return ret;
+    }
+    else
+    {
+        copy(cast(void*)bytes.ptr, cast(void*)&ret, T.sizeof);
+        return ret;
     }
 }
 

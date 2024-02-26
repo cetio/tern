@@ -1,7 +1,6 @@
-/// Simple math functions and expression simplifier
-module tern.math;
+/// Simple and easy equation simplifier
+module tern.math.simpl;
 
-// TODO: Refactor simpl
 import std.conv;
 import std.traits;
 import tern.string;

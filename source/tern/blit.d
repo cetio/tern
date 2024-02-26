@@ -1,10 +1,11 @@
 /// Blitting of data from one type to another, cloning, and more
 module tern.blit;
 
+import std.conv;
 import tern.traits;
 import tern.meta;
-import std.conv;
 import tern.memory;
+import tern.serialization;
 
 public:
 static:
@@ -90,6 +91,13 @@ pragma(inline)
     return ret;
 }
 
+pragma(inline)
+@trusted T qdup(T)(T val)
+{
+    // Unfortunately this indirection is necessary :(
+    return val.softSerialize().softDeserialize!T;
+}
+
 /**
  * Blits all members or array elements onto another value.
  * 
@@ -97,6 +105,7 @@ pragma(inline)
  *  lhs = Side to have values blitted to.
  *  rhs = Side to have values blitted from.
  */
+pragma(inline)
 @trusted void blit(T, F)(ref F lhs, T rhs)
     if ((!isIntrinsicType!F && !isIntrinsicType!T) || (isArray!T && isArray!F && !isAssociativeArray!T))
 {
@@ -275,6 +284,7 @@ pragma(inline)
 }
 
 /// Creates a new instance of `T` dynamically based on its traits.
+pragma(inline)
 T factory(T)()
 {
     static if (isDynamicArray!T)
@@ -283,4 +293,80 @@ T factory(T)()
         return new T();
     else 
         return T.init;
+}
+
+pragma(inline)
+ref auto loadElem(size_t index, T)(T val)
+{
+    static if (__traits(compiles, { auto _ = val[0]; }))
+        return val[index];
+    static assert(T.stringof~" has no indexing!");
+}
+
+pragma(inline)
+auto storeElem(A, T)(T val, A ahs, size_t index)
+{
+    static if (__traits(compiles, { auto _ = (val[0] = ahs); }))
+        return val[index] = ahs;
+    else static if (__traits(compiles, { auto _ = val[0]; }))
+    {
+        copy(cast(void*)&ahs, cast(void*)&val[index], A.sizeof);
+        return val[index];
+    }
+    static assert(T.stringof~" has no indexing!");
+}
+
+pragma(inline)
+auto loadSlice(T)(T val, size_t start, size_t end)
+{
+    static if (__traits(compiles, { auto _ = val[start..end]; }))
+        return val[start..end];
+    static assert(T.stringof~" has no slicing!");
+}
+
+pragma(inline)
+auto storeSlice(A, T)(T val, A ahs, size_t start, size_t end) 
+{
+    static if (__traits(compiles, { auto _ = (val[start..end] = ahs); }))
+        return val[start..end] = ahs;
+    else static if (__traits(compiles, { auto _ = val[start]; }))
+    {
+        copy(cast(void*)ahs.ptr, cast(void*)&val[start], typeof(ahs[0]).sizeof * ahs.length);
+        return val[start..end];
+    }
+    return val;
+}
+
+pragma(inline)
+size_t loadLength(size_t DIM : 0, T)(T val)
+{
+    static if (__traits(compiles, { auto _ = val.opDollar!DIM; }))
+        return val.opDollar!DIM;
+    else static if (DIM == 0)
+        return opDollar();
+    else
+    {
+        size_t length;
+        foreach (u; val[DIM])
+            length++;
+        return length;
+    }
+    static assert(T.stringof~" has no length!");
+}
+
+pragma(inline)
+size_t loadLength(T)(T val)
+{
+    static if (__traits(compiles, { auto _ = val.opDollar(); }))
+        return val.opDollar();
+    else static if (__traits(compiles, { auto _ = val.length; }))
+        return val.length;
+    else
+    {
+        size_t length;
+        foreach (u; val)
+            length++;
+        return length;
+    }
+    static assert(T.stringof~" has no length!");
 }

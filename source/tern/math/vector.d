@@ -1,5 +1,5 @@
 /// Arbitrary vector implementation and utilities for working with vectors
-module tern.vector;
+module tern.math.vector;
 
 /// Arbitrary vector implementation, allows any length vector less than or equal to 256 bits and can be interacted with as an array.
 public struct Vector(T)

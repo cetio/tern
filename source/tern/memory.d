@@ -16,26 +16,6 @@ public enum Endianness
 
 public:
 static:
-/**
- * Gets all bytes of `val` non-recursively but dynamically based on type.
- * 
- * Params:
- *  val = The value to extract all bytes from.
- *
- * Remarks:
- *  - Classes will return their instance data.
- *  - Arrays will return their element data.
- */
-pure @trusted ubyte[] getBytes(T)(T val)
-{
-    static if (is(T == class))
-        (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].dup;
-    else static if (isArray!T)
-        return (cast(ubyte*)val.ptr)[0..(ElementType!T.sizeof * val.length)].dup;
-    else
-        return (cast(ubyte*)&val)[0..T.sizeof].dup;
-}
-
 @nogc:
 /**
  * Allocates an entry of `size` 
