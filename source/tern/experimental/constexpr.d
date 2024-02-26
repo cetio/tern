@@ -3,7 +3,7 @@ module tern.experimental.constexpr;
 
 import tern.experimental.ds_allocator;
 import tern.traits;
-import tern.serialization;
+import tern.serialize;
 import std.conv;
 
 /// Allocates `T` in the data segment when `T` is *not* a dynamic array, this is used identically to `T` normally.

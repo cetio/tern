@@ -3,7 +3,7 @@ module tern.digest;
 
 import std.meta;
 import tern.traits;
-import tern.serialization;
+import tern.serialize;
 import tern.meta;
 
 /// Attribute for marking a class as a digester, must implement `encrypt` or `hash  `

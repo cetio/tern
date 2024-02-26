@@ -4,7 +4,7 @@ module tern.exec;
 
 import tern.stream;
 import tern.traits;
-import tern.serialization;
+import tern.serialize;
 import tern.state;
 import tern.blit;
 import std.string;

@@ -2,7 +2,7 @@
 module tern.digest.berus;
 
 import std.conv;
-import tern.serialization;
+import tern.serialize;
 import tern.digest;
 
 /**

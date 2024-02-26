@@ -2,8 +2,8 @@
 module tern.stream.binary_stream;
 
 public import tern.stream.impl;
-import tern.serialization;
-import tern.serialization;
+import tern.serialize;
+import tern.serialize;
 import tern.traits;
 import tern.memory;
 

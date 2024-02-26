@@ -2,7 +2,7 @@
 module tern.digest.elfhash;
 
 import tern.digest;
-import tern.serialization;
+import tern.serialize;
 
 /**
  * Implementation of ELFHash digester.

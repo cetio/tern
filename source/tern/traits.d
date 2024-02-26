@@ -6,7 +6,7 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import tern.meta;
-import tern.serialization;
+import tern.serialize;
 import tern.blit;
 import std.traits;
 public import std.traits : fullyQualifiedName, mangledName, moduleName, packageName,

@@ -4,7 +4,7 @@ module tern.digest.hight;
 // TODO: Fix?
 import tern.digest;
 import tern.algorithm;
-import tern.serialization;
+import tern.serialize;
 
 /**
  * Implementation of HIGHT digester.

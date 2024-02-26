@@ -5,7 +5,7 @@ import std.range;
 import std.conv;
 import tern.traits;
 import tern.memory;
-import tern.random;
+import tern.codegen;
 
 alias ElementType = tern.traits.ElementType;
 

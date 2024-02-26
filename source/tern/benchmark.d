@@ -49,7 +49,7 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
 
             auto duration = (Clock.currTime - start) / cast(float) config.iterations;
             ret[i] = BenchmarkResult(__traits(identifier, F)~"()", i, duration, config);
-            results ~= ret[i];
+            results ~= BenchmarkResult(__traits(identifier, F)~"()", results.length, duration, config);
 
             timestamp = Clock.currTime;
             writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ",  __traits(identifier, F), "() finished benchmark!");
@@ -70,8 +70,11 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
                     auto start = Clock.currTime;
                     foreach (k; 0..config.iterations)
                         FUNCS["~j.to!string~"]();
-                    ret[i] = BenchmarkResult(__traits(identifier, F)~\"()\", i, (Clock.currTime - start) / cast(float)config.iterations, config);
-                    results ~= BenchmarkResult(__traits(identifier, F)~\"()\", results.length, (Clock.currTime - start) / cast(float)config.iterations, config);
+
+                    auto duration = (Clock.currTime - start) / cast(float) config.iterations;
+                    ret[i] = BenchmarkResult(__traits(identifier, F)~\"()\", i, duration, config);
+                    results ~= BenchmarkResult(__traits(identifier, F)~\"()\", results.length, duration, config);
+
                     timestamp = Clock.currTime;
                     writeln(\"[\", timestamp.hour, \":\", timestamp.minute, \":\", timestamp.second, \"] \",  __traits(identifier, F), \"() finished benchmark!\");
                 }");
@@ -94,7 +97,7 @@ BenchmarkResult[] benchmark(alias F, ARGS...)(BenchmarkConfig config, ARGS args)
 
     auto duration = (Clock.currTime - start) / cast(float) config.iterations;
     auto result = BenchmarkResult(__traits(identifier, F)~ARGS.stringof, 0, duration, config);
-    results ~= result;
+    results ~= BenchmarkResult(__traits(identifier, F)~ARGS.stringof, results.length, duration, config);
 
     timestamp = Clock.currTime;
     writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ",  __traits(identifier, F)~ARGS.stringof, " finished benchmark!");

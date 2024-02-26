@@ -1,5 +1,5 @@
 /// General-purpose binary serializer and deserializer for arbitrary data types
-module tern.serialization;
+module tern.serialize;
 
 import tern.traits;
 import tern.blit;

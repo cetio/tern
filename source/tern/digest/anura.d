@@ -4,7 +4,7 @@ module tern.digest.anura;
 // TODO: Fix?
 import tern.digest;
 import tern.digest.circe;
-import tern.serialization;
+import tern.serialize;
 import tern.algorithm;
 
 /**

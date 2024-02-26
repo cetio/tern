@@ -4,8 +4,8 @@ module tern.stream.atomic_stream;
 // TODO: Serialization
 public import tern.stream.impl;
 import tern.typecons;
-import tern.serialization;
-import tern.serialization;
+import tern.serialize;
+import tern.serialize;
 import tern.traits;
 import tern.memory;
 
