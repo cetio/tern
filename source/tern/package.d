@@ -18,6 +18,7 @@ public import tern.blit;
 public import tern.codegen;
 public import tern.event;
 public import tern.exception;
+public import tern.hardware;
 public import tern.hresult;
 public import tern.integer;
 public import tern.math;

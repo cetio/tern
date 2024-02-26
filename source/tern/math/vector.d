@@ -1,6 +1,10 @@
 /// Arbitrary vector implementation and utilities for working with vectors
 module tern.math.vector;
 
+import tern.traits;
+import core.simd;
+import tern.blit;
+
 /// Arbitrary vector implementation, allows any length vector less than or equal to 256 bits and can be interacted with as an array.
 public struct Vector(T)
     if (is(T U : U[L], size_t L) && (isIntegral!U || isFloatingPoint!U))

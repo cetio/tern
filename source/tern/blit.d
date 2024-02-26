@@ -91,6 +91,15 @@ pragma(inline)
     return ret;
 }
 
+/**
+ * Duplicates `val` using soft[de]serialization, avoiding deep cloning.
+ *
+ * Params:
+ *  val = The value to be duplicated.
+ *
+ * Returns:
+ *  Clone of `val`
+ */
 pragma(inline)
 @trusted T qdup(T)(T val)
 {

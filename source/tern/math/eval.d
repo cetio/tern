@@ -1,5 +1,5 @@
-/// Simple and easy equation simplifier
-module tern.math.simpl;
+/// Simple and easy equation evaluator
+module tern.math.eval;
 
 import std.conv;
 import std.traits;
@@ -10,16 +10,16 @@ public:
 static:
 pure:
 /**
- * Simplifies a simple (does not contain functions) arithmetic expression.
+ * Evaluates a simple (does not contain functions) arithmetic expression.
  *
  * Params:
- *  exp = The arithmetic expression to be simplified.
- *  op = Specific operation to be simplified out of `exp`
+ *  exp = The arithmetic expression to be evaluated.
+ *  op = Specific operation to be evaluated out of `exp`
  *
  * Returns:
- *  The simplified arithmetic expression.
+ *  The evaluated arithmetic expression.
  */
-string simpl(string exp, string op)
+string eval(string exp, string op)
 {
     immutable uint[string] priority = [
         "*": 0,
@@ -71,7 +71,7 @@ string simpl(string exp, string op)
         if (words[i][0] == '(')
         {
             size_t end = findMatchingParenthesis(i);
-            exp = exp.replace(words[i..end].join(' '), simpl(words[i..end].join(' ')[1..$-1]));
+            exp = exp.replace(words[i..end].join(' '), eval(words[i..end].join(' ')[1..$-1]));
             i = end - 1;
         }
     }
@@ -189,29 +189,27 @@ string simpl(string exp, string op)
 }
 
 /**
- * Simplifies a simple (does not contain functions) arithmetic expression.
+ * Evaluates a simple (does not contain functions) arithmetic expression.
  *
  * Params:
- *  exp = The arithmetic expression to be simplified.
+ *  exp = The arithmetic expression to be evaluated.
  *
  * Returns:
- *  The simplified arithmetic expression.
+ *  The evaluated arithmetic expression.
  *
  * Example:
  *  ```d
- *  // Simplify an arithmetic expression
- *  auto result = simpl("(5 + 3) * 2");
+ *  auto result = eval("(5 + 3) * 2");
  *  assert(result == "16");
  *
- *  // Simplify a more complex expression
  *  auto expr = "3 * (4 + 2) / 3";
- *  auto simplifiedExpr = simpl(expr);
+ *  auto simplifiedExpr = eval(expr);
  *  assert(simplifiedExpr == "6");
  *  ```
  */
-string simpl(string exp)
+string eval(string exp)
 {
     static foreach (op; ["*", "^^", "/", "%", "+", "-", "<<", ">>", "<", "<=", ">", ">=", "==", "!=", "&", "|", "&&", "||"])
-        exp = simpl(exp, op);
+        exp = eval(exp, op);
     return exp;
 }
