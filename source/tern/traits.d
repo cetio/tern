@@ -7,6 +7,7 @@ import std.array;
 import std.meta;
 import tern.meta;
 import tern.serialization;
+import tern.blit;
 public import std.traits;
 
 public:
@@ -14,7 +15,7 @@ static:
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);
 /// True if `T` is an indirection.
-public alias isReferenceType(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || isArray!T);
+public alias isReferenceType(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || isDynamicArray!T || isAssociativeArray!T);
 /// True if `T` is not an indirection.
 public alias isValueType(T) = Alias!(!isIndirection!T);
 /// True if `F` is exported.
@@ -85,6 +86,51 @@ public template isDImplDefined(alias A)
     else
         enum isDImplDefined = false;
 }
+public template isIndexable(T)
+{
+    enum isIndexable = 
+    {
+        static if (is(T == void))
+            return false;
+        else
+        {
+            T temp = factory!T;
+            static if (__traits(compiles, { auto _ = temp[0]; }))
+                return true;
+            return false;
+        }
+    }();
+}
+public template isForward(T)
+{
+    enum isForward = 
+    {
+        static if (is(ElementType!T == void))
+            return false;
+        else
+        {
+            T temp = factory!T;
+            static if (__traits(compiles, { foreach(u; temp) { } }))
+                return true;
+            return false;
+        }
+    }();
+}
+public template isBackward(T)
+{
+    enum isBackward = 
+    {
+        static if (is(ElementType!T == void))
+            return false;
+        else
+        {
+            T temp = factory!T;
+            static if (__traits(compiles, { foreach_reverse(u; temp) { } }))
+                return true;
+            return false;
+        }
+    }();
+}
 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer.
 public template wrapsIndirection(T)
@@ -130,6 +176,11 @@ public template ElementType(T)
 {
     static if (is(T == U[], U) || is(T == U*, U) || is(T U == U[L], size_t L))
         alias ElementType = ElementType!U;
+    else static if (isIndexable!T)
+    {
+        T temp = factory!T;
+        alias ElementType = ElementType!(typeof(temp[0]));
+    }
     else
         alias ElementType = OriginalType!T;
 }

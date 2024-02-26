@@ -5,7 +5,7 @@ import tern.serialization;
 import tern.traits;
 import tern.meta;
 import tern.memory;
-import tern.blit : qdup;
+import tern.blit : qdup, factory;
 import std.conv;
 
 /// Implements all functions of an abstract class with an default/empty function.

@@ -5,7 +5,6 @@ import tern.traits;
 import tern.typecons;
 import tern.algorithm.searching;
 import tern.algorithm.lazy_substitute;
-import std.range.primitives : isBidirectionalRange, isInputRange;
 
 /**
  * Last In First Out
@@ -37,9 +36,9 @@ static:
  *  i1 = Second index to swap.
  */
 void swap(T)(ref T arr, size_t i0, size_t i1)
-    if (isDynamicArray!T)
+    if (isIndexable!T)
 {
-    ubyte d = arr[i0];
+    auto d = arr[i0];
     arr[i0] = arr[i1];
     arr[i1] = d;
 }
@@ -59,7 +58,7 @@ void swap(T)(ref T arr, size_t i0, size_t i1)
  *  Defaults to `LIFO`
  */
 ElementType!T pop(O = LIFO, T)(ref T arr)
-    if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
+    if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
     assert(arr.length != 0, "Cannot pop from an empty collection!");
 
@@ -90,18 +89,14 @@ ElementType!T pop(O = LIFO, T)(ref T arr)
  *  Defaults to `LIFO`
  */
 ElementType!T peek(O, T)(ref T arr)
-    if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
+    if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
     assert(arr.length != 0, "Cannot dup from an empty collection!");
 
     static if (is(O == LIFO))
-    {
         return arr[$-1];
-    }
     else
-    {
         return arr[0];
-    }
 }
 
 /**
@@ -116,7 +111,7 @@ ElementType!T peek(O, T)(ref T arr)
  *  Defaults to `LIFO`
  */
 void swap(O = LIFO, T)(ref T arr)
-    if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
+    if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
     assert(arr.length >= 2, "Cannot swap in a collection with less than 2 elements!");
 
@@ -135,13 +130,13 @@ void swap(O = LIFO, T)(ref T arr)
  *  val = The value to push onto the array.
  */
 nothrow void push(T)(ref T arr, ElementType!T val)
-    if ((is(O == LIFO) || is(O == FILO)) && isDynamicArray!T)
+    if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
     arr ~= val;
 }
 
 A replace(A, B, C)(A arr, B from, C to)
-    if (isInputRange!A && !isInputRange!B && !isInputRange!C)
+    if (isIndexable!A && !isIndexable!B && !isIndexable!C)
 {
     Enumerable!A ret = arr;
     size_t index = arr.indexOf(from);
@@ -154,7 +149,7 @@ A replace(A, B, C)(A arr, B from, C to)
 }
 
 A replace(A, B, C)(A arr, B from, C to)
-    if (isInputRange!A && isInputRange!B && isInputRange!C)
+    if (isIndexable!A && isIndexable!B && isIndexable!C && isForward!C)
 {
     Enumerable!A ret = arr;
     size_t index = arr.indexOf(from);
@@ -174,7 +169,15 @@ A replace(A, B, C)(A arr, B from, C to)
 }
 
 LazySubstitute!(A, B, C) substitute(A, B, C)(A arr, B from, C to)
-    if (isInputRange!A)
+    if (isForward!T && isIndexable!T)
 {
     return LazySubstitute!(A, B, C)(arr, from, to);
+}
+
+T reverse(T)(T arr) 
+    if (isIndexable!T)
+{
+    for (size_t i = 0; i < arr.length / 2; i++) 
+        arr.swap(i, arr.length - i - 1);
+    return arr;
 }

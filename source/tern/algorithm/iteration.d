@@ -8,7 +8,7 @@ public import tern.algorithm.lazy_map;
 
 public:
 LazyMap!(F, T) map(alias F, T)(T arr)
-    if (isInputRange!T)
+    if (isForward!T)
 {
     return LazyMap!(F, T)(arr);
 }
@@ -21,7 +21,13 @@ unittest
 }
 
 LazyFilter!(F, T) filter(alias F, T)(T arr)
-    if (isInputRange!T)
+    if (isForward!T)
+{
+    return LazyFilter!(F, T)(arr);
+}
+
+LazyFilter!(F, T) sieve(alias F, T)(T arr)
+    if (isForward!T)
 {
     return LazyFilter!(F, T)(arr);
 }
@@ -69,7 +75,7 @@ size_t levenshteinDistance(A, B)(A str1, B str2)
 }
 
 A join(A, B)(A[] arrs, B by)
-    if (isInputRange!A)
+    if (isIterable!A)
 {
     A ret;
     foreach (arr; arrs)

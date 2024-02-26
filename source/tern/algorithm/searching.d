@@ -20,7 +20,7 @@ pure:
  *  `arr` portioned into blocks of `blockSize`
  */
 T[] portionBy(T)(ref T arr, size_t blockSize, bool pad = true)
-    if (isDynamicArray!T)
+    if (isIterable!T)
 {
     if (pad)
         arr ~= new ElementType!T[blockSize - (arr.length % blockSize)];
@@ -43,7 +43,7 @@ T[] portionBy(T)(ref T arr, size_t blockSize, bool pad = true)
  *  `arr` portioned into blocks of `blockSize`
  */
 P[] portionTo(P, T)(ref T arr)
-    if (isArray!T)
+    if (isIterable!T)
 {
     static if (!isStaticArray!T)
         arr ~= new ElementType!T[P.sizeof - (arr.length % P.sizeof)];
@@ -57,7 +57,7 @@ P[] portionTo(P, T)(ref T arr)
 }
 
 size_t indexOf(A, B)(A arr, B elem)
-    if (isInputRange!A && !isInputRange!B)
+    if (isForward!A && !isIterable!B)
 {
     size_t index;
     foreach (u; arr)
@@ -70,7 +70,7 @@ size_t indexOf(A, B)(A arr, B elem)
 }
 
 size_t lastIndexOf(A, B)(A arr, B elem)
-    if (isBidirectionalRange!A && !isInputRange!B)
+    if (isBackward!A && !isIterable!B)
 {
     size_t index;
     foreach_reverse (u; arr)
@@ -82,7 +82,7 @@ size_t lastIndexOf(A, B)(A arr, B elem)
 }
 
 size_t indexOf(A, B)(A arr, B subarr)
-    if (isInputRange!A && isInputRange!B)
+    if (isForward!A && isIterable!B)
 {
     if (subarr.length > arr.length)
         return -1;
@@ -101,7 +101,7 @@ size_t indexOf(A, B)(A arr, B subarr)
 }
 
 size_t lastIndexOf(A, B)(A arr, B subarr)
-    if (isBidirectionalRange!A && isBidirectionalRange!B)
+    if (isBackward!A && isIterable!B)
 {
     if (subarr.length > arr.length)
         return -1;

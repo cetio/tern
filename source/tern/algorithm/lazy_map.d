@@ -6,7 +6,7 @@ import std.range.primitives : isInputRange;
 import std.conv;
 
 public struct LazyMap(alias F, T)
-    if (isInputRange!T)
+    if (isForward!T)
 {
     T array;
     alias array this;

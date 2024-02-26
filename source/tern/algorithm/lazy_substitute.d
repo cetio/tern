@@ -5,7 +5,7 @@ import std.range.primitives : isInputRange;
 import std.conv;
 
 public struct LazySubstitute(A, B, C)
-    if (isInputRange!A)
+    if (isForward!T && isIndexable!T)
 {
     A array;
     alias array this;

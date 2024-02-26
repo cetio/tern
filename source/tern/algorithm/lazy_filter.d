@@ -2,11 +2,10 @@
 module tern.algorithm.lazy_filter;
 
 import tern.traits;
-import std.range.primitives : isInputRange;
 import std.conv;
 
 public struct LazyFilter(alias F, T)
-    if (isInputRange!T)
+    if (isForward!T)
 {
     T array;
     alias array this;
