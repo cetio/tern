@@ -3,6 +3,7 @@ module tern.algorithm.searching;
 
 import tern.traits;
 import tern.meta;
+import tern.blit;
 
 public:
 static:
@@ -22,10 +23,10 @@ T[] portionBy(T)(ref T arr, size_t blockSize, bool pad = true)
     if (isIndexable!T)
 {
     if (pad)
-        arr ~= new ElementType!T[blockSize - (arr.length % blockSize)];
+        arr ~= new ElementType!T[blockSize - (arr.loadLength % blockSize)];
     
     T[] ret;
-    foreach (i; 0..((arr.length / 8) - 1))
+    foreach (i; 0..((arr.loadLength / 8) - 1))
         ret ~= arr[(i * 8)..((i + 1) * 8)];
     return ret;
 }
@@ -45,12 +46,12 @@ P[] portionTo(P, T)(ref T arr)
     if (isIndexable!T)
 {
     static if (!isStaticArray!T)
-        arr ~= new ElementType!T[P.sizeof - (arr.length % P.sizeof)];
+        arr ~= new ElementType!T[P.sizeof - (arr.loadLength % P.sizeof)];
     else
         static assert(Length!T % P.sizeof == 0, "Static array cannot be portioned, does not align to size!");
     
     P[] ret;
-    foreach (i; 0..((arr.length / P.sizeof) - 1))
+    foreach (i; 0..((arr.loadLength / P.sizeof) - 1))
         ret ~= *cast(P*)(&arr[(i * P.sizeof)]);
     return ret;
 }
@@ -58,12 +59,10 @@ P[] portionTo(P, T)(ref T arr)
 size_t indexOf(A, B)(A arr, B elem)
     if (isForward!A && isElement!(A, B))
 {
-    size_t index;
-    foreach (u; arr)
+    foreach (i; 0..arr.loadLength)
     {
-        if (u == elem)
-            return index;
-        index++;
+        if (arr[i] == elem)
+            return i;
     }
     return -1;
 }
@@ -71,12 +70,10 @@ size_t indexOf(A, B)(A arr, B elem)
 size_t lastIndexOf(A, B)(A arr, B elem)
     if (isBackward!A && isElement!(A, B))
 {
-    size_t index = arr.length;
-    foreach_reverse (u; arr)
+    foreach_reverse (i; 0..arr.loadLength)
     {
-        if (u == elem)
-            return index;
-        index--;
+        if (arr[i] == elem)
+            return i;
     }
     return -1;
 }
@@ -84,37 +81,27 @@ size_t lastIndexOf(A, B)(A arr, B elem)
 size_t indexOf(A, B)(A arr, B subarr)
     if (isForward!A && !isElement!(A, B) && isIndexable!B)
 {
-    if (subarr.length > arr.length)
+    if (subarr.loadLength > arr.loadLength)
         return -1;
 
-    size_t index;
-    foreach (u; arr)
+    foreach (i; 0..(arr.loadLength - subarr.loadLength + 1))
     {
-        if (index + subarr.length > arr.length)
-            return -1;
-
-        if (arr[index..(index + subarr.length)] == subarr)
-            return index;
-        index++;
+        if (arr[i..(i + subarr.loadLength)] == subarr)
+            return i;
     }
     return -1;
 }
 
 size_t lastIndexOf(A, B)(A arr, B subarr)
-    if (isBackward!A && !isElement!(A, B) && isIndexable!B)
+    if (isForward!A && !isElement!(A, B) && isIndexable!B)
 {
-    if (subarr.length > arr.length)
+    if (subarr.loadLength >= arr.loadLength)
         return -1;
 
-    size_t index = arr.length;
-    foreach_reverse (u; arr)
+    foreach_reverse (i; 0..(arr.loadLength - subarr.loadLength + 1))
     {
-        if (index + subarr.length > arr.length)
-            continue;
-
-        if (arr[index..(index + subarr.length)] == subarr)
-            return index;
-        index--;
+        if (arr[i..(i + subarr.loadLength)] == subarr)
+            return i;
     }
     return -1;
 }
@@ -122,25 +109,21 @@ size_t lastIndexOf(A, B)(A arr, B subarr)
 size_t indexOf(alias F, A)(A arr)
     if (isForward!A && isCallable!F)
 {
-    size_t index;
-    foreach (u; arr)
+    foreach (i; 0..arr.loadLength)
     {
-        if (F(u))
-            return index;
-        index++;
+        if (F(arr[i]))
+            return i;
     }
     return -1;
 }
 
 size_t lastIndexOf(alias F, A)(A arr)
-    if (isBackward!A && isCallable!F)
+    if (isForward!A && isCallable!F)
 {
-    size_t index = arr.length;
-    foreach_reverse (u; arr)
+    foreach_reverse (i; 0..arr.loadLength)
     {
-        if (F(u))
-            return index;
-        index--;
+        if (F(arr[i]))
+            return i;
     }
     return -1;
 }
@@ -180,7 +163,7 @@ size_t count(A, B)(A arr, B subarr)
     size_t count;
     while (size_t index = arr.indexOf(subarr) != -1)
     {
-        arr = arr[index + subarr.length..$];
+        arr = arr[index + subarr.loadLength..$];
         count++;
     }
     return count;

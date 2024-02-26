@@ -341,6 +341,22 @@ final:
         return value = val.qdup;
     }
 
+    void popFront()
+    {
+        value = this[1..$];
+    }
+
+    void popBack()
+    {
+        value = this[0..$-1];
+    }
+
+    string toString()
+    {
+        return value.to!string;
+    }
+
+@nogc:
     A opCast(A)()
     {
         return cast(A)value;
@@ -433,23 +449,8 @@ final:
         return this[$-1];
     }
 
-    void popFront()
-    {
-        value = this[1..$];
-    }
-
-    void popBack()
-    {
-        value = this[0..$-1];
-    }
-
     bool empty()
     {
         return length == 0;
-    }
-
-    string toString()
-    {
-        return value.to!string;
     }
 }

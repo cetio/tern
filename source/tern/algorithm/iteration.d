@@ -1,10 +1,11 @@
 /// Algorithms for mutating or searching based on iteration of an array
 module tern.algorithm.iteration;
 
-import tern.traits;
-import tern.algorithm.searching;
 public import tern.algorithm.lazy_filter;
 public import tern.algorithm.lazy_map;
+import tern.traits;
+import tern.algorithm.searching;
+import tern.blit;
 
 public:
 LazyMap!(F, T) map(alias F, T)(T arr)
@@ -79,7 +80,12 @@ A join(A, B)(A[] arrs, B by)
 {
     A ret;
     foreach (arr; arrs)
-        ret ~= arr~by;
+    {
+        static if (isIndexable!B)
+            ret ~= arr~cast(A)by;
+        else
+            ret ~= arr~cast(ElementType!A)by;
+    }
     return ret;
 }
 
@@ -114,7 +120,7 @@ A[] split(alias F, A)(A arr)
 }
 
 ElementType!T sum(T)(T arr)
-    if (isIndexable!T && isIntegral!(ElementType!T))
+    if (isForward!T && isIntegral!(ElementType!T))
 {
     ElementType!T sum;
     foreach (u; arr)
@@ -125,5 +131,5 @@ ElementType!T sum(T)(T arr)
 ElementType!T average(T)(T arr)
     if (isIndexable!T && isIntegral!(ElementType!T))
 {
-    return arr.sum / arr.length;
+    return arr.sum / arr.loadLength;
 }

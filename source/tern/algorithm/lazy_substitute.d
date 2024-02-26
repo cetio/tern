@@ -1,6 +1,7 @@
 module tern.algorithm.lazy_substitute;
 
 import tern.traits;
+import tern.blit : loadLength, loadSlice, storeElem, storeSlice;
 import std.conv;
 
 public struct LazySubstitute(A, B, C)
@@ -24,7 +25,7 @@ pure:
     this(A arr, B from, C to)
     {
         array = arr;
-        length = array.length;
+        length = array.loadLength;
         this.from = from;
         this.to = to;
     }
@@ -58,14 +59,14 @@ pure:
     ref auto opIndex(ptrdiff_t index)
     {
         if (array[index] == from)
-            return array[index] = to;
+            return array.storeElem(to, index);
         else
             return array[index];
     }
 
     auto opIndexAssign(T)(T ahs, ptrdiff_t index) 
     {
-        return array[index] = ahs;
+        return array.storeElem(ahs, index);
     }
 
     size_t opDollar()

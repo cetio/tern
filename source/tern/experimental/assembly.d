@@ -118,9 +118,6 @@ else
     /// True if `T` would be split into several XMM registers, otherwise, false.
     alias isSplit(T) = Alias!(isFloat!T && T.sizeof > 8);
 }
-alias supportsSIMD128 = Alias!(__traits(compiles, { asm { vxorps XMM0, XMM0, XMM0; } }));
-alias supportsSIMD256 = Alias!(__traits(compiles, { asm { vxorps YMM0, YMM0, YMM0; } }));
-alias supportsSIMD512 = Alias!(__traits(compiles, { asm { vxorps ZMM0, ZMM0, ZMM0; } }));
 
 /// Alias type to act as a floating point (`float`)
 alias FLOAT = float;

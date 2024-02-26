@@ -5,6 +5,7 @@ import tern.traits;
 import tern.typecons;
 import tern.algorithm.searching;
 import tern.algorithm.lazy_substitute;
+import tern.blit;
 
 /**
  * Last In First Out
@@ -32,8 +33,8 @@ static:
  *
  * Params:
  *  arr = The array.
- *  i0 = First index to swap.
- *  i1 = Second index to swap.
+ *  i0 = First i to swap.
+ *  i1 = Second i to swap.
  */
 void swap(T)(ref T arr, size_t i0, size_t i1)
     if (isIndexable!T)
@@ -60,8 +61,6 @@ void swap(T)(ref T arr, size_t i0, size_t i1)
 ElementType!T pop(O = LIFO, T)(ref T arr)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
-    assert(arr.length != 0, "Cannot pop from an empty collection!");
-
     static if (is(O == LIFO))
     {
         scope (exit) arr = arr[0..$-1];
@@ -91,8 +90,6 @@ ElementType!T pop(O = LIFO, T)(ref T arr)
 ElementType!T peek(O, T)(ref T arr)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
-    assert(arr.length != 0, "Cannot dup from an empty collection!");
-
     static if (is(O == LIFO))
         return arr[$-1];
     else
@@ -113,10 +110,8 @@ ElementType!T peek(O, T)(ref T arr)
 void swap(O = LIFO, T)(ref T arr)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
-    assert(arr.length >= 2, "Cannot swap in a collection with less than 2 elements!");
-
     static if (is(O == LIFO))
-        arr.swap(arr.length - 1, arr.length - 2);
+        arr.swap(arr.loadLength - 1, arr.loadLength - 2);
     else
         arr.swap(0, 1);
 }
@@ -139,47 +134,69 @@ A replace(A, B, C)(A arr, B from, C to)
     if (isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
     Enumerable!A ret = arr;
-    size_t index = arr.indexOf(from);
-    while (index != -1)
+    foreach (i; 0..ret.length)
     {
-        ret[index] = to;
-        index = ret.indexOf(from);
+        if (ret[i] == to)
+            ret[i] = from;
     }
     return ret.value;
 }
 
 A replace(A, B, C)(A arr, B from, C to)
-    if (isIndexable!A && isElement!(A, B) && isElement!(A, C))
+    if (isIndexable!A && isIndexable!B && isIndexable!C && !isElement!(A, B) && !isElement!(A, C))
 {
     Enumerable!A ret = arr;
-    size_t index = arr.indexOf(from);
-    while (index != -1)
+    foreach (ref i; 0..ret.length)
     {
-        if (to.length == from.length)
-            ret[index..(index + to.length)] = to;
-        else
+        if (i + from.loadLength >= ret.loadLength)
+            break;
+
+        if (ret[i..(i + from.loadLength)] == from)
         {
-            ret[index..(index + from.length)] = to[0..from.length];
-            foreach (u; to[from.length..$])
-                ret ~= u;
+            if (to.loadLength <= from.loadLength)
+                ret[i..(i + to.loadLength)] = to;
+            else
+            {
+                ret[i..(i + from.loadLength)] = to[0..from.loadLength];
+                ret.insert(i + from.loadLength, to[from.loadLength..$]);
+            }
+
+            if (to.loadLength < from.loadLength)
+                ret.alienate(i + to.loadLength, from.loadLength - to.loadLength);
+
+            i += to.loadLength - 1;
         }
-        index = ret.indexOf(from);
     }
     return ret.value;
 }
 
 A replaceMany(A, B, C...)(A arr, B to, C from)
-    if (isIndexable!A && isIndexable!B && isIndexable!C && isForward!C && !isElement!(A, B) && !isElement!(A, C))
+    if (isIndexable!A)
 {
     foreach (u; from)
-        arr = arr.replace(u, to);
+        arr.replace(u, to);
     return arr;
 }
 
-A remove(A, B)(A arr, B to)
+A remove(A, B)(A arr, B val)
     if (isIndexable!A)
 {
-    foreach (u; to)
+    Enumerable!A ret = arr;
+    foreach (ref i; 0..ret.length)
+    {
+        if (i + val.loadLength > ret.length)
+            break;
+
+        if (ret[i..(i + val.loadLength)] == val)
+            ret.alienate(i, val.loadLength);
+    }
+    return ret.value;
+}
+
+A removeMany(A, B...)(A arr, B vals)
+    if (B.length > 1 && isIndexable!A)
+{
+    foreach (u; vals)
         arr = arr.remove(u);
     return arr;
 }
@@ -193,11 +210,12 @@ LazySubstitute!(A, B, C) substitute(A, B, C)(A arr, B from, C to)
 T reverse(T)(T arr) 
     if (isIndexable!T)
 {
-    for (size_t i = 0; i < arr.length / 2; i++) 
-        arr.swap(i, arr.length - i - 1);
+    for (size_t i = 0; i < arr.loadLength / 2; i++) 
+        arr.swap(i, arr.loadLength - i - 1);
     return arr;
 }
 
+pragma(inline)
 void fill(A, B)(ref A arr, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
@@ -207,11 +225,32 @@ void fill(A, B)(ref A arr, B elem)
     arr = ret.value;
 }
 
+pragma(inline)
 void clear(T)(ref T arr)
     if (isIndexable!T)
 {
     Enumerable!A ret = arr;
     foreach (i; 0..ret.length)
         ret[i] = ElementType!T.init;
+    arr = ret.value;
+}
+
+pragma(inline)
+void alienate(T)(ref T arr, size_t i, size_t length)
+{
+    Enumerable!T ret = arr;
+    ret = ret[0..i]~ret[(i + length)..$];
+    arr = ret.value;
+}
+
+pragma(inline)
+void insert(A, B)(ref A arr, size_t i, B elem)
+    if (isIndexable!A)
+{
+    Enumerable!A ret = arr;
+    static if (isIndexable!B)
+        ret = ret[0..i]~cast(A)elem~ret[i..$];
+    else
+        ret = ret[0..i]~cast(ElementType!A)elem~ret[(i + 1)..$];
     arr = ret.value;
 }

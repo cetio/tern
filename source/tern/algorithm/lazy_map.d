@@ -2,6 +2,7 @@
 module tern.algorithm.lazy_map;
 
 import tern.traits;
+import tern.blit : loadLength;
 import std.conv;
 
 public struct LazyMap(alias F, T)
@@ -28,7 +29,7 @@ pure:
     this(T arr)
     {
         _array = arr;
-        length = _array.length;
+        length = _array.loadLength;
     }
 
     T opSlice(ptrdiff_t start, ptrdiff_t end)

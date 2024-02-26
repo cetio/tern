@@ -123,48 +123,6 @@ pure:
 }
 
 /**
- * Gets all bytes of `val` non-recursively but dynamically based on type.
- * 
- * Params:
- *  val = The value to extract all bytes from.
- *
- * Remarks:
- *  - Classes will return their instance data.
- *  - Arrays will return their element data.
- */
-@trusted ubyte[] softSerialize(T)(T val)
-{
-    static if (is(T == class))
-        (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].dup;
-    else static if (isArray!T)
-        return (cast(ubyte*)val.ptr)[0..(ElementType!T.sizeof * val.length)].dup;
-    else
-        return (cast(ubyte*)&val)[0..T.sizeof].dup;
-}
-
-@trusted T softDeserialize(T)(ubyte[] bytes)
-{
-    static if (is(T == class))
-    {
-        T ret = factory!T;
-        copy(cast(void*)bytes.ptr, *cast(void**)ret, __traits(classInstanceSize, T));
-        return ret;
-    }
-    else static if (isArray!T)
-    {
-        T ret = factory!T(bytes.length / ElementType!T.sizeof);
-        copy(cast(void*)bytes.ptr, cast(void*)ret.ptr, bytes.length);
-        return ret;
-    }
-    else
-    {
-        T ret = factory!T;
-        copy(cast(void*)bytes.ptr, cast(void*)&ret, T.sizeof);
-        return ret;
-    }
-}
-
-/**
  * Pads `data` right to `size` with zeroes.
  *
  * Params:

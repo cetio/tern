@@ -8,10 +8,24 @@ version (Windows)
 {
     import std.windows.registry;
 }
+else version (linux)
+{
+    import std.file;
+}
 
-// This implementation is not fast, but neither are most hwid extractions \_( -.-)_/
+version (X86)
+{
+    /// True if the current processor supports SIMD-128
+    public enum supportsSIMD128 = __traits(compiles, { asm { vxorps XMM0, XMM0, XMM0; } });
+    /// True if the current processor supports SIMD-256
+    public enum supportsSIMD256 = __traits(compiles, { asm { vxorps YMM0, YMM0, YMM0; } });
+    /// True if the current processor supports SIMD-512
+    public enum supportsSIMD512 = __traits(compiles, { asm { vxorps ZMM0, ZMM0, ZMM0; } });
+}
+
 public:
 static:
+// This implementation is not fast, but neither are most hwid extractions \_( -.-)_/
 version (Windows)
 {    
     /// Retrieves the motherboard serial number. May fail and return null.
@@ -110,6 +124,21 @@ version (Windows)
     string hardwareId()
     {
         ubyte[] serials = cast(ubyte[])moboSerial()~cast(ubyte[])monitorSerial()~cast(ubyte[])diskSerial()~cast(ubyte[])biosSerial();
+        return digest!SHA1(serials).toHexString().toLower();
+    }
+}
+else version (linux)
+{
+    /// Retrieves the motherboard serial number. Will never return null.
+    string moboSerial()
+    {
+        return readText(r"/sys/class/dmi/id/board_serial");
+    }
+
+    /// Summation of all serials hashes into a single hardware id. Could be an invalid identifier but unlikely.
+    string hardwareId()
+    {
+        ubyte[] serials = cast(ubyte[])moboSerial();
         return digest!SHA1(serials).toHexString().toLower();
     }
 }

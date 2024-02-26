@@ -103,8 +103,25 @@ pragma(inline)
 pragma(inline)
 @trusted T qdup(T)(T val)
 {
-    // Unfortunately this indirection is necessary :(
-    return val.softSerialize().softDeserialize!T;
+    static if (is(T == class))
+    {
+        T ret = factory!T;
+        copy(*cast(void**)val, *cast(void**)ret, __traits(classInstanceSize, T));
+        return ret;
+    }
+    else static if (isArray!T)
+    {
+        size_t size = ElementType!T.sizeof * val.length;
+        T ret = factory!T(size / ElementType!T.sizeof);
+        copy(cast(void*)val.ptr, cast(void*)ret.ptr, size);
+        return ret;
+    }
+    else
+    {
+        T ret = factory!T;
+        copy(cast(void*)&val, cast(void*)&ret, T.sizeof);
+        return ret;
+    }
 }
 
 /**
@@ -292,7 +309,7 @@ pragma(inline)
     return ret;
 }
 
-/// Creates a new instance of `T` dynamically based on its traits.
+/// Creates a new instance of `T` dynamically based on its traits, with optional construction args.
 pragma(inline)
 T factory(T, ARGS...)(ARGS args)
 {
@@ -306,17 +323,47 @@ T factory(T, ARGS...)(ARGS args)
     else static if (isReferenceType!T)
         return new T(args);
     else 
-        return T.init;
+    {
+        static if (ARGS.length != 0)
+            return T(args);
+        else
+            return T.init;
+    }
 }
 
+/**
+ * Dynamically tries to load an element from `val`, this is useful for arbitrary range types.
+ *
+ * Params:
+ *  index = Index to load from `val`
+ *  val = The value to store the element into.
+ *
+ * Returns:
+ *  The loaded element.
+ */
 pragma(inline)
 ref auto loadElem(size_t index, T)(T val)
 {
     static if (__traits(compiles, { auto _ = val[0]; }))
         return val[index];
-    static assert(T.stringof~" has no indexing!");
+    else
+        static assert(T.stringof~" has no indexing!");
 }
 
+/**
+ * Dynamically tries to store `ahs` into `val`, this is useful for arbitrary range types.
+ *
+ * Params:
+ *  val = The value to store the element into.
+ *  ahs = The value to be stored.
+ *  index = Index to store `ahs` into.
+ *
+ * Returns:
+ *  The stored element.
+ *
+ * Remarks:
+ *  Resorts to a forced memory copy if no index assignment allowed. Here be dragons.
+ */
 pragma(inline)
 auto storeElem(A, T)(T val, A ahs, size_t index)
 {
@@ -327,17 +374,40 @@ auto storeElem(A, T)(T val, A ahs, size_t index)
         copy(cast(void*)&ahs, cast(void*)&val[index], A.sizeof);
         return val[index];
     }
-    static assert(T.stringof~" has no indexing!");
+    else
+        static assert(T.stringof~" has no indexing!");
 }
 
+/**
+ * Dynamically tries toload a slice from `val`, this is useful for arbitrary range types.
+ *
+ * Params:
+ *  val = The value to load the slice from.
+ *
+ * Returns:
+ *  The loaded slice.
+ */
 pragma(inline)
 auto loadSlice(T)(T val, size_t start, size_t end)
 {
     static if (__traits(compiles, { auto _ = val[start..end]; }))
         return val[start..end];
-    static assert(T.stringof~" has no slicing!");
+    else
+        static assert(T.stringof~" has no slicing!");
 }
 
+/**
+ * Dynamically tries to store a slice into `val`, this is useful for arbitrary range types.
+ *
+ * Params:
+ *  val = The value to store the slice into.
+ *
+ * Returns:
+ *  The stored slice.
+ *
+ * Remarks:
+ *  Resorts to a forced memory copy if no slicing assignment allowed. Here be dragons.
+ */
 pragma(inline)
 auto storeSlice(A, T)(T val, A ahs, size_t start, size_t end) 
 {
@@ -348,9 +418,23 @@ auto storeSlice(A, T)(T val, A ahs, size_t start, size_t end)
         copy(cast(void*)ahs.ptr, cast(void*)&val[start], typeof(ahs[0]).sizeof * ahs.length);
         return val[start..end];
     }
+    else
+        static assert(T.stringof~" has no slicing!");
     return val;
 }
 
+/**
+ * Dynamically tries to load the length of `val`, this is useful for arbitrary range types.
+ *
+ * Params:
+ *  val = The value to load the length of.
+ *
+ * Remarks:
+ *  Returns 1 if `T` has no length apparent.
+ *
+ * Returns:
+ *  The loaded length.
+ */
 pragma(inline)
 size_t loadLength(size_t DIM : 0, T)(T val)
 {
@@ -358,16 +442,18 @@ size_t loadLength(size_t DIM : 0, T)(T val)
         return val.opDollar!DIM;
     else static if (DIM == 0)
         return opDollar();
-    else
+    else static if (isForward!T)
     {
         size_t length;
         foreach (u; val[DIM])
             length++;
         return length;
     }
-    static assert(T.stringof~" has no length!");
+    else
+        return 1;
 }
 
+/// ditto
 pragma(inline)
 size_t loadLength(T)(T val)
 {
@@ -375,12 +461,13 @@ size_t loadLength(T)(T val)
         return val.opDollar();
     else static if (__traits(compiles, { auto _ = val.length; }))
         return val.length;
-    else
+    else static if (isForward!T)
     {
         size_t length;
         foreach (u; val)
             length++;
         return length;
     }
-    static assert(T.stringof~" has no length!");
+    else
+        return 1;
 }
