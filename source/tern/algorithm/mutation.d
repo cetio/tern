@@ -129,14 +129,14 @@ void swap(O = LIFO, T)(ref T arr)
  *  arr = The array being pushed to.
  *  val = The value to push onto the array.
  */
-nothrow void push(T)(ref T arr, ElementType!T val)
-    if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
+nothrow void push(A, B)(ref A arr, B val)
+    if ((is(O == LIFO) || is(O == FILO)) && isIndexable!A && isElement!(A, B))
 {
     arr ~= val;
 }
 
 A replace(A, B, C)(A arr, B from, C to)
-    if (isIndexable!A && !isIndexable!B && !isIndexable!C)
+    if (isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
     Enumerable!A ret = arr;
     size_t index = arr.indexOf(from);

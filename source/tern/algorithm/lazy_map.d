@@ -6,10 +6,10 @@ import std.range.primitives : isInputRange;
 import std.conv;
 
 public struct LazyMap(alias F, T)
-    if (isForward!T)
+    if (isForward!T && isInvokable!F)
 {
-    T array;
-    alias array this;
+    T _array;
+    alias _array this;
     
 public:
 final:
@@ -21,16 +21,21 @@ final:
 pure:
     size_t length;
 
+    T array()
+    {
+        return this[0..length];
+    }
+    
     this(T arr)
     {
-        array = arr;
-        length = array.length;
+        _array = arr;
+        length = _array.length;
     }
 
     T opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         T slice;
-        foreach (ref u; array)
+        foreach (ref u; _array)
         {
             slice ~= opIndex(start++);        
 
@@ -42,7 +47,7 @@ pure:
 
     ref auto opIndex(ptrdiff_t index)
     {
-        return F(array[index]);
+        return F(_array[index]);
         throw new Throwable("Lazy filter index out of bounds!");
     }
 

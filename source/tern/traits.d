@@ -131,6 +131,15 @@ public template isBackward(T)
         }
     }();
 }
+public template isElement(A, B)
+{
+    enum isElement =
+    {
+        return isAssignable!(B, ElementType!A);
+    }();
+}
+/// True if `F` is a function, lambda, or otherwise may be called using `(...)`
+public alias isInvokable(alias F) = Alias!(isCallable!F || F.stringof.startsWith("__lambda"));
 
 /// True if `T` wraps indirection, like an array or wrapper for a pointer.
 public template wrapsIndirection(T)

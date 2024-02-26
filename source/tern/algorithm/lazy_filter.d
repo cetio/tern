@@ -5,10 +5,10 @@ import tern.traits;
 import std.conv;
 
 public struct LazyFilter(alias F, T)
-    if (isForward!T)
+    if (isForward!T && isInvokable!F)
 {
-    T array;
-    alias array this;
+    T _array;
+    alias _array this;
 
 private:
 final:
@@ -21,9 +21,14 @@ public:
     }
 
 pure:
+    T array()
+    {
+        return this[0..length];
+    }
+
     this(T arr)
     {
-        array = arr;
+        _array = arr;
     }
 
     size_t length()
@@ -32,7 +37,7 @@ pure:
             return _length;
 
         _length = 0;
-        foreach (u; array)
+        foreach (u; _array)
         {
             if (F(u))
                 _length++;
@@ -43,7 +48,7 @@ pure:
     T opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         T slice;
-        foreach (ref u; array)
+        foreach (ref u; _array)
         {
             slice ~= opIndex(start++);        
 
@@ -56,7 +61,7 @@ pure:
     auto opSliceAssign(A)(A ahs, ptrdiff_t start, ptrdiff_t end) 
     {
         T slice;
-        foreach (ref u; array)
+        foreach (ref u; _array)
         {
             slice ~= opIndex(ahs[start], start++);        
 
@@ -68,24 +73,20 @@ pure:
 
     ref auto opIndex(ptrdiff_t index)
     {
-        foreach (ref u; array)
+        foreach (ref u; _array)
         {
-            if (F(u) && index <= 0)
+            if (F(u) && index-- <= 0)
                 return u;
-            else
-                index--;
         }
         throw new Throwable("Lazy filter index out of bounds!");
     }
 
     auto opIndexAssign(A)(A ahs, ptrdiff_t index) 
     {
-        foreach (ref u; array)
+        foreach (ref u; _array)
         {
-            if (F(u) && index <= 0)
+            if (F(u) && index-- <= 0)
                 return u = ahs;
-            else
-                index--;
         }
         throw new Throwable("Lazy filter index out of bounds!");
     }
