@@ -130,7 +130,7 @@ pragma(inline)
     {
         static foreach (field; FieldNames!F)
         {
-            static if (hasMember!(T, field) && !isImmutable!(TypeOf!(T, field)) && !isImmutable!(TypeOf!(F, field)))
+            static if (hasMember!(T, field) && isMutable!(TypeOf!(T, field)) && isMutable!(TypeOf!(F, field)))
                 __traits(getMember, lhs, field) = cast(TypeOf!(F, field))__traits(getMember, rhs, field);
         }
     }
@@ -272,7 +272,7 @@ pragma(inline)
     T ret = factory!T;
     static foreach (field; FieldNames!F)
     {
-        static if (hasMember!(T, field) && !isImmutable!(__traits(getMember, T, field)) && !isImmutable!(__traits(getMember, F, field)))
+        static if (hasMember!(T, field) && isMutable!(__traits(getMember, T, field)) && isMutable!(__traits(getMember, F, field)))
             __traits(getMember, ret, field) = cast(TypeOf!(T, field))__traits(getMember, val, field);
     }
     return ret;
@@ -294,12 +294,17 @@ pragma(inline)
 
 /// Creates a new instance of `T` dynamically based on its traits.
 pragma(inline)
-T factory(T)()
+T factory(T, ARGS...)(ARGS args)
 {
     static if (isDynamicArray!T)
-        return new T(0);
+    {
+        static if (ARGS.length == 0)
+            return new T(0);
+        else
+            return new T(args);
+    }
     else static if (isReferenceType!T)
-        return new T();
+        return new T(args);
     else 
         return T.init;
 }

@@ -1,0 +1,3 @@
+replace/remove bulk
+use enumerable/stand-ins for length & stuff
+replace with smaller (move)

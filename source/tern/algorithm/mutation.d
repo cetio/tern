@@ -149,7 +149,7 @@ A replace(A, B, C)(A arr, B from, C to)
 }
 
 A replace(A, B, C)(A arr, B from, C to)
-    if (isIndexable!A && isIndexable!B && isIndexable!C && isForward!C)
+    if (isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
     Enumerable!A ret = arr;
     size_t index = arr.indexOf(from);
@@ -168,6 +168,22 @@ A replace(A, B, C)(A arr, B from, C to)
     return ret.value;
 }
 
+A replaceMany(A, B, C...)(A arr, B to, C from)
+    if (isIndexable!A && isIndexable!B && isIndexable!C && isForward!C && !isElement!(A, B) && !isElement!(A, C))
+{
+    foreach (u; from)
+        arr = arr.replace(u, to);
+    return arr;
+}
+
+A remove(A, B)(A arr, B to)
+    if (isIndexable!A)
+{
+    foreach (u; to)
+        arr = arr.remove(u);
+    return arr;
+}
+
 LazySubstitute!(A, B, C) substitute(A, B, C)(A arr, B from, C to)
     if (isForward!T && isIndexable!T)
 {
@@ -180,4 +196,22 @@ T reverse(T)(T arr)
     for (size_t i = 0; i < arr.length / 2; i++) 
         arr.swap(i, arr.length - i - 1);
     return arr;
+}
+
+void fill(A, B)(ref A arr, B elem)
+    if (isIndexable!A && isElement!(A, B))
+{
+    Enumerable!A ret = arr;
+    foreach (i; 0..ret.length)
+        ret[i] = elem;
+    arr = ret.value;
+}
+
+void clear(T)(ref T arr)
+    if (isIndexable!T)
+{
+    Enumerable!A ret = arr;
+    foreach (i; 0..ret.length)
+        ret[i] = ElementType!T.init;
+    arr = ret.value;
 }

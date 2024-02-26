@@ -5,7 +5,7 @@ import tern.traits;
 import std.conv;
 
 public struct LazyFilter(alias F, T)
-    if (isForward!T && isInvokable!F)
+    if (isForward!T && isCallable!F)
 {
     T _array;
     alias _array this;

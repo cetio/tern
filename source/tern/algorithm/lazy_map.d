@@ -2,11 +2,10 @@
 module tern.algorithm.lazy_map;
 
 import tern.traits;
-import std.range.primitives : isInputRange;
 import std.conv;
 
 public struct LazyMap(alias F, T)
-    if (isForward!T && isInvokable!F)
+    if (isForward!T && isCallable!F)
 {
     T _array;
     alias _array this;
@@ -25,7 +24,7 @@ pure:
     {
         return this[0..length];
     }
-    
+
     this(T arr)
     {
         _array = arr;

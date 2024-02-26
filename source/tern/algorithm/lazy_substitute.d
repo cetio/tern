@@ -1,11 +1,10 @@
 module tern.algorithm.lazy_substitute;
 
 import tern.traits;
-import std.range.primitives : isInputRange;
 import std.conv;
 
 public struct LazySubstitute(A, B, C)
-    if (isForward!A && isIndexable!A && isInvokable!F)
+    if (isForward!A && isIndexable!A && isCallable!F)
 {
     A array;
     alias array this;

@@ -3,7 +3,6 @@ module tern.algorithm.searching;
 
 import tern.traits;
 import tern.meta;
-import std.range.primitives : isBidirectionalRange, isInputRange;
 
 public:
 static:
@@ -62,7 +61,7 @@ size_t indexOf(A, B)(A arr, B elem)
     size_t index;
     foreach (u; arr)
     {
-        if (arr[index] == elem)
+        if (u == elem)
             return index;
         index++;
     }
@@ -75,7 +74,7 @@ size_t lastIndexOf(A, B)(A arr, B elem)
     size_t index = arr.length;
     foreach_reverse (u; arr)
     {
-        if (arr[index] == elem)
+        if (u == elem)
             return index;
         index--;
     }
@@ -121,7 +120,7 @@ size_t lastIndexOf(A, B)(A arr, B subarr)
 }
 
 size_t indexOf(alias F, A)(A arr)
-    if (isForward!A && isInvokable!F)
+    if (isForward!A && isCallable!F)
 {
     size_t index;
     foreach (u; arr)
@@ -134,7 +133,7 @@ size_t indexOf(alias F, A)(A arr)
 }
 
 size_t lastIndexOf(alias F, A)(A arr)
-    if (isBackward!A && isInvokable!F)
+    if (isBackward!A && isCallable!F)
 {
     size_t index = arr.length;
     foreach_reverse (u; arr)
@@ -151,10 +150,12 @@ size_t countUntil(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) 
 size_t countUntil(alias F, A)(A arr) if (isForward!A) => arr.indexOf!F;
 size_t among(alias F, A)(A arr) if (isIndexable!A) => arr.indexOf!F + 1;
 
-bool contains(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => indexOf(arr, elem) != -1;
-bool contains(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => indexOf(arr, subarr) != -1;
+bool contains(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => arr.indexOf(elem)!= -1;
+bool contains(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.indexOf(subarr) != -1;
+bool contains(alias F, A)(A arr) if (isIndexable!A && isCallable!F) => arr.indexOf!F != -1;
 bool canFind(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => indexOf(arr, elem) != -1;
 bool canFind(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => indexOf(arr, subarr) != -1;
+bool canFind(alias F, A)(A arr) if (isIndexable!A && isCallable!F) => arr.indexOf!F != -1;
 
 bool startsWith(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => arr.length >= 1 && arr[0..1].contains(elem);
 bool startsWith(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.length >= subarr.length && arr[0..subarr.length].contains(subarr);

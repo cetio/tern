@@ -67,7 +67,7 @@ pure:
     size_t offset;
     static if (isArray!T)
     {
-        static if (isDynamicArray!T && !isImmutable!(ElementType!T))
+        static if (isDynamicArray!T && isMutable!(ElementType!T))
         {
             if (len == -1)
                 len = deserialize!size_t(bytes[offset..(offset += size_t.sizeof)]).makeEndian(endianness);
@@ -82,7 +82,7 @@ pure:
             bytes ~= new ubyte[(len * ElementType!T.sizeof) - bytes.length];
 
         foreach (i; 0..len)
-        static if (!isImmutable!(ElementType!T))
+        static if (isMutable!(ElementType!T))
             ret[i] = bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T).makeEndian(endianness);
         else
             ret ~= bytes[offset..(offset += ElementType!T.sizeof)].deserialize!(ElementType!T).makeEndian(endianness);
@@ -96,7 +96,7 @@ pure:
 
         foreach (field; FieldNames!T)
         {
-            static if (!isImmutable!(__traits(getMember, T, field)))
+            static if (isMutable!(__traits(getMember, T, field)))
                 __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
         }
         return ret;
@@ -108,7 +108,7 @@ pure:
 
         foreach (field; FieldNames!T)
         {
-            static if (!isImmutable!(__traits(getMember, T, field)))
+            static if (isMutable!(__traits(getMember, T, field)))
                 __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
         }
         return ret;
@@ -144,22 +144,21 @@ pure:
 
 @trusted T softDeserialize(T)(ubyte[] bytes)
 {
-    T ret = factory!T;
     static if (is(T == class))
     {
+        T ret = factory!T;
         copy(cast(void*)bytes.ptr, *cast(void**)ret, __traits(classInstanceSize, T));
         return ret;
     }
     else static if (isArray!T)
     {
-        static if (isDynamicArray!T)
-            ret ~= new ElementType!T[bytes.length / ElementType!T.sizeof];
-
+        T ret = factory!T(bytes.length / ElementType!T.sizeof);
         copy(cast(void*)bytes.ptr, cast(void*)ret.ptr, bytes.length);
         return ret;
     }
     else
     {
+        T ret = factory!T;
         copy(cast(void*)bytes.ptr, cast(void*)&ret, T.sizeof);
         return ret;
     }

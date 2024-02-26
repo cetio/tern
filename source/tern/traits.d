@@ -8,7 +8,20 @@ import std.meta;
 import tern.meta;
 import tern.serialization;
 import tern.blit;
-public import std.traits;
+import std.traits;
+public import std.traits : fullyQualifiedName, mangledName, moduleName, packageName,
+    isFunction, arity, functionAttributes, hasFunctionAttributes, functionLinkage, FunctionTypeOf, isSafe, isUnsafe,
+    isFinal, ParameterDefaults, Parameters, ReturnType, SetFunctionAttributes, variadicFunctionStyle, EnumMembers, Fields,
+    hasAliasing, hasElaborateAssign, hasElaborateCopyConstructor, hasElaborateDestructor, hasElaborateMove, hasIndirections,
+    hasMember, hasStaticMember, hasNested, hasUnsharedAliasing, isInnerClass, isNested, TemplateArgsOf, TemplateOf,
+    CommonType, AllImplicitConversionTargets, ImplicitConversionTargets, CopyTypeQualifiers, CopyConstness, isAssignable,
+    isCovariantWith, isImplicitlyConvertible, isQualifierConvertible, InoutOf, ConstOf, SharedOf, SharedInoutOf, SharedConstOf,
+    SharedConstInoutOf, ImmutableOf, QualifierOf, allSameType, isType, isAggregateType, isArray, isAssociativeArray, isAutodecodableString,
+    isBasicType, isBoolean, isBuiltinType, isCopyable, isDynamicArray, isEqualityComparable, isFloatingPoint, isIntegral, isNarrowString, 
+    isConvertibleToString, isNumeric, isOrderingComparable, isPointer, isScalarType, isSigned, isSIMDVector, isSomeChar, isSomeString,
+    isStaticArray, isUnsigned, isAbstractClass, isAbstractFunction, isDelegate, isExpressions, isFinalClass, isFinalFunction, isFunctionPointer,
+    isInstanceOf, isSomeFunction, isTypeTuple, Unconst, Unshared, Unqual, Signed, Unsigned, ValueType, Promoted, Select, select,
+    hasUDA, getUDAs, getSymbolsByUDA;
 
 public:
 static:
@@ -36,14 +49,14 @@ public alias isIntrinsicType(T) = Alias!(isBasicType!T || isBuiltinType!T || isA
 /// True if `A` has any children.
 public alias hasChildren(alias A) = Alias!(isModule!A || isPackage!A || Prerequirement!(A, true, isType, false, isIntrinsicType, false, hasModifiers));
 /// True if `A` is not mutable (const, immutable, enum, etc.).
-public template isImmutable(alias A)
+public template isMutable(alias A)
 {
     static if (isType!A)
-        enum isImmutable = !isMutable!A;
+        enum isMutable = std.traits.isMutable!A;
     else static if (isField!A)
-        enum isImmutable = !isMutable!(typeof(A)) || isEnum!A;
+        enum isMutable = std.traits.isMutable!(typeof(A)) || !isEnum!A;
     else
-        enum isImmutable = true;
+        enum isMutable = false;
 }
 /// True if `T` is an enum, array, or pointer.
 public alias hasModifiers(T) = Alias!(isArray!T || isPointer!T || !isAggregateType!T);
@@ -86,6 +99,7 @@ public template isDImplDefined(alias A)
     else
         enum isDImplDefined = false;
 }
+/// True if `T` is able to be indexed.
 public template isIndexable(T)
 {
     enum isIndexable = 
@@ -101,6 +115,7 @@ public template isIndexable(T)
         }
     }();
 }
+/// True if `T` is able to be iterated upon forwards.
 public template isForward(T)
 {
     enum isForward = 
@@ -116,6 +131,7 @@ public template isForward(T)
         }
     }();
 }
+/// True if `T` is able to be iterated upon backwards.
 public template isBackward(T)
 {
     enum isBackward = 
@@ -131,16 +147,12 @@ public template isBackward(T)
         }
     }();
 }
-public template isElement(A, B)
-{
-    enum isElement =
-    {
-        return isAssignable!(B, ElementType!A);
-    }();
-}
+/// True if `B` is an element type of `A` (assignable as element)
+public alias isElement(A, B) = Alias!(isAssignable!(B, ElementType!A));
+/// True if `B` is able to be used as a range the same as `A`
+public alias isSimRange(A, B) = Alias!(isAssignable!(ElementType!B, ElementType!A));
 /// True if `F` is a function, lambda, or otherwise may be called using `(...)`
-public alias isInvokable(alias F) = Alias!(isCallable!F || F.stringof.startsWith("__lambda"));
-
+public alias isCallable(alias F) = Alias!(std.traits.isCallable!F || F.stringof.startsWith("__lambda"));
 /// True if `T` wraps indirection, like an array or wrapper for a pointer.
 public template wrapsIndirection(T)
 {
