@@ -1,15 +1,17 @@
 /// Reimplementation of `core.atomic` with better data support
 module tern.atomic;
 
+import tern.typecons;
+import std.traits;
 import core.atomic;
 import core.sync.mutex;
-import std.traits;
-import tern.typecons;
+import core.sync.condition;
 
-public:
+private:
 static:
 shared Mutex mutex;
 
+public:
 shared static this()
 {
     mutex = new shared Mutex();
@@ -141,4 +143,39 @@ unittest
 {
     shared int val = 10;
     assert(val.atomicOp!"+"(1) == 11);
+}
+
+/// Spinlock implementation backed by `Condition`
+public class SpinLock
+{
+private:
+final:
+shared:
+    Mutex mutex;
+    Condition condition;
+
+public:
+    this()
+    {
+        mutex = new shared Mutex();
+        condition = new shared Condition(mutex);
+    }
+
+    void lock() shared
+    {
+        mutex.lock();
+        while (!tryLock())
+            condition.wait();
+    }
+
+    bool tryLock() shared
+    {
+        return mutex.tryLock();
+    }
+
+    void unlock() shared
+    {
+        mutex.unlock();
+        condition.notifyAll();
+    }
 }
