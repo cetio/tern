@@ -14,6 +14,7 @@ public import tern.atomic;
 public import tern.benchmark;
 public import tern.blit;
 public import tern.codegen;
+public import tern.concurrency;
 public import tern.eval;
 public import tern.exception;
 public import tern.hardware;
