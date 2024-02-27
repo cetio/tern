@@ -1,5 +1,5 @@
-/// Templates for code generation, accessors, inheritance, etc.
-module tern.codegen;
+/// Type melding and arbitrary inheritance implementation
+module tern.meld;
 
 import std.array;
 import std.ascii;
@@ -7,11 +7,6 @@ import std.algorithm;
 import tern.traits;
 import tern.serialization;
 import tern.string;
-
-/// Attribute signifying an enum uses flags
-public enum flags;
-/// Attribute signifying an enum should not have properties made
-public enum exempt;
 
 /** 
  * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type.  
@@ -26,7 +21,7 @@ public enum exempt;
  *
  * @inherit!A @inherit!B struct C 
  * {
- *     mixin apply;
+ *     mixin meld;
  *
  *     string y() => "yohoho!";
  * }
@@ -51,13 +46,13 @@ public template inherit(T)
  *
  *  @inherit!A @inherit!B struct C 
  *  {
- *      mixin apply;
+ *      mixin meld;
  *
  *      string y() => "yohoho!";
  *  }
  * ```
  */
-public template applyInherits()
+public template meld()
 {
     static foreach (i, A; seqFilter!(isType, __traits(getAttributes, typeof(this))))
     {
@@ -106,7 +101,7 @@ public template applyInherits()
 
     @inherit!A @inherit!B struct C
     {
-        mixin apply;
+        mixin meld;
 
         string y() => "yohoho!";
     }
@@ -116,95 +111,6 @@ public template applyInherits()
     assert(c.x() == 2);
     assert(c.y() == "yohoho!");
 } */
-
-/// Template mixin for auto-generating properties.  
-/// Assumes standardized prefixes! (m_ for backing fields, k for masked enum values)  
-/// Assumes standardized postfixes! (MASK or Mask for masks)  
-// TODO: Overloads (allow devs to write specifically a get/set and have the counterpart auto generated)
-//       ~Bitfield exemption?~
-//       Conditional get/sets? (check flag -> return a default) (default attribute?)
-//       Flag get/sets from pre-existing get/sets (see methodtable.d relatedTypeKind)
-//       Auto import types (generics!!)
-//       Allow for indiv. get/sets without needing both declared
-//       Clean up with tern.meta
-/// Does not support multiple fields with the same enum type!
-public template accessors()
-{
-    import std.traits;
-    import std.string;
-    import std.meta;
-
-    static foreach (string member; __traits(allMembers, typeof(this)))
-    {
-        static if (member.startsWith("m_") && !__traits(compiles, { enum _ = mixin(member); }) &&
-            isMutable!(TypeOf!(typeof(this), member)) &&
-            (isFunction!(__traits(getMember, typeof(this), member)) || staticIndexOf!(exempt, __traits(getAttributes, __traits(getMember, typeof(this), member))) == -1))
-        {
-            static if (!__traits(hasMember, typeof(this), member[2..$]))
-            {
-                static if (!__traits(hasMember, typeof(this), member[2..$]))
-                {
-                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_"~member[2..$]~"_get\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"() { return "~member~"; }");
-                    mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_"~member[2..$]~"_set\") extern (C) export final @property "~fullyQualifiedName!(TypeOf!(typeof(this), member))~" "~member[2..$]~"("~fullyQualifiedName!(TypeOf!(typeof(this), member))~" val) { "~member~" = val; return "~member~"; }");
-                }
-
-                // Flags
-                static if (is(TypeOf!(typeof(this), member) == enum) &&
-                    !seqContains!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) &&
-                    seqContains!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))))
-                {
-                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
-                    {
-                        static if (flag.startsWith('k'))
-                        {
-                            static foreach_reverse (string mask; __traits(allMembers, TypeOf!(this, member))[0..staticIndexOf!(flag, __traits(allMembers, TypeOf!(this, member)))])
-                            {
-                                static if (mask.endsWith("Mask") || mask.endsWith("MASK"))
-                                {
-                                    static if (!__traits(hasMember, typeof(this), "is"~flag[1..$]))
-                                    {
-                                        // @property bool isEastern()...
-                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag[1..$]~"_get\") extern (C) export final @property bool is"~flag[1..$]~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                                        // @property bool isEastern(bool state)...
-                                        mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag[1..$]~"get\") extern (C) export final @property bool is"~flag[1..$]~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~" : ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~mask~") & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~")) == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                                    }
-                                }
-
-                            }
-                        }
-                        else
-                        {  
-                            static if (!__traits(hasMember, typeof(this), "is"~flag))
-                            {
-                                // @property bool isEastern()...
-                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return ("~member[2..$]~" & "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") != 0; }");
-                                // @property bool isEastern(bool state)...
-                                mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = cast("~fullyQualifiedName!(TypeOf!(this, member))~")(state ? ("~member[2..$]~" | "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") : ("~member[2..$]~" & ~"~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"))) != 0; }");
-                            }
-                        }
-                    }
-                }
-
-                // Non-flags
-                static if (is(TypeOf!(typeof(this), member) == enum) &&
-                    !seqContains!(exempt, __traits(getAttributes, TypeOf!(typeof(this), member))) &&
-                    !seqContains!(flags, __traits(getAttributes, TypeOf!(typeof(this), member))))
-                {
-                    static foreach (string flag; __traits(allMembers, TypeOf!(this, member)))
-                    {
-                        static if (!__traits(hasMember, typeof(this), "is"~flag))
-                        {
-                            // @property bool Eastern()...
-                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"() { return "~member[2..$]~" == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                            // @property bool Eastern(bool state)...
-                            mixin("pragma(mangle, \""~__traits(identifier, typeof(this)).mangle()~"_is"~flag~"_get\") extern (C) export final @property bool is"~flag~"(bool state) { return ("~member[2..$]~" = "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~") == "~fullyQualifiedName!(TypeOf!(this, member))~"."~flag~"; }");
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 /** 
  * Generates a mixin for implementing all possible functions of `T`
@@ -376,62 +282,4 @@ public template functionMap(T, bool mapOperators = false)
                 }";
         return str;
     }();
-}
-
-/** 
- * Generates a random boolean with the odds `1/max`
- *
- * Params:
- *  max = Maximum odds, this is what the chance is out of.
- */
-public alias randomBool(uint max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
-    = Alias!(random!(uint, 0, max, seed, R0, R1, R2, R3) == 0);
-
-/** 
- * Generates a random floating point value.
- *
- * Params:
- *  min = Minimum value.
- *  max = Maximum value.
- *  seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
- */
-public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
-    if (is(T == float) || is(T == double))
-{
-    pure T random()
-    {
-        return random!(ulong, cast(ulong)(min * cast(T)1000), cast(ulong)(max * cast(T)1000), seed, R0, R1, R2, R3) / cast(T)1000;
-    }
-}
-
-/** 
- * Generates a random integral value.
- *
- * Params:
- *  min = Minimum value.
- *  max = Maximum value.
- *  seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
- */
-public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
-    if (isIntegral!T)
-{
-    pure T random()
-    {
-        static if (min == max)
-            return min;
-
-        ulong s0 = (seed * R0) || 1;
-        ulong s1 = (seed * R0) || 1;
-        ulong s2 = (seed * R0) || 1;
-        
-        static foreach (c; R1)
-            s0 *= (c * (R0 ^ seed)) || 1;
-        static foreach (c; R2)
-            s1 *= (c * (R0 - seed)) || 1;
-        static foreach (c; R3)
-            s2 *= (c * (R0 ^ seed)) || 1;
-        
-        ulong o = s0 + s1 + s2;
-        return min + (cast(T)o % (max - min));
-    }
 }

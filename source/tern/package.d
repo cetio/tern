@@ -10,17 +10,20 @@ public import tern.typecons;
 /* public import tern.exec; */
 /* public import tern.experimental; */
 /* public import tern.regex; */
+public import tern.accessors;
 public import tern.atomic;
 public import tern.benchmark;
 public import tern.blit;
-public import tern.codegen;
 public import tern.concurrency;
+public import tern.ctrand;
 public import tern.eval;
 public import tern.exception;
 public import tern.hardware;
 public import tern.hresult;
 public import tern.integer;
+public import tern.lambda;
 public import tern.matrix;
+public import tern.meld;
 public import tern.memory;
 public import tern.meta;
 public import tern.serialization;

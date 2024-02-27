@@ -8,8 +8,8 @@ import std.conv;
 public struct LazyMap(alias F, T)
     if (isForward!T && isCallable!F)
 {
-    T _array;
-    alias _array this;
+    T _range;
+    alias _range this;
     
 public:
 final:
@@ -21,21 +21,21 @@ final:
 pure:
     size_t length;
 
-    T array()
+    T range()
     {
         return this[0..length];
     }
 
-    this(T arr)
+    this(T range)
     {
-        _array = arr;
-        length = _array.loadLength;
+        _range = range;
+        length = _range.loadLength;
     }
 
     T opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         T slice;
-        foreach (ref u; _array)
+        foreach (ref u; _range)
         {
             slice ~= opIndex(start++);        
 
@@ -47,7 +47,7 @@ pure:
 
     ref auto opIndex(ptrdiff_t index)
     {
-        return F(_array[index]);
+        return F(_range[index]);
         throw new Throwable("Lazy filter index out of bounds!");
     }
 

@@ -89,14 +89,14 @@ string eval(string exp, string op)
 
         if (word == op)
         {
-            if (words[i - 1].startsWith('~') && words[i - 1].filter!(x => x.isDigit).array.length == words[i - 1].length - 1)
+            if (words[i - 1].startsWith('~') && words[i - 1].filter!(x => x.isDigit).range.length == words[i - 1].length - 1)
                 words[i - 1] = (~words[i - 1][1..$].to!ulong).to!string;
 
-            if (words[i + 1].startsWith('~') && words[i + 1].filter!(x => x.isDigit).array.length == words[i + 1].length - 1)
+            if (words[i + 1].startsWith('~') && words[i + 1].filter!(x => x.isDigit).range.length == words[i + 1].length - 1)
                 words[i + 1] = (~words[i + 1][1..$].to!ulong).to!string;
 
-            bool lhsNumeric = words[i - 1].filter!(x => x.isDigit).array.length == words[i - 1].length;
-            bool rhsNumeric = words[i + 1].filter!(x => x.isDigit).array.length == words[i + 1].length;
+            bool lhsNumeric = words[i - 1].filter!(x => x.isDigit).range.length == words[i - 1].length;
+            bool rhsNumeric = words[i + 1].filter!(x => x.isDigit).range.length == words[i + 1].length;
 
             if (!lhsNumeric || !rhsNumeric)
                 continue;

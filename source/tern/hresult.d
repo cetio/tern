@@ -1,7 +1,7 @@
 /// HResult implementation and functions for easily interacting with HResult
 module tern.hresult;
 
-import tern.codegen;
+import tern.accessors : exempt;
 
 public @exempt enum HResult
 {

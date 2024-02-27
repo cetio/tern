@@ -2,7 +2,7 @@
 module tern.typecons.variant;
 
 import std.conv;
-import tern.codegen;
+import tern.meld;
 import tern.meta;
 import tern.traits;
 import tern.blit;

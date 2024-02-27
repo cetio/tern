@@ -1,159 +1,235 @@
-/// Algorithms for finding some kind of sequence or element in an array
+/// Algorithms for finding some kind of sequence or element in an range
 module tern.algorithm.searching;
 
+public import tern.algorithm.plane;
 import tern.traits;
 import tern.meta;
 import tern.blit;
 import tern.algorithm.iteration;
+import tern.lambda;
 
 public:
-static:
-pure:
+size_t indexOf(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
+{
+    foreach (i; 0..range.loadLength)
+    {
+        if (range[i] == elem)
+            return i;
+    }
+    return -1;
+}
+
+size_t indexOf(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
+{
+    if (subrange.loadLength > range.loadLength)
+        return -1;
+
+    foreach (i; 0..(range.loadLength - subrange.loadLength + 1))
+    {
+        if (range[i..(i + subrange.loadLength)] == subrange)
+            return i;
+    }
+    return -1;
+}
+
+size_t indexOf(alias F, A)(A range)
+    if (isIndexable!A && isCallable!F)
+{
+    foreach (i; 0..range.loadLength)
+    {
+        if (F(range[i]))
+            return i;
+    }
+    return -1;
+}
+
+size_t lastIndexOf(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
+{
+    foreach_reverse (i; 0..range.loadLength)
+    {
+        if (range[i] == elem)
+            return i;
+    }
+    return -1;
+}
+
+size_t lastIndexOf(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
+{
+    if (subrange.loadLength >= range.loadLength)
+        return -1;
+
+    foreach_reverse (i; 0..(range.loadLength - subrange.loadLength + 1))
+    {
+        if (range[i..(i + subrange.loadLength)] == subrange)
+            return i;
+    }
+    return -1;
+}
+
+size_t lastIndexOf(alias F, A)(A range)
+    if (isIndexable!A && isCallable!F)
+{
+    foreach_reverse (i; 0..range.loadLength)
+    {
+        if (F(range[i]))
+            return i;
+    }
+    return -1;
+}
+
 /** 
- * Portions `arr` into blocks of `blockSize`, with optional padding.
+ * Portions `range` into blocks of `blockSize`, with optional padding.
  *
  * Params:
- *  arr = The array to be portioned.
+ *  range = The range to be portioned.
  *  blockSize = The size of the blocks to be portioned.
- *  pad = Should the array be padded? Defaults to true.
+ *  pad = Should the range be padded? Defaults to true.
  *
  * Returns: 
- *  `arr` portioned into blocks of `blockSize`
+ *  `range` portioned into blocks of `blockSize`
  */
-T[] portionBy(T)(ref T arr, size_t blockSize, bool pad = true)
+T[] portionBy(T)(ref T range, size_t blockSize, bool pad = true)
     if (isIndexable!T)
 {
     if (pad)
-        arr ~= new ElementType!T[blockSize - (arr.loadLength % blockSize)];
+        range ~= new ElementType!T[blockSize - (range.loadLength % blockSize)];
     
     T[] ret;
-    foreach (i; 0..((arr.loadLength / 8) - 1))
-        ret ~= arr[(i * 8)..((i + 1) * 8)];
+    foreach (i; 0..((range.loadLength / 8) - 1))
+        ret ~= range[(i * 8)..((i + 1) * 8)];
     return ret;
 }
 
 /** 
- * Portions `arr` into blocks of `blockSize`.
+ * Portions `range` into blocks of `blockSize`.
  *
  * Params:
- *  arr = The array to be portioned.
+ *  range = The range to be portioned.
  *  blockSize = The size of the blocks to be portioned.
- *  pad = Should the array be padded? Defaults to true.
+ *  pad = Should the range be padded? Defaults to true.
  *
  * Returns: 
- *  `arr` portioned into blocks of `blockSize`
+ *  `range` portioned into blocks of `blockSize`
  */
-P[] portionTo(P, T)(ref T arr)
+P[] portionTo(P, T)(ref T range)
     if (isIndexable!T)
 {
     static if (!isStaticArray!T)
-        arr ~= new ElementType!T[P.sizeof - (arr.loadLength % P.sizeof)];
+        range ~= new ElementType!T[P.sizeof - (range.loadLength % P.sizeof)];
     else
-        static assert(Length!T % P.sizeof == 0, "Static array cannot be portioned, does not align to size!");
+        static assert(Length!T % P.sizeof == 0, "Static range cannot be portioned, does not align to size!");
     
     P[] ret;
-    foreach (i; 0..((arr.loadLength / P.sizeof) - 1))
-        ret ~= *cast(P*)(&arr[(i * P.sizeof)]);
+    foreach (i; 0..((range.loadLength / P.sizeof) - 1))
+        ret ~= *cast(P*)(&range[(i * P.sizeof)]);
     return ret;
 }
 
-size_t indexOf(A, B)(A arr, B elem)
-    if (isForward!A && isElement!(A, B))
+size_t countUntil(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
 {
-    foreach (i; 0..arr.loadLength)
-    {
-        if (arr[i] == elem)
-            return i;
-    }
-    return -1;
+    return range.indexOf(elem);
 }
 
-size_t lastIndexOf(A, B)(A arr, B elem)
-    if (isBackward!A && isElement!(A, B))
+size_t countUntil(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
-    foreach_reverse (i; 0..arr.loadLength)
-    {
-        if (arr[i] == elem)
-            return i;
-    }
-    return -1;
+    return range.indexOf(subrange);
 }
 
-size_t indexOf(A, B)(A arr, B subarr)
-    if (isForward!A && !isElement!(A, B) && isIndexable!B)
+size_t countUntil(alias F, A)(A range)
+    if (isForward!A)
 {
-    if (subarr.loadLength > arr.loadLength)
-        return -1;
-
-    foreach (i; 0..(arr.loadLength - subarr.loadLength + 1))
-    {
-        if (arr[i..(i + subarr.loadLength)] == subarr)
-            return i;
-    }
-    return -1;
+    return range.indexOf!F;
 }
 
-size_t lastIndexOf(A, B)(A arr, B subarr)
-    if (isForward!A && !isElement!(A, B) && isIndexable!B)
+size_t among(alias F, A)(A range)
+    if (isIndexable!A)
 {
-    if (subarr.loadLength >= arr.loadLength)
-        return -1;
-
-    foreach_reverse (i; 0..(arr.loadLength - subarr.loadLength + 1))
-    {
-        if (arr[i..(i + subarr.loadLength)] == subarr)
-            return i;
-    }
-    return -1;
+    return range.indexOf!F + 1;
 }
 
-size_t indexOf(alias F, A)(A arr)
-    if (isForward!A && isCallable!F)
+bool contains(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
 {
-    foreach (i; 0..arr.loadLength)
-    {
-        if (F(arr[i]))
-            return i;
-    }
-    return -1;
+    return range.indexOf(elem) != -1;
 }
 
-size_t lastIndexOf(alias F, A)(A arr)
-    if (isForward!A && isCallable!F)
+bool contains(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
-    foreach_reverse (i; 0..arr.loadLength)
-    {
-        if (F(arr[i]))
-            return i;
-    }
-    return -1;
+    return range.indexOf(subrange) != -1;
 }
 
-size_t countUntil(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B))  => arr.indexOf(elem);
-size_t countUntil(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.indexOf(subarr);
-size_t countUntil(alias F, A)(A arr) if (isForward!A) => arr.indexOf!F;
-size_t among(alias F, A)(A arr) if (isIndexable!A) => arr.indexOf!F + 1;
+bool contains(alias F, A)(A range)
+    if (isIndexable!A && isCallable!F)
+{
+    return range.indexOf!F != -1;
+}
 
-bool contains(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => arr.indexOf(elem)!= -1;
-bool contains(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.indexOf(subarr) != -1;
-bool contains(alias F, A)(A arr) if (isIndexable!A && isCallable!F) => arr.indexOf!F != -1;
-bool canFind(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => indexOf(arr, elem) != -1;
-bool canFind(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => indexOf(arr, subarr) != -1;
-bool canFind(alias F, A)(A arr) if (isIndexable!A && isCallable!F) => arr.indexOf!F != -1;
+bool canFind(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
+{
+    return indexOf(range, elem) != -1;
+}
 
-size_t all(alias F, A)(A arr) if (isForward!A) => arr.filter!F.length == arr.loadLength;
-size_t any(alias F, A)(A arr) if (isForward!A) => arr.indexOf!F != -1;
+bool canFind(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
+{
+    return indexOf(range, subrange) != -1;
+}
 
-bool startsWith(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => arr.length >= 1 && arr[0..1].contains(elem);
-bool startsWith(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.length >= subarr.length && arr[0..subarr.length].contains(subarr);
-bool endsWith(A, B)(A arr, B elem) if (isIndexable!A && isElement!(A, B)) => arr.length >= 1 && arr[$-1..$].contains(elem);
-bool endsWith(A, B)(A arr, B subarr) if (isIndexable!A && !isElement!(A, B) && isIndexable!B) => arr.length >= subarr.length && arr[$-subarr.length..$].contains(subarr);
+bool canFind(alias F, A)(A range)
+    if (isIndexable!A && isCallable!F)
+{
+    return range.indexOf!F != -1;
+}
 
-size_t count(A, B)(A arr, B elem)
+size_t all(alias F, A)(A range)
+    if (isForward!A)
+{
+    return range.filter!F.length == range.loadLength;
+}
+
+size_t any(alias F, A)(A range)
+    if (isForward!A)
+{
+    return range.indexOf!F != -1;
+}
+
+bool startsWith(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
+{
+    return range.length >= 1 && range[0..1].contains(elem);
+}
+
+bool startsWith(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
+{
+    return range.length >= subrange.length && range[0..subrange.length].contains(subrange);
+}
+
+bool endsWith(A, B)(A range, B elem)
+    if (isIndexable!A && isElement!(A, B))
+{
+    return range.length >= 1 && range[$-1..$].contains(elem);
+}
+
+bool endsWith(A, B)(A range, B subrange)
+    if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
+{
+    return range.length >= subrange.length && range[$-subrange.length..$].contains(subrange);
+}
+
+size_t count(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     size_t count;
-    foreach (u; arr)
+    foreach (u; range)
     {
         if (u == elem)
             count++;
@@ -161,14 +237,12 @@ size_t count(A, B)(A arr, B elem)
     return count;
 }
 
-size_t count(A, B)(A arr, B subarr)
+size_t count(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
     size_t count;
-    while (size_t index = arr.indexOf(subarr) != -1)
-    {
-        arr = arr[index + subarr.loadLength..$];
+    range.plane!((ref i) {
         count++;
-    }
+    })(subrange);
     return count;
 }

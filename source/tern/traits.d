@@ -1,17 +1,18 @@
 /// Traits templates intended to fill the gaps in `std.traits`
 module tern.traits;
 
+import tern.meta;
+import tern.serialization;
+import tern.blit;
 import std.string;
 import std.algorithm;
 import std.array;
 import std.meta;
-import tern.meta;
-import tern.serialization;
-import tern.blit;
 import std.traits;
+import std.functional;
 public import std.traits : fullyQualifiedName, mangledName, moduleName, packageName,
     isFunction, arity, functionAttributes, hasFunctionAttributes, functionLinkage, FunctionTypeOf, isSafe, isUnsafe,
-    isFinal, ParameterDefaults, Parameters, ReturnType, SetFunctionAttributes, variadicFunctionStyle, EnumMembers, Fields,
+    isFinal, ParameterDefaults, SetFunctionAttributes, FunctionAttribute, variadicFunctionStyle, EnumMembers, Fields,
     hasAliasing, hasElaborateAssign, hasElaborateCopyConstructor, hasElaborateDestructor, hasElaborateMove, hasIndirections,
     hasMember, hasStaticMember, hasNested, hasUnsharedAliasing, isInnerClass, isNested, TemplateArgsOf, TemplateOf,
     CommonType, AllImplicitConversionTargets, ImplicitConversionTargets, CopyTypeQualifiers, CopyConstness, isAssignable,
@@ -23,8 +24,6 @@ public import std.traits : fullyQualifiedName, mangledName, moduleName, packageN
     isInstanceOf, isSomeFunction, isTypeTuple, Unconst, Unshared, Unqual, Signed, Unsigned, ValueType, Promoted, Select, select,
     hasUDA, getUDAs, getSymbolsByUDA;
 
-public:
-static:
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);
 /// True if `T` is an indirection.
@@ -153,6 +152,12 @@ public alias isElement(A, B) = Alias!(isAssignable!(B, ElementType!A));
 public alias isSimRange(A, B) = Alias!(isAssignable!(ElementType!B, ElementType!A));
 /// True if `F` is a function, lambda, or otherwise may be called using `(...)`
 public alias isCallable(alias F) = Alias!(std.traits.isCallable!F || __traits(identifier, F).startsWith("__lambda"));
+/// True if `F` is a lambda.
+public alias isLambda(alias F) = Alias!(__traits(identifier, F).startsWith("__lambda"));
+/// True if `F` is a lambda that returns a boolean.
+public alias isFilter(alias F) = Alias!(isLambda!F && is(ReturnType!F == bool));
+/// True if `F` is a dynamic lambda (templated, ie: `x => x + 1`)
+public alias isDynamicLambda(alias F) = Alias!(isLambda!F && is(typeof(F) == void));
 /// True if `T` wraps indirection, like an array or wrapper for a pointer.
 public template wrapsIndirection(T)
 {
@@ -161,6 +166,108 @@ public template wrapsIndirection(T)
         enum wrapsIndirection = hasIndirections!T && __traits(allMembers, T).length <= 2 && !isArray!(typeof(__traits(allMembers, T)[0])) && !isArray!(typeof(__traits(allMembers, T)[1]));
     else
         enum wrapsIndirection = isArray!T;
+}
+/// True if `A` is a property of any kind.
+public alias isProperty(alias A) = Alias!(hasUDA!(A, property));
+/// True if `F` may be CTFE evaluated.
+public alias mayCTFE(alias F) = Alias!(Prerequirement!(F, true, isCallable, true, hasFunctionAttributes!(F, "pure")));
+
+/// Gets the return type of a callable symbol.
+public template ReturnType(alias F)
+    if (isCallable!F)
+{
+    static if (isLambda!F && !__traits(compiles, { alias _ = std.traits.ReturnType!F; }))
+    {
+        typeof(toDelegate(F)) dg;
+        alias ReturnType = std.traits.ReturnType!dg;
+    }  
+    else
+        alias ReturnType = std.traits.ReturnType!F;
+}
+
+/// Gets the parameters of a callable symbol.
+public template Parameters(alias F)
+    if (isCallable!F)
+{
+    static if (isLambda!F && !__traits(compiles, { alias _ = std.traits.Parameters!F; }))
+    {
+        typeof(toDelegate(F)) dg;
+        alias Parameters = std.traits.Parameters!dg;
+    }  
+    else
+        alias Parameters = std.traits.Parameters!F;
+}
+
+/// Gets the signature of `F` as a string.  
+/// This includes all attributes, templates (must be already initialized, names are lost,) and parameters.
+public template FunctionSignature(alias F)
+    if (isFunction!F)
+{
+    enum FunctionSignature = 
+    {
+        string paramSig = "(";
+        static if (__traits(compiles, { alias _ = TemplateArgsOf!F; }))
+        {
+            static foreach (i, A; TemplateArgsOf!F)
+            {
+                static if (__traits(compiles, { enum _ = B; }))
+                    paramSig ~= fullyQualifiedName!(typeof(B))~" T"~i.stringof[0..$-2];
+                else
+                    paramSig ~= "alias T"~i.stringof[0..$-2];
+            }
+            paramSig ~= ")(";
+        }
+        
+        foreach (i, P; Parameters!F)
+            paramSig ~= fullyQualifiedName!P~" "~ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
+        paramSig ~= ')';
+
+        return seqStringOf!(" ", __traits(getFunctionAttributes, F))~" "~fullyQualifiedName!(ReturnType!F)~" "~__traits(identifier, F)~paramSig;
+    }();
+}
+
+/// Gets the signature of `F` as a string without any types present.
+// Uses a lot of redundant code but that's fine
+public template FunctionCallableSignature(alias F)
+    if (isFunction!F)
+{
+    enum FunctionCallableSignature = 
+    {
+        string paramSig = "(";
+        static if (__traits(compiles, { alias _ = TemplateArgsOf!F; }))
+        {
+            static foreach (i, A; TemplateArgsOf!F)
+            {
+                static if (__traits(compiles, { enum _ = B; }))
+                    paramSig ~= "T"~i.stringof[0..$-2];
+                else
+                    paramSig ~= "T"~i.stringof[0..$-2];
+            }
+            paramSig ~= ")(";
+        }
+        
+        foreach (i, P; Parameters!F)
+            paramSig ~= ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
+        paramSig ~= ')';
+
+        return __traits(identifier, F)~paramSig;
+    }();
+}
+
+/// Gets the signature of `F` as a string.  
+/// Initializers will be lost.
+public template FieldSignature(alias F)
+    if (isField!F)
+{
+    enum FieldSignature =
+    {
+        static if (isEnum!F)
+            return "enum "~fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F)~" = "~F.stringof;
+        else static if (isStatic!F)
+            return "static "~fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F);
+        else
+            return fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F);
+    }();
 }
 
 /// Gets an all default arguments for `T` as a mixin (`void[]` for types or variadic)
@@ -173,11 +280,11 @@ public template TemplateDefaults(alias T)
         static foreach (arg; T.stringof[(T.stringof.indexOf('(') + 1)..T.stringof.indexOf(')')].split(", "))
         {
             static if (arg.split(' ').length == 1)
-                ret ~= "void[]";
+                ret ~= "void[], ";
             else
-                ret ~= arg.split(' ')[0]~".init";
+                ret ~= arg.split(' ')[0]~".init, ";
         }
-        return ret;
+        return ret[0..(ret.length >= 2 ? $-2 : $)];
     }();
 }
 
@@ -213,90 +320,7 @@ public template Length(T)
         enum Length = L;
 }
 
-/** 
- * Gets the signature of `F` as a string.  
- * Initializers will be lost.
- */
-public template FieldSignature(alias F)
-    if (isField!F)
-{
-    enum FieldSignature =
-    {
-        static if (isEnum!F)
-            return "enum "~fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F)~" = "~F.stringof;
-        else static if (isStatic!F)
-            return "static "~fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F);
-        else
-            return fullyQualifiedName!(typeof(F))~" "~__traits(identifier, F);
-    }();
-}
-
-/** 
- * Gets the signature of `F` as a string.  
- * This includes all attributes, templates (must be already initialized, names are lost,) and parameters.
- */
-public template FunctionSignature(alias F)
-    if (isFunction!F)
-{
-    enum FunctionSignature = 
-    {
-        string paramSig = "(";
-        static if (__traits(compiles, { alias _ = TemplateArgsOf!F; }))
-        {
-            static foreach (i, A; TemplateArgsOf!F)
-            {
-                static if (__traits(compiles, { enum _ = B; }))
-                    paramSig ~= fullyQualifiedName!(typeof(B))~" T"~i.stringof[0..$-2];
-                else
-                    paramSig ~= "alias T"~i.stringof[0..$-2];
-            }
-            paramSig ~= ")(";
-        }
-        
-        foreach (i, P; Parameters!F)
-            paramSig ~= fullyQualifiedName!P~" "~ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
-        paramSig ~= ')';
-
-        return seqStringOf!(" ", __traits(getFunctionAttributes, F))~" "~fullyQualifiedName!(ReturnType!F)~" "~__traits(identifier, F)~paramSig;
-    }();
-}
-
-/** 
- * Gets the signature of `F` as a string without any types present.
- */
-// Uses a lot of redundant code but that's fine
-public template FunctionCallableSignature(alias F)
-    if (isFunction!F)
-{
-    enum FunctionCallableSignature = 
-    {
-        string paramSig = "(";
-        static if (__traits(compiles, { alias _ = TemplateArgsOf!F; }))
-        {
-            static foreach (i, A; TemplateArgsOf!F)
-            {
-                static if (__traits(compiles, { enum _ = B; }))
-                    paramSig ~= "T"~i.stringof[0..$-2];
-                else
-                    paramSig ~= "T"~i.stringof[0..$-2];
-            }
-            paramSig ~= ")(";
-        }
-        
-        foreach (i, P; Parameters!F)
-            paramSig ~= ParameterIdentifierTuple!F[i]~(i == Parameters!F.length - 1 ? null : ", ");
-        paramSig ~= ')';
-
-        return __traits(identifier, F)~paramSig;
-    }();
-}
-
-/**
-    Gets an `AliasSeq` all types that `T` implements.
-
-    This is functionally very similar to `InterfacesTuple(T)` from `std.traits`, but is more advanced and  
-    includes *all* implements, including class inherits and alias this.
-*/
+/// Gets an `AliasSeq` all types that `T` implements.
 public template Implements(T)
 {
     /* private template Flatten(H, T...)
@@ -332,7 +356,7 @@ public template Implements(T)
     }  
 }
 
-/// Gets an AliasSeq of all fields in `A`
+/// Gets an `AliasSeq` of the names of all fields in `A`
 public template FieldNames(alias A)
 {
     alias FieldNames = AliasSeq!();
@@ -345,7 +369,7 @@ public template FieldNames(alias A)
     }
 }
 
-/// Gets an AliasSeq of all functions in `A`
+/// Gets an `AliasSeq` of the names all functions in `A`
 public template FunctionNames(alias A)
 {
     alias FunctionNames = AliasSeq!();
@@ -358,7 +382,7 @@ public template FunctionNames(alias A)
     }
 }
 
-/// Gets an AliasSeq of all types in `A`
+/// Gets an `AliasSeq` of the names of all types in `A`
 public template TypeNames(alias A)
 {
     alias TypeNames = AliasSeq!();
@@ -371,7 +395,7 @@ public template TypeNames(alias A)
     }
 }
 
-/// Gets an AliasSeq of all templates in `A`
+/// Gets an `AliasSeq` of the names of all templates in `A`
 public template TemplateNames(alias A)
 {
     alias TemplateNames = AliasSeq!();
@@ -406,20 +430,4 @@ public template Imports(alias M)
     mixin("alias Imports = AliasSeq!("~ 
         _Imports.join(", ")~ 
     ");");
-}
-
-/// Gets a `void*[]` of all indirections contained in `T val`
-pure void*[] indirections(T)(T val)
-{
-    void*[] ptrs;
-    static foreach (field; getFields!T)
-    {
-        static if (isPointer!(TypeOf!(T, field)))
-            ptrs ~= cast(void*)__traits(getMember, val, field);
-        else static if (is(TypeOf!(T, field) == class))
-            ptrs ~= *cast(void**)&__traits(getMember, val, field);
-        else static if (isIndirection!(TypeOf!(T, field)))
-            ptrs ~= __traits(getMember, val, field).indirections;
-    }
-    return ptrs;
 }

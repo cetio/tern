@@ -220,6 +220,7 @@ pragma(inline)
         static assert(0, "Cannot convert or cast from type "~F.stringof~" to type "~T.stringof~"!");
 }
 
+/// ditto
 pragma(inline)
 @trusted auto ref T to(T, F)(F val)
 {

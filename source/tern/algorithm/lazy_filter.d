@@ -2,13 +2,14 @@
 module tern.algorithm.lazy_filter;
 
 import tern.traits;
+import tern.algorithm.searching;
 import std.conv;
 
 public struct LazyFilter(alias F, T)
     if (isForward!T && isCallable!F)
 {
-    T _array;
-    alias _array this;
+    T _range;
+    alias _range this;
 
 private:
 final:
@@ -21,14 +22,14 @@ public:
     }
 
 pure:
-    T array()
+    T range()
     {
         return this[0..length];
     }
 
-    this(T arr)
+    this(T range)
     {
-        _array = arr;
+        _range = range;
     }
 
     size_t length()
@@ -37,7 +38,7 @@ pure:
             return _length;
 
         _length = 0;
-        foreach (u; _array)
+        foreach (u; _range)
         {
             if (F(u))
                 _length++;
@@ -48,7 +49,7 @@ pure:
     T opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         T slice;
-        foreach (ref u; _array)
+        foreach (ref u; _range)
         {
             slice ~= opIndex(start++);        
 
@@ -61,7 +62,7 @@ pure:
     auto opSliceAssign(A)(A ahs, ptrdiff_t start, ptrdiff_t end) 
     {
         T slice;
-        foreach (ref u; _array)
+        foreach (ref u; _range)
         {
             slice ~= opIndex(ahs[start], start++);        
 
@@ -73,7 +74,7 @@ pure:
 
     ref auto opIndex(ptrdiff_t index)
     {
-        foreach (ref u; _array)
+        foreach (ref u; _range)
         {
             if (F(u) && index-- <= 0)
                 return u;
@@ -83,7 +84,7 @@ pure:
 
     auto opIndexAssign(A)(A ahs, ptrdiff_t index) 
     {
-        foreach (ref u; _array)
+        foreach (ref u; _range)
         {
             if (F(u) && index-- <= 0)
                 return u = ahs;

@@ -30,6 +30,16 @@ static:
 BenchmarkResult[] results;
 
 public:
+/**
+ * Benchmarks all functions in `FUNCS` with the given config.
+ *
+ * Params:
+ *  FUNCS = Sequence of functions to be benchmarked.
+ *  config = Benchmark configuration.
+ *
+ * Remarks:
+ *  May not be parameterized.
+ */
 BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
     if (seqAll!(isCallable, FUNCS))
 {
@@ -84,6 +94,14 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
     return ret.dup;
 }
 
+/**
+ * Benchmarks `F` with the given config and arguments.
+ *
+ * Params:
+ *  F = The function to be benchmarked.
+ *  config = Benchmark configuration.
+ *  args = The arguments to invoke `F` with.
+ */
 BenchmarkResult[] benchmark(alias F, ARGS...)(BenchmarkConfig config, ARGS args)
 {
     auto timestamp = Clock.currTime;
@@ -106,6 +124,12 @@ BenchmarkResult[] benchmark(alias F, ARGS...)(BenchmarkConfig config, ARGS args)
     return [result];
 }
 
+/**
+ * Writes a report of `results` to the console.
+ *
+ * Params:
+ *  results = The benchmark results to be written.
+ */
 void report(BenchmarkResult[] results) 
 {
     writeln("BENCHMARK ["~__VENDOR__~" "~__VERSION__.to!string~"]");
@@ -130,6 +154,7 @@ void report(BenchmarkResult[] results)
     writeln("-----------------------------------------------------------------------------");
 }
 
+/// Writes a report of all benchmarks that have been run to the console.
 void reportAll() 
 {
     report(results);

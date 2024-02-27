@@ -7,8 +7,8 @@ import std.conv;
 public struct LazySubstitute(A, B, C)
     if (isForward!A && isIndexable!A && isCallable!F)
 {
-    A array;
-    alias array this;
+    A range;
+    alias range this;
     
 public:
 final:
@@ -22,10 +22,10 @@ pure:
     B from;
     C to;
 
-    this(A arr, B from, C to)
+    this(A range, B from, C to)
     {
-        array = arr;
-        length = array.loadLength;
+        range = range;
+        length = range.loadLength;
         this.from = from;
         this.to = to;
     }
@@ -33,7 +33,7 @@ pure:
     A opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         A slice;
-        foreach (ref u; array)
+        foreach (ref u; range)
         {
             slice ~= opIndex(start++);        
 
@@ -46,7 +46,7 @@ pure:
     auto opSliceAssign(T)(T ahs, ptrdiff_t start, ptrdiff_t end) 
     {
         A slice;
-        foreach (ref u; array)
+        foreach (ref u; range)
         {
             slice ~= opIndex(ahs[start], start++);        
 
@@ -58,15 +58,15 @@ pure:
 
     ref auto opIndex(ptrdiff_t index)
     {
-        if (array[index] == from)
-            return array.storeElem(to, index);
+        if (range[index] == from)
+            return range.storeElem(to, index);
         else
-            return array[index];
+            return range[index];
     }
 
     auto opIndexAssign(T)(T ahs, ptrdiff_t index) 
     {
-        return array.storeElem(ahs, index);
+        return range.storeElem(ahs, index);
     }
 
     size_t opDollar()

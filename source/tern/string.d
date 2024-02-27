@@ -158,7 +158,7 @@ string mangle(string str)
         .replace(",", "COMMA")
         .replace("!", "EXCLM");
 
-    return cast(string)str.filter!(c => isAlphaNum(c) || c == '_').array;
+    return cast(string)str.filter!(c => isAlphaNum(c) || c == '_').range;
 }
 
 string padLeft(string str, size_t length, char padding = ' ')

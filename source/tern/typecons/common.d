@@ -377,6 +377,7 @@ final:
     }
 
     auto opIndexAssign(A)(A ahs, size_t index)
+        if (A.sizeof <= ElementType!T.sizeof)
     {
         static if (__traits(compiles, { auto _ = (value[0] = ahs); }))
             return value[index] = ahs;
@@ -396,12 +397,13 @@ final:
     }
 
     auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
+        if (ElementType!A.sizeof <= ElementType!T.sizeof)
     {
         static if (__traits(compiles, { auto _ = (value[start..end] = ahs); }))
             return value[start..end] = ahs;
         else static if (__traits(compiles, { auto _ = value[start]; }))
         {
-            copy(cast(void*)ahs.ptr, cast(void*)&value[start], typeof(ahs[0]).sizeof * ahs.length);
+            copy(cast(void*)ahs.ptr, cast(void*)&value[start], ElementType!A.sizeof * ahs.length);
             return value[start..end];
         }
         return value;
@@ -452,5 +454,35 @@ final:
     bool empty()
     {
         return length == 0;
+    }
+}
+
+public struct Blittable(T)
+{
+    static if (isIndexable!T)
+        Enumerable!T value;
+    else
+        T value;
+    alias value this;
+
+public:
+final:
+    static if (!isIndexable!T)
+    this(T val)
+    {
+        value = val;
+    }
+
+    static if (isIndexable!T)
+    this(Enumerable!T val)
+    {
+        value = val;
+    }
+
+    auto opAssign(A)(A ahs)
+        if (A.sizeof <= T.sizeof)
+    {
+        copy(cast(void*)&ahs, cast(void*)&value, A.sizeof);
+        return this;
     }
 }
