@@ -1,7 +1,7 @@
 /// Implementation of XXHash digester
 module tern.digest.xxhash;
 
-import tern.serialize;
+import tern.serialization;
 import tern.digest;
 
 /**

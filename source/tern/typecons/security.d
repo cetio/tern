@@ -12,7 +12,7 @@ import std.array;
 
 import tern.traits;
 import tern.meta;
-import tern.serialize;
+import tern.serialization;
 import tern.typecons;
 import tern.digest;
 import tern.digest.mira;

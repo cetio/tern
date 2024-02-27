@@ -1,7 +1,7 @@
 /// Implementation of CRC32 digester
 module tern.digest.crc32;
 
-import tern.serialize;
+import tern.serialization;
 import tern.digest;
 
 /**

@@ -2,7 +2,7 @@
 module tern.stream.memory_stream;
 
 public import tern.stream.impl;
-import tern.serialize;
+import tern.serialization;
 import tern.traits;
 
 /// Memory stream implementation backed by a pointer, has no bounds checking.

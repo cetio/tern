@@ -2,7 +2,7 @@
 module tern.digest.djb2;
 
 import tern.digest;
-import tern.serialize;
+import tern.serialization;
 
 /**
  * Implementation of DJB2 digester.

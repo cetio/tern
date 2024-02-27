@@ -16,6 +16,25 @@ public enum Endianness
 
 public:
 static:
+@trusted bool[] getBits(T)(T val)
+{
+    bool[] ret;
+    foreach_reverse (i, b; val.getBytes())
+    {
+        foreach_reverse (j; 0..7)
+            ret ~= (((b >> j) & 1) ? true : false);
+    }
+    return ret;
+}
+
+string toBitString(bool[] bits)
+{
+    string ret;
+    foreach (b; bits)
+        ret ~= b ? '1' : '0';
+    return ret;
+}
+
 @nogc:
 /**
  * Allocates an entry of `size` 

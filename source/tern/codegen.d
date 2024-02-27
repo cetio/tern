@@ -5,7 +5,7 @@ import std.array;
 import std.ascii;
 import std.algorithm;
 import tern.traits;
-import tern.serialize;
+import tern.serialization;
 import tern.string;
 
 /// Attribute signifying an enum uses flags

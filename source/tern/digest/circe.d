@@ -3,7 +3,7 @@ module tern.digest.circe;
 
 import tern.digest;
 import tern.algorithm;
-import tern.serialize;
+import tern.serialization;
 
 /** 
  * Implementation of Circe digester.

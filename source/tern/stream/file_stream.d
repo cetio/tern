@@ -2,7 +2,7 @@ module tern.stream.file_stream;
 
 import std.stdio;
 import tern.typecons;
-import tern.serialize;
+import tern.serialization;
 import tern.traits;
 import tern.memory;
 import tern.digest.mira;

@@ -3,7 +3,7 @@ module tern.meta;
 
 import tern.traits;
 import tern.state;
-import tern.serialize;
+import tern.serialization;
 public import std.meta;
 
 /**

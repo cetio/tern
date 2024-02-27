@@ -1,7 +1,7 @@
     /// Implementation of FNV1 digester
     module tern.digest.fnv1;
 
-    import tern.serialize;
+    import tern.serialization;
     import tern.digest;
 
     /**

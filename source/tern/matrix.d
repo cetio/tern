@@ -1,7 +1,7 @@
 /// Matrix implementation backed by a multi-dimensional vector array
-module tern.math.matrix;
+module tern.matrix;
 
-import tern.math.vector;
+import tern.vector;
 import std.conv;
 
 /// Arbitrary matrix implementation, allows any row length less than or equal to 256 bits in total and can be interacted with as an array.

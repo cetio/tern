@@ -6,7 +6,7 @@ import std.algorithm;
 import std.array;
 import std.meta;
 import tern.meta;
-import tern.serialize;
+import tern.serialization;
 import tern.blit;
 import std.traits;
 public import std.traits : fullyQualifiedName, mangledName, moduleName, packageName,
@@ -152,7 +152,7 @@ public alias isElement(A, B) = Alias!(isAssignable!(B, ElementType!A));
 /// True if `B` is able to be used as a range the same as `A`
 public alias isSimRange(A, B) = Alias!(isAssignable!(ElementType!B, ElementType!A));
 /// True if `F` is a function, lambda, or otherwise may be called using `(...)`
-public alias isCallable(alias F) = Alias!(std.traits.isCallable!F || F.stringof.startsWith("__lambda"));
+public alias isCallable(alias F) = Alias!(std.traits.isCallable!F || __traits(identifier, F).startsWith("__lambda"));
 /// True if `T` wraps indirection, like an array or wrapper for a pointer.
 public template wrapsIndirection(T)
 {

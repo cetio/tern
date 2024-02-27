@@ -3,7 +3,7 @@ module tern.integer;
 
 import std.conv;
 import std.traits;
-import tern.math;
+import tern.serialization;
 
 /// Represents the shorthand for an integer
 public alias utri = UInt!24;

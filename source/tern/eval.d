@@ -1,10 +1,9 @@
-/// Simple and easy equation evaluator
-module tern.math.eval;
+/// Simple and easy mathematical equation evaluator
+module tern.eval;
 
 import std.conv;
 import std.traits;
 import tern.string;
-import std.string : split;
 
 public:
 static:

@@ -1,9 +1,10 @@
-/// Reimplementation of `core.atomic` with support for all data types
+/// Reimplementation of `core.atomic` with better data support as well as Queue and CircularBuffer
 module tern.atomic;
 
 import core.atomic;
 import core.sync.mutex;
 import std.traits;
+import tern.typecons;
 
 public:
 static:
@@ -142,5 +143,99 @@ unittest
     assert(val.atomicOp!"+"(1) == 11);
 }
 
-//void spinLock(uint* lock);
-//void spinUnlock(uint* lock);
+/// Thread-safe queue implementation with range capabilities
+public struct Queue(T)
+{
+private:
+final:
+    shared Atomic!(T[]) queue;
+
+public:
+    void enqueue(T val) shared
+    {
+        queue ~= val;
+    }
+
+    T dequeue() shared
+    {
+        scope (exit) queue = queue[1..$];
+        return queue[0];
+    }
+
+    size_t length() shared
+    {
+        return queue.length;
+    }
+
+    bool empty() shared
+    {
+        return queue.length == 0;
+    }
+
+    T front() shared
+    {
+        return queue.value[0];
+    }
+
+    T back() shared
+    {
+        return queue.value[$-1];
+    }
+
+    void popFront()
+    {
+        queue = queue[1..$];
+    }
+
+    void popBack()
+    {
+        queue = queue[0..$-1];
+    }
+}
+
+/// Thread-safe circular buffer implementation that acts like a stream
+public class CircularBuffer(T)
+{
+private:
+final:
+    T[] array;
+    Atomic!size_t head;
+
+public:
+    this(size_t length)
+    {
+        array = new T[length];
+    }
+    
+    void write(T val)
+    {
+        if (head >= array.length)
+            head = 0;
+
+        array[head++] = val;
+    }
+
+    void put(T val)
+    {
+        if (head >= array.length)
+            head = 0;
+
+        array[head] = val;
+    }
+
+    T read()
+    {
+        if (head >= array.length)
+            head = 0;
+            
+        return array[head++];
+    }
+
+    T peek()
+    {
+        if (head >= array.length)
+            head = 0;
+
+        return array[head];
+    }
+}

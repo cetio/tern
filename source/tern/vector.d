@@ -1,5 +1,5 @@
 /// Arbitrary vector implementation and utilities for working with vectors
-module tern.math.vector;
+module tern.vector;
 
 import tern.traits;
 import core.simd;

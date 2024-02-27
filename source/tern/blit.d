@@ -5,7 +5,7 @@ import std.conv;
 import tern.traits;
 import tern.meta;
 import tern.memory;
-import tern.serialize;
+import tern.serialization;
 
 public:
 static:

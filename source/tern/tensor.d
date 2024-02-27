@@ -1,7 +1,7 @@
 /// Tensor implementation backed by a multi-dimensional matrix array
-module tern.math.tensor;
+module tern.tensor;
 
-import tern.math.matrix;
+import tern.matrix;
 import std.conv;
 
 /// Arbitrary tensor implementation, allows any row length less than or equal to 256 bits in total and can be interacted with as an array.
