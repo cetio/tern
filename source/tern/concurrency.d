@@ -2,6 +2,7 @@
 module tern.concurrency;
 
 public import std.concurrency : Tid, send, receiveTimeout, receiveOnly, receive;
+import std.concurrency;
 import tern.traits;
 import tern.blit;
 import tern.lambda;
@@ -140,7 +141,7 @@ void parallelFor(alias F)(ptrdiff_t start, ptrdiff_t end, ptrdiff_t step)
             if (len - chunk >= cycles)
                 return;
             size_t rem = cycles % chunk;
-            len -= rem != 0 ? chunk - rem : 0;
+            len -= rem != 0 ? chunk - rem - 1 : 0;
         }
         
         foreach (i; index..len)

@@ -25,6 +25,9 @@ pure:
     /// Gets the internally held range after predication.
     T range()
     {
+        if (length == 0)
+            return T.init;
+            
         return this[0..length];
     }
 

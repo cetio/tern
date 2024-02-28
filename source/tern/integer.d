@@ -2,6 +2,7 @@
 module tern.integer;
 
 import tern.serialization;
+import tern.meta;
 import std.conv;
 import std.traits;
 
@@ -204,9 +205,17 @@ public:
         return this;
     }
 
-    auto opEquals(A)(const A ahs) const
+    bool opEquals(A)(const A ahs) const
     {
-        return cast(A)this == ahs;
+        static if (!isSame!(Unqual!A, Unqual!(typeof(this))))
+            return cast(A)this == ahs;
+        else
+        {
+            static if (isSigned!A)
+                return cast(long)this == ahs;
+            else
+                return cast(ulong)this == ahs;
+        }
     }
 
     int opCmp(A)(const A ahs) const
@@ -250,10 +259,11 @@ public:
 
         static if (isSigned!T)
         {
-            if (data[size - 1] & 128)
-                return -(2UL ^^ cast(ulong)SIZE - (*cast(T*)&data));
+            if (this.data[$-1] & 128)
+                return cast(T)(-(2L ^^ cast(long)SIZE - (*cast(T*)&data)));
         }
-        data[size - 1] &= ~128;
+        static if (T.sizeof == size)
+            data[$-1] &= ~128;
         return *cast(T*)&data;
     }
 
@@ -261,10 +271,10 @@ public:
     {
         long val = cast(long)ahs;
         data[0..size] = (cast(ubyte*)&val)[0..size];
-        data[size - 1] >>= 1;
+        data[$-1] >>= 1;
         static if (isSigned!A)
         if (val < 0)
-            data[size - 1] |= 128;  
+            data[$-1] |= 128;  
         return this;
     }
 
@@ -289,9 +299,17 @@ public:
         return this;
     }
 
-    auto opEquals(A)(const A ahs) const
+    bool opEquals(A)(const A ahs) const
     {
-        return cast(A)this == ahs;
+        static if (!isSame!(Unqual!A, Unqual!(typeof(this))))
+            return cast(A)this == ahs;
+        else
+        {
+            static if (isSigned!A)
+                return cast(long)this == ahs;
+            else
+                return cast(ulong)this == ahs;
+        }
     }
 
     int opCmp(A)(const A ahs) const

@@ -25,8 +25,6 @@ unittest
     assert(val.atomicOp!"+"(1) == 11);
 }
 
-
-
 // This is THE worst way to use atomic variables!
 shared ulong count = 0;
 void addUp(){
