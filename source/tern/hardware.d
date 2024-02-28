@@ -12,6 +12,7 @@ else version (linux)
 {
     import std.process;
     import std.file;
+    import std.stdio : lines;
 }
 
 version (X86)
@@ -145,9 +146,14 @@ else version (linux)
     /// Retrieves the disk serial number. May fail and return null.
     string diskSerial()
     {
-        auto process = pipeProcess(command, Redirect.stdout);
-        scope (exit) process.close();
-        return process.read().idup;
+        auto process = pipeProcess("lsblk -no serial", Redirect.stdout);
+        wait(process.pid);
+        foreach (string line; lines(process.stdout))
+        {
+            if (!line.length) continue;
+            return line;
+        }
+        return null;
     }
 
     /// Summation of all serials hashes into a single hardware id. Could be an invalid identifier but unlikely.

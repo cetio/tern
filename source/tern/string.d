@@ -96,12 +96,10 @@ string toLower(string str)
  * Return:
  *  `c` in uppercase.
  */
-char toUpper(char c)
+T toUpper(T)(T c) if (isSomeChar!T)
 {
-    if (!c.isAlpha)
-        return c;
-    else if (c.isLower)
-        return cast(char)(c - ('a' - 'A'));
+    if (c.isLower)
+        return cast(T)(c - ('a' - 'A'));
     else
         return c;
 }
@@ -115,12 +113,10 @@ char toUpper(char c)
  * Return:
  *  `c` in lowercase.
  */
-char toLower(char c)
+T toLower(T)(T c) if (isSomeChar!T)
 {
-    if (!c.isAlpha)
-        return c;
-    else if (c.isUpper)
-        return cast(char)(c + ('a' - 'A'));
+    if (c.isUpper)
+        return cast(T)(c + ('a' - 'A'));
     else
         return c;
 }
@@ -139,7 +135,8 @@ string toCamelCase(string str)
     char[] ret = new char[str.length];
     ret[0] = str[0].toLower;
     foreach (i, c; str[1..$])
-        ret[i] = c;
+        ret[i+1] = c;
+
     return cast(string)ret;
 }
 
@@ -157,7 +154,8 @@ string toPascalCase(string str)
     char[] ret = new char[str.length];
     ret[0] = str[0].toUpper;
     foreach (i, c; str[1..$])
-        ret[i] = c;
+        ret[i+1] = c;
+
     return cast(string)ret;
 }
 
@@ -334,7 +332,7 @@ string[] splitLines(string str)
  *  `true` if the character is alphabetic.
  */
 bool isAlpha(T)(T c) if (isSomeChar!T) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-
+  
 /**
  * Checks if a character is a digit.
  *
@@ -345,7 +343,8 @@ bool isAlpha(T)(T c) if (isSomeChar!T) => (c >= 'a' && c <= 'z') || (c >= 'A' &&
  * Returns:
  *  `true` if the character is a digit.
  */
-bool isDigit(T)(T c, uint base = 10) if (isSomeChar!T) => (c >= '0' && c <= ('9' - base)) || (base > 10 && (c >= 'a' && c <= ('f' - base)) || (c >= 'A' && c <= ('F' - base)));
+bool isDigit(T)(T c, uint base = 10) if (isSomeChar!T) => (c >= '0' && c <= '9'- (base > 10 ? 0 : 10-base) ) || (base > 10 && c <= 'a' + base-11);
+
 
 /**
  * Checks if a character is alphanumeric.

@@ -19,6 +19,7 @@ import tern.serialization;
 import tern.blit;
 import tern.string;
 import std.traits;
+import std.functional;
 
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);

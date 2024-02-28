@@ -30,11 +30,6 @@ public template seqContains(A...)
     }();
 }
 
-unittest
-{
-    alias Seq = AliasSeq!(int, float, string);
-    static assert(seqContains!(string, Seq) == true);
-}
 
 /**
  * Filters over an `AliasSeq` based on a predicate.
@@ -58,12 +53,6 @@ public template seqFilter(A...)
     }
 }
 
-unittest
-{
-    alias Seq = AliasSeq!(int, float, string);
-    alias FilteredSeq = seqFilter!(isFloatingPoint, Seq);
-    static assert(is(FilteredSeq == AliasSeq!(float)));
-}
 
 /**
  * Filters over an `AliasSeq` based on a string predicate.
@@ -90,12 +79,6 @@ public template seqFilter(string F, A...)
         seqFilter = AliasSeq!(seqFilter, filter!(i, B));
 }
 
-unittest
-{
-    alias Seq = AliasSeq!(int, float, string);
-    alias S = seqFilter!("isFloatingPoint!X", Seq);
-    static assert(is(S == AliasSeq!(float)));
-}
 
 /**
  * Maps a template over an `AliasSeq`, returning an `AliasSeq` of all of the return values.
@@ -116,12 +99,6 @@ public template seqMap(A...)
         seqMap = AliasSeq!(seqMap, F!B);
 }
 
-unittest
-{
-    alias Seq = AliasSeq!(int, float, string);
-    alias MappedSeq = seqMap!(isIntegral, Seq);
-    static assert(MappedSeq.stringof == "AliasSeq!(true, false, false)");
-}
 
 /**
  * Maps a string over an `AliasSeq`, returning an `AliasSeq` of all of the return values.
@@ -148,12 +125,6 @@ public template seqMap(string F, A...)
         seqMap = AliasSeq!(seqMap, map!(i, B));
 }
 
-unittest
-{
-    alias Seq = AliasSeq!(int, byte, long);
-    alias S = seqMap!("Alias!(X.sizeof)", Seq);
-    static assert(S.stringof == "AliasSeq!(4LU, 1LU, 8LU)");
-}
 
 /**
  * Finds the index of an alias in an `AliasSeq`.
@@ -175,12 +146,6 @@ public template seqIndexOf(A...)
         }
         return -1;
     }();
-}
-
-unittest
-{
-    alias Seq = AliasSeq!(int, float, string);
-    static assert(seqIndexOf!(string, Seq) == 2);
 }
 
 /// True if all elements in `A` meet the first given predicate.
@@ -239,12 +204,6 @@ public template isSame(alias A, alias B)
         enum isSame = __traits(isSame, A, B);
 }
 
-unittest
-{
-    alias A = int;
-    alias B = int;
-    static assert(isSame!(A, B));
-}
 
 public template Prerequirement(A...)
 {

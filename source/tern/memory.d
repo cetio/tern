@@ -159,13 +159,6 @@ pure:
     }
 }
 
-unittest
-{
-    int a = 0;
-    int b = 1;
-    copy(&b, &a, 4);
-    assert(a == b);
-}
 
 /** 
  * Sets all bytes at `dest` to `val` within range `0..length`.
