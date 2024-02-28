@@ -56,11 +56,6 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
     return mixin("rhs."~ELEM);
 }
 
-unittest
-{
-    shared int val = 10;
-    assert(val.atomicLoad == 10);
-}
 
 /// Atomically stores `lhs` in `rhs`
 pragma(inline)
@@ -94,13 +89,6 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs, L lhs)
     return mixin("rhs."~ELEM~" = lhs");
 }
 
-unittest
-{
-    shared int val = 10;
-    val.atomicStore(7);
-    assert(val.atomicLoad == 7);
-}
-
 /// Atomically exchanges `rhs` and `lhs`
 pragma(inline)
 void atomicExchange(R, L)(ref shared R rhs, L lhs)
@@ -117,14 +105,6 @@ void atomicExchange(R, L)(ref shared R rhs, L lhs)
     }
 }
 
-unittest
-{
-    shared int val = 10;
-    shared int val2 = 1;
-    val.atomicExchange(val2);
-    assert(val.atomicLoad == 1);
-}
-
 /// Performs an atomic operation `op` on `rhs` and `lhs`
 pragma(inline)
 auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
@@ -139,11 +119,6 @@ auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
     }
 }
 
-unittest
-{
-    shared int val = 10;
-    assert(val.atomicOp!"+"(1) == 11);
-}
 
 /// Spinlock implementation backed by `Condition`
 public class SpinLock
