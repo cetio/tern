@@ -1,4 +1,4 @@
-/// Implementation of Adler-32 digester
+/// Implementation of Adler-32 digester.
 module tern.digest.adler32;
 
 import tern.digest;
@@ -28,14 +28,14 @@ pure:
 
 public:
     /**
-    * Computes the Adler-32 hash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the Adler-32 hash is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed Adler-32 hash digest.
-    */
+     * Computes the Adler-32 hash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the Adler-32 hash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed Adler-32 hash digest.
+     */
     ubyte[] hash(ubyte[] data) 
     {
         int a = 1, b = 0;

@@ -1,14 +1,14 @@
-/// Algorithms for mutating ranges
+/// Algorithms for mutating ranges.
 module tern.algorithm.mutation;
 
+public import tern.algorithm.lazy_filter;
+public import tern.algorithm.lazy_map;
+public import tern.algorithm.lazy_substitute;
 import tern.traits;
 import tern.typecons;
 import tern.blit;
 import tern.algorithm.searching;
 import tern.algorithm.range;
-public import tern.algorithm.lazy_filter;
-public import tern.algorithm.lazy_map;
-public import tern.algorithm.lazy_substitute;
 
 public:
 LazyMap!(F, T) map(alias F, T)(T range)

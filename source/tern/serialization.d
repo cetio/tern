@@ -1,9 +1,9 @@
-/// General-purpose binary serializer and deserializer for arbitrary data types
+/// General-purpose binary serializer and deserializer for arbitrary data types.
 module tern.serialization;
 
+public import tern.memory;
 import tern.traits;
 import tern.blit;
-public import tern.memory;
 
 public:
 static:
@@ -58,7 +58,7 @@ pure:
  *  endianness = The endianness to be serialized to. Defaults to native.
  * 
  * Returns:
- *  The deserialized value of `T`
+ *  The deserialized value of `T`.
  */
 @trusted deserialize(T, B)(B bytes, size_t len = -1, Endianness endianness = Endianness.Native)
     if (isDynamicArray!B && (is(ElementType!B == ubyte) || is(ElementType!B == byte)))
@@ -153,7 +153,7 @@ void vacpp(ref ubyte[] data, size_t size)
 }
 
 /**
- * Unpads `data` assuming it was padded previously with `vacpp`
+ * Unpads `data` assuming it was padded previously with `vacpp`.
  *
  * Params:
  *  data = The bytes to be unpadded.

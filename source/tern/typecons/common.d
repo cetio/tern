@@ -1,4 +1,4 @@
-/// General-purpose wrapper/construct types for interacting with types
+/// General-purpose wrapper/construct types for interacting with types.
 module tern.typecons.common;
 
 import tern.serialization;
@@ -49,7 +49,7 @@ public class WhiteHole(T)
  * No, this is not actually an optional, it is literally backed by a pointer and thus *actually* nullable.
  *
  * Remarks:
- *  - `opOpAssign` is not supported for fields of `T`
+ *  - `opOpAssign` is not supported for fields of `T`.
  *  - const Nullable(T) is not supported, but shared Nullable(T) is.
  *
  * Example:

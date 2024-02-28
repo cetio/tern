@@ -1,4 +1,4 @@
-/// A collection of submodules too unruly to let loose in the library
+/// A collection of submodules too unruly to let loose in the library.
 module tern.experimental;
 
 public import tern.experimental.assembly;

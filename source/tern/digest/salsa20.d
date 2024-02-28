@@ -1,4 +1,4 @@
-/// Implementation of Salsa20 digester
+/// Implementation of Salsa20 digester.
 module tern.digest.salsa20;
 
 import tern.digest;
@@ -51,13 +51,13 @@ static:
 
 public:
     /**
-    * Encrypts the given byte array `data`
-    *
-    * Params:
-    *  data: Reference to the input byte array to be encrypted.
-    *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
-    *  nonce: The nonce value. Must be exactly 64 bits (8 bytes) in length.
-    */
+     * Encrypts the given byte array `data`.
+     *
+     * Params:
+     *  data: Reference to the input byte array to be encrypted.
+     *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
+     *  nonce: The nonce value. Must be exactly 64 bits (8 bytes) in length.
+     */
     void encrypt(ref ubyte[] data, string key, ubyte[8] nonce = (ubyte[8]).init, uint counter = 0)
     {
         if (key.length != 32)
@@ -91,12 +91,12 @@ public:
     }
 
     /**
-    * Decrypts the given byte array `data`
-    *
-    * Params:
-    *  data: Reference to the input byte array to be encrypted.
-    *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
-    *  nonce: The nonce value. Must be exactly 64 bits (8 bytes) in length.
-    */
+     * Decrypts the given byte array `data`.
+     *
+     * Params:
+     *  data: Reference to the input byte array to be encrypted.
+     *  key: The encryption key. Must be exactly 256 bits (32 bytes) in length.
+     *  nonce: The nonce value. Must be exactly 64 bits (8 bytes) in length.
+     */
     void decrypt(ref ubyte[] data, string key, ubyte[8] nonce = (ubyte[8]).init, uint counter = 0) => encrypt(data, key, nonce, counter);
 }

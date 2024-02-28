@@ -1,17 +1,17 @@
-/// Advanced executable format and binary support, with hooks, syscalls, and PE + ELF + Mach-o format support
-// TODO: ELF
+// Advanced executable format and binary support, with hooks, syscalls, and PE + ELF + Mach-o format support.
+// TODO: Finish
 module tern.exec;
 
+public import tern.exec.pe;
+public import tern.exec.elf;
+public import tern.exec.hook;
+public import tern.exec.syscall;
 import tern.stream;
 import tern.traits;
 import tern.serialization;
 import tern.state;
 import tern.blit;
 import std.string;
-public import tern.exec.pe;
-public import tern.exec.elf;
-public import tern.exec.hook;
-public import tern.exec.syscall;
 
 public struct ClrMetadata
 {
@@ -97,7 +97,7 @@ final:
 
         if (type == ImageType.ROM)
         {
-            *cast(ROMImage*)&optionalImage = stream.read!ROMImage;
+     *cast(ROMImage*)&optionalImage = stream.read!ROMImage;
         }
         else if (type == ImageType.PE32)
         {
@@ -105,7 +105,7 @@ final:
         }
         else if (type == ImageType.PE64)
         {
-            *cast(PE64Image*)&optionalImage = stream.readPlasticized!(PE64Image, "baseOfData", "type", ImageType.PE32);
+     *cast(PE64Image*)&optionalImage = stream.readPlasticized!(PE64Image, "baseOfData", "type", ImageType.PE32);
         }
     }
     
@@ -279,14 +279,14 @@ public:
     ClrMetadata clrMetadata;
 
     /**
-    * Reads a PE file from the specified file path.
-    *
-    * Params:
-    *   filePath = The path to the PE file to be read.
-    *
-    * Returns:
-    *  A PE object containing the parsed data from the file.
-    */
+     * Reads a PE file from the specified file path.
+     *
+     * Params:
+     *   filePath = The path to the PE file to be read.
+     *
+     * Returns:
+     *  A PE object containing the parsed data from the file.
+     */
     static PE read(string filePath)
     {
         PE pe = new PE();

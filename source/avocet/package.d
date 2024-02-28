@@ -1,4 +1,4 @@
-/// Avocet auxillary assembly/disassembly library
+// Avocet auxillary assembly/disassembly library
 module avocet;
 
 // TODO: make pure

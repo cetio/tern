@@ -1,5 +1,5 @@
 /// Fast slab-entry based memory allocator with simple defragmentation.
-/// Recommended to use `tern.memory` instead if you want thread-safety
+/// Recommended to use `tern.memory` instead if you want thread-safety.
 module tern.experimental.heap_allocator;
 
 import std.experimental.allocator.mmap_allocator;
@@ -256,7 +256,7 @@ pragma(inline)
 }
 
 /**
- * Zeroes the entry pointed to by `ptr`
+ * Zeroes the entry pointed to by `ptr`.
  *
  * Params:
  *  threadSafe = Should this operation be thread safe? Default false.

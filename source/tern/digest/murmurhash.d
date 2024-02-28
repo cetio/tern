@@ -1,4 +1,4 @@
-/// Implementation of MurmurHash digester
+/// Implementation of MurmurHash digester.
 module tern.digest.murmurhash;
 
 import tern.memory;
@@ -32,15 +32,15 @@ pure:
 
 public:
     /**
-    * Computes the MurmurHash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the hash is to be computed.
-    *  seed = An optional seed value used to initialize the hash function. Defaults to 0.
-    *
-    * Returns:
-    *  An array of bytes representing the computed MurmurHash digest.
-    */
+     * Computes the MurmurHash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the hash is to be computed.
+     *  seed = An optional seed value used to initialize the hash function. Defaults to 0.
+     *
+     * Returns:
+     *  An array of bytes representing the computed MurmurHash digest.
+     */
     ubyte[] hash(ubyte[] data, uint seed = 0)
     {
         sachp(data, 4);

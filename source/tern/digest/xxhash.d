@@ -1,4 +1,4 @@
-/// Implementation of XXHash digester
+/// Implementation of XXHash digester.
 module tern.digest.xxhash;
 
 import tern.serialization;
@@ -25,14 +25,14 @@ public:
 static:
 pure:
     /**
-    * Computes the XXHash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the XXHash is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed XXHash digest.
-    */
+     * Computes the XXHash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the XXHash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed XXHash digest.
+     */
     ubyte[] hash(ubyte[] data)
     {
         const ulong prime1 = 11_400_714_785_074_694_791;

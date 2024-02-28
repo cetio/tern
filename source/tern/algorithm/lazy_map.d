@@ -1,10 +1,11 @@
-/// Lazy map-based range (mutate on function)
+/// Lazy map-based range (mutate on function.)
 module tern.algorithm.lazy_map;
 
 import tern.traits;
 import tern.blit : loadLength;
 import std.conv;
 
+/// Lazy map-based range implementation.
 public struct LazyMap(alias F, T)
     if (isForward!T && isCallable!F)
 {
@@ -21,6 +22,7 @@ final:
 pure:
     size_t length;
 
+    /// Gets the internally held range after predication.
     T range()
     {
         return this[0..length];

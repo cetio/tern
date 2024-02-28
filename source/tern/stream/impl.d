@@ -1,4 +1,4 @@
-/// Stream interface and enums for stream implementations
+/// Stream interface and enums for stream implementations.
 module tern.stream.impl;
 
 public enum Seek

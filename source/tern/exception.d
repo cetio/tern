@@ -1,8 +1,6 @@
-/// Simple parser oriented throwable raising with highlighting
+/// Simple parser oriented throwable raising with highlighting.
 module tern.exception;
 
-import std.algorithm;
-import std.array;
 import tern.string;
 
 private enum padding = "                      "; // object.Throwable@(0): 
@@ -16,7 +14,7 @@ pure:
  * Params:
  *  exception = The exception to be raised.
  *  matchTo = String to use for syntax/error highlighting.
- *  matchOf = String to use to search for and highlight in `matchTo`
+ *  matchOf = String to use to search for and highlight in `matchTo`.
  */
 void raise(string exception, string matchTo = null, string matchOf = null)
 {
@@ -32,8 +30,8 @@ void raise(string exception, string matchTo = null, string matchOf = null)
  * Params:
  *  exception = The exception to be raised.
  *  matchTo = String to use for syntax/error highlighting.
- *  matchStart = Start index of the string to use to search for and highlight in `matchTo`
- *  matchEnd = End index of the string to use to search for and highlight in `matchTo`
+ *  matchStart = Start index of the string to use to search for and highlight in `matchTo`.
+ *  matchEnd = End index of the string to use to search for and highlight in `matchTo`.
  */
 void raise(string exception, string matchTo, size_t matchStart, size_t matchEnd)
 {

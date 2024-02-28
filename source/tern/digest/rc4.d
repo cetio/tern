@@ -1,4 +1,4 @@
-/// Implementation of RC4 digester
+/// Implementation of RC4 digester.
 module tern.digest.rc4;
 
 import tern.serialization;
@@ -12,14 +12,14 @@ import tern.digest.circe;
  * applications. It operates by generating a pseudorandom stream of bits (keystream) based on 
  * a secret key, which is then XORed with the plaintext to produce the ciphertext.
  *
-* Example:
-* ```d
-* import tern.digest.rc4;
-* 
-* ubyte[] data = [1, 2, 3, 4, 5];
-* string key = "my_secret_key";
-* RC4.encrypt(data, key);
-* ```
+ * Example:
+ * ```d
+ * import tern.digest.rc4;
+ * 
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "my_secret_key";
+ * RC4.encrypt(data, key);
+ * ```
  */
 public static @digester class RC4
 {
@@ -27,7 +27,7 @@ public:
 static:
 pure:
     /**
-     * Encrypts the given byte array `data`
+     * Encrypts the given byte array `data`.
      *
      * Params:
      *  data = Reference to the input byte array to be encrypted.
@@ -71,7 +71,7 @@ pure:
     }
 
     /**
-     * Decrypts the given byte array `data`
+     * Decrypts the given byte array `data`.
      *
      * Params:
      *  data = Reference to the input byte array to be decrypted.

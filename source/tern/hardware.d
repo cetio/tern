@@ -1,4 +1,4 @@
-/// Tools for getting hardware identifiers to validate device identity
+/// Utilities for getting hardware identifiers to validate device identity.
 module tern.hardware;
 
 import tern.string;

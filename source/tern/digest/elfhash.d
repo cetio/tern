@@ -1,4 +1,4 @@
-/// Implementation of ELFHash digester
+/// Implementation of ELFHash digester.
 module tern.digest.elfhash;
 
 import tern.digest;
@@ -24,14 +24,14 @@ public:
 static:
 pure:
     /**
-    * Computes the ELFHash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the ELFHash digest is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed ELFHash digest.
-    */
+     * Computes the ELFHash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the ELFHash digest is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed ELFHash digest.
+     */
     ubyte[] hash(ubyte[] data)
     {
         uint ret;

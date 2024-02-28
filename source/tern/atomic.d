@@ -1,4 +1,4 @@
-/// Reimplementation of `core.atomic` with better data support
+/// Reimplementation of `core.atomic` with better data support.
 module tern.atomic;
 
 import tern.typecons;
@@ -24,7 +24,7 @@ void fence()
     atomicFence();
 }
 
-/// Atomically loads the value of `rhs`
+/// Atomically loads the value of `rhs`.
 pragma(inline)
 auto atomicLoad(R)(ref shared R rhs)
 {
@@ -38,7 +38,7 @@ auto atomicLoad(R)(ref shared R rhs)
     }
 }
 
-/// Atomically loads an array element in the value of `rhs`
+/// Atomically loads an array element in the value of `rhs`.
 pragma(inline)
 auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs)
 {
@@ -47,7 +47,7 @@ auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs)
     return rhs[ELEM];
 }
 
-/// Atomically loads a field element in the value of `rhs`
+/// Atomically loads a field element in the value of `rhs`.
 pragma(inline)
 auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
 {
@@ -62,7 +62,7 @@ unittest
     assert(val.atomicLoad == 10);
 }
 
-/// Atomically stores `lhs` in `rhs`
+/// Atomically stores `lhs` in `rhs`.
 pragma(inline)
 void atomicStore(R, L)(ref shared R rhs, L lhs)
 {
@@ -76,7 +76,7 @@ void atomicStore(R, L)(ref shared R rhs, L lhs)
     }
 }
 
-/// Atomically stores the array element `lhs` in an array element of `rhs`
+/// Atomically stores the array element `lhs` in an array element of `rhs`.
 pragma(inline)
 auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs, L lhs)
 {
@@ -85,7 +85,7 @@ auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs, L lhs)
     return rhs[ELEM] = lhs;
 }
 
-/// Atomically stores the field element `lhs` in a field element of `rhs`
+/// Atomically stores the field element `lhs` in a field element of `rhs`.
 pragma(inline)
 auto atomicLoadElem(string ELEM, R)(ref shared R rhs, L lhs)
 {
@@ -101,7 +101,7 @@ unittest
     assert(val.atomicLoad == 7);
 }
 
-/// Atomically exchanges `rhs` and `lhs`
+/// Atomically exchanges `rhs` and `lhs`.
 pragma(inline)
 void atomicExchange(R, L)(ref shared R rhs, L lhs)
 {
@@ -125,7 +125,7 @@ unittest
     assert(val.atomicLoad == 1);
 }
 
-/// Performs an atomic operation `op` on `rhs` and `lhs`
+/// Performs an atomic operation `op` on `rhs` and `lhs`.
 pragma(inline)
 auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
 {
@@ -145,7 +145,7 @@ unittest
     assert(val.atomicOp!"+"(1) == 11);
 }
 
-/// Spinlock implementation backed by `Condition`
+/// Spinlock implementation backed by `Condition`.
 public class SpinLock
 {
 private:

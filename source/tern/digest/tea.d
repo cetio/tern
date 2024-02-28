@@ -1,4 +1,4 @@
-/// Implementation of TEA digesters
+/// Implementation of TEA digesters.
 module tern.digest.tea;
 
 import tern.digest;
@@ -60,8 +60,8 @@ pure:
                 v1 += (((v0 << 4) + k2) ^ (v0 + sum) ^ ((v0 >> 5) + k3));
             }
 
-            *cast(uint*)block = v0;
-            *cast(uint*)(block + 4) = v1;
+     *cast(uint*)block = v0;
+     *cast(uint*)(block + 4) = v1;
         }
     }
 
@@ -100,8 +100,8 @@ pure:
                 sum -= delta;
             }
 
-            *cast(uint*)block = v0;
-            *cast(uint*)(block + 4) = v1;
+     *cast(uint*)block = v0;
+     *cast(uint*)(block + 4) = v1;
         }
 
         unvacpp(data);
@@ -161,8 +161,8 @@ pure:
                 v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + k[sum & 3]);
             }
 
-            *cast(int*)block = v0;
-            *cast(int*)(block + 4) = v1;
+     *cast(int*)block = v0;
+     *cast(int*)(block + 4) = v1;
         }
     }
 
@@ -200,8 +200,8 @@ pure:
                 sum -= delta;
             }
 
-            *cast(int*)block = v0;
-            *cast(int*)(block + 4) = v1;
+     *cast(int*)block = v0;
+     *cast(int*)(block + 4) = v1;
         }
 
         unvacpp(data);
@@ -261,8 +261,8 @@ pure:
                 v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + k[sum & 3]);
             }
 
-            *cast(int*)block = v0;
-            *cast(int*)(block + 4) = v1;
+     *cast(int*)block = v0;
+     *cast(int*)(block + 4) = v1;
         }
     }
 
@@ -300,8 +300,8 @@ pure:
                 sum -= delta;
             }
 
-            *cast(int*)block = v0;
-            *cast(int*)(block + 4) = v1;
+     *cast(int*)block = v0;
+     *cast(int*)(block + 4) = v1;
         }
 
         unvacpp(data);

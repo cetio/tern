@@ -1,4 +1,4 @@
-/// Implementation of SuperFastHash digester
+/// Implementation of SuperFastHash digester.
 module tern.digest.superfasthash;
 
 import tern.serialization;
@@ -24,14 +24,14 @@ public:
 static:
 pure:
     /**
-    * Computes the SuperFastHash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the SuperFastHash is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed SuperFastHash digest.
-    */
+     * Computes the SuperFastHash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the SuperFastHash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed SuperFastHash digest.
+     */
     ubyte[] hash(ubyte[] data)
     {
         size_t index = 0;

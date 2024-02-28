@@ -1,4 +1,4 @@
-/// Implementation of RIPEMD digester
+/// Implementation of RIPEMD digester.
 module tern.digest.ripemd;
 
 import tern.digest;
@@ -25,14 +25,14 @@ public:
 static:
 pure:
     /**
-    * Computes the RIPEMD hash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the RIPEMD hash is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed RIPEMD hash digest.
-    */
+     * Computes the RIPEMD hash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the RIPEMD hash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed RIPEMD hash digest.
+     */
     auto hash(ubyte[] data)
     {
         import std.digest;

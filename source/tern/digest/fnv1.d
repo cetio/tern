@@ -1,25 +1,25 @@
-    /// Implementation of FNV1 digester
+    /// Implementation of FNV1 digester.
     module tern.digest.fnv1;
 
     import tern.serialization;
     import tern.digest;
 
     /**
-    * Implementation of FNV1 digester.
-    *
-    * FNV1 (Fowler–Noll–Vo) is a simple hash function that XORs each byte of 
-    * the input data with a predefined constant and then multiplies the result 
-    * by another predefined constant. The process is repeated for each byte in 
-    * the data.
-    *
-    * Example:
-    * ```d
-    * import tern.digest.fnv1;
-    * 
-    * ubyte[] data = [1, 2, 3, 4, 5];
-    * auto hashValue = FNV1.hash(data);
-    * ```
-    */
+     * Implementation of FNV1 digester.
+     *
+     * FNV1 (Fowler–Noll–Vo) is a simple hash function that XORs each byte of 
+     * the input data with a predefined constant and then multiplies the result 
+     * by another predefined constant. The process is repeated for each byte in 
+     * the data.
+     *
+     * Example:
+     * ```d
+     * import tern.digest.fnv1;
+     * 
+     * ubyte[] data = [1, 2, 3, 4, 5];
+     * auto hashValue = FNV1.hash(data);
+     * ```
+     */
     public static @digester class FNV1
     {
     private:
@@ -30,14 +30,14 @@
 
     public:
         /**
-        * Computes the FNV1 hash digest of the given data.
-        *
-        * Params:
-        *  data = The input byte array for which the FNV1 hash is to be computed.
-        *
-        * Returns:
-        *  A byte array representing the computed FNV1 hash digest.
-        */
+     * Computes the FNV1 hash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the FNV1 hash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed FNV1 hash digest.
+     */
         ubyte[] hash(ubyte[] data) 
         {
             ulong hash = OFFSETBASIS;

@@ -1,11 +1,11 @@
 module tern.regex.builder;
 
+import tern.state;
+import tern.exception;
 import std.string;
 import std.conv;
 import std.ascii;
 import std.algorithm;
-import tern.state;
-// TODO: Use tern.exception
 
 // Tokens
 package enum : ubyte
@@ -38,7 +38,7 @@ package enum : ubyte
     // Not used! Comments don't need to be parsed!
     // (?#...)
     //COMMENT
-    /// `\K` `\Kn`
+    /// `\K` `\Kn`.
     /// Resets match or group match
     RESET,
     /// `n->` or `|->`
@@ -109,10 +109,10 @@ public:
 final:
 align(8):
     /// What kind of element is this?
-    /// eg: `CHARACTERS`
+    /// eg: `CHARACTERS`.
     ubyte token;
     /// What are the special modifiers of this element?
-    /// eg: `EXCLUSIONARY`
+    /// eg: `EXCLUSIONARY`.
     ubyte modifiers;
     /// Characters mapped (like in a character set or literal)
     /// Elements mapped (like in a group or reference)
@@ -122,10 +122,10 @@ align(8):
         Element[] elements;
     }
     /// Minimum times to require fulfillment
-    /// eg: `1`
+    /// eg: `1`.
     uint min;
     /// Maximum times to allow fulfillment
-    /// eg: `1`
+    /// eg: `1`.
     uint max = 1;
 
     pure string tokenName()
@@ -233,14 +233,6 @@ pure string expand(string str, ref string[string] lookups)
     return ret;
 }
 
-pure string highlightError(string str, uint index)
-{
-    string highlightColor = "\x1B[31;4m";
-    string resetColor = "\x1B[0m";
-
-    return "                      "~str[0..index]~highlightColor~str[index..index + 1]~resetColor~str[index + 1..$];
-}
-
 // TODO: Refer to future group/element
 //        b  B (?:..) (..) lookahead lookbehind
 pragma(inline, true)
@@ -255,7 +247,7 @@ pure Element[] build(string pattern, string[string] lookups)
         {
             case '+':
                 if (!elements[$-1].tokenQuantifiable)
-                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '+' (non-quantifiable!)\n"~highlightError(pattern, i));
+                    raise(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '+' (non-quantifiable!)", pattern, i, i + 1);
 
                 if (elements[$-1].modifierQuantifiable)
                 {
@@ -271,10 +263,10 @@ pure Element[] build(string pattern, string[string] lookups)
 
             case '*':
                 if (!elements[$-1].tokenQuantifiable)
-                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '*' (non-quantifiable!)\n"~highlightError(pattern, i));
+                    raise(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '*' (non-quantifiable!)", pattern, i, i + 1);
 
                 if (!elements[$-1].modifierQuantifiable)
-                    throw new Throwable(elements[$-1].modifiersName()~" cannot be succeeded by quantifier token '*' (non-quantifiable!)\n"~highlightError(pattern, i));
+                    raise(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '*' (non-quantifiable!)", pattern, i, i + 1);
 
                 elements[$-1].min = 0;
                 elements[$-1].max = uint.max;
@@ -283,7 +275,7 @@ pure Element[] build(string pattern, string[string] lookups)
 
             case '?':
                 if (!elements[$-1].tokenQuantifiable)
-                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '?' (non-quantifiable!)\n"~highlightError(pattern, i));
+                    raise(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '?' (non-quantifiable!)", pattern, i, i + 1);
 
                 if (elements[$-1].modifierQuantifiable)
                 {
@@ -299,10 +291,10 @@ pure Element[] build(string pattern, string[string] lookups)
 
             case '{':
                 if (!elements[$-1].tokenQuantifiable)
-                    throw new Throwable(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '{' (non-quantifiable!)\n"~highlightError(pattern, i));
+                    raise(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '{' (non-quantifiable!)", pattern, i, i + 1);
 
                 if (!elements[$-1].modifierQuantifiable)
-                    throw new Throwable(elements[$-1].modifiersName()~" cannot be succeeded by quantifier token '{' (non-quantifiable!)\n"~highlightError(pattern, i));
+                    raise(elements[$-1].tokenName()~" cannot be succeeded by quantifier token '{' (non-quantifiable!)", pattern, i, i + 1);
 
                 string arg = pattern.getArgument(i, '{', '}');
                 string[] args = arg.split("..");
@@ -318,9 +310,7 @@ pure Element[] build(string pattern, string[string] lookups)
                     elements[$-1].max = args[1].to!uint;
                 }
                 else
-                {
-                    throw new Throwable("Quantifier range ('{') expected 1-2 arguments (found "~args.length.to!string~"!)\n"~highlightError(pattern, i));
-                }
+                    raise("Quantifier range ('{') expected 1-2 arguments (found "~args.length.to!string~"!)", pattern, i, i + 1);
 
                 i += arg.length + 1;
                 elements[$-1].modifiers |= QUANTIFIED;
@@ -375,9 +365,7 @@ pure Element[] build(string pattern, string[string] lookups)
                         element.elements = [ elements[id] ];
                     }
                     else
-                    {
-                        throw new Throwable("REFERENCE ('%n') refers to element "~id.to!string~", which is outside of valid range!\n"~highlightError(pattern, i));
-                    }
+                        raise("REFERENCE ('%n') refers to element "~id.to!string~", which is outside of valid range!", pattern, i, i + 1);
                     break;
                 }
                 break;
@@ -399,7 +387,7 @@ pure Element[] build(string pattern, string[string] lookups)
                         }
                     }
                     if (element.token != REFERENCE)
-                        throw new Throwable("REFERENCE ('$n') refers to group "~id.to!string~", which is outside of valid range!\n"~highlightError(pattern, i));
+                        raise("REFERENCE ('$n') refers to group "~id.to!string~", which is outside of valid range!", pattern, i, i + 1);
                 }
                 element.token = ANCHOR_END;
                 break;
@@ -424,9 +412,7 @@ pure Element[] build(string pattern, string[string] lookups)
                     break;
                 }
                 else
-                {
-                    throw new Throwable("Expected syntax <-n or <-| for PUSHBW! "~highlightError(pattern, i));
-                }
+                    raise("Expected syntax <-n or <-| for PUSHBW!", pattern, i, i + 1);
                 break;
 
             case '(':
@@ -479,7 +465,7 @@ pure Element[] build(string pattern, string[string] lookups)
                                 }
                             }
                             if (element.elements.length == 0)
-                                throw new Throwable(r"RESET ('\K') refers to group "~id.to!string~", which is outside of valid range!\n"~highlightError(pattern, i));
+                                raise(r"RESET ('\K') refers to group "~id.to!string~", which is outside of valid range!", pattern, i, i + 1);
                         }
                         break;
                     }

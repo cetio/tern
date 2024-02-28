@@ -1,11 +1,11 @@
-/// Very fast and very not thread-safe fixed data segment allocator
+/// Very fast and very not thread-safe fixed data segment allocator.
 module tern.experimental.ds_allocator;
 
-import std.range;
-import std.conv;
 import tern.traits;
 import tern.memory;
 import tern.meld;
+import std.range;
+import std.conv;
 
 alias ElementType = tern.traits.ElementType;
 
@@ -16,7 +16,7 @@ private pure string generateCases(size_t r)()
     {
         str ~= "case "~i.to!string~":
         static ubyte["~i.to!string~"] data"~r.to!string~";
-        *cast(size_t*)&data"~r.to!string~" = size;
+     *cast(size_t*)&data"~r.to!string~" = size;
         T arr;
         (cast(size_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)&data"~r.to!string~" + size_t.sizeof;
@@ -37,7 +37,7 @@ static:
  *  length = The initial length of the array.
  *
  * Returns:
- *  A new array of type `T`
+ *  A new array of type `T`.
  */
 T dsNew(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)(size_t length)
     if (isDynamicArray!T)

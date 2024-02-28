@@ -1,10 +1,10 @@
-/// Digests and ingests for various cryptography algorithms
+/// Digests and ingests for various cryptography algorithms.
 module tern.digest;
 
-import std.meta;
 import tern.traits;
 import tern.serialization;
 import tern.meta;
+import std.meta;
 
 /// Attribute for marking a class as a digester, must implement `encrypt` or `hash  `
 public enum digester;
@@ -96,7 +96,7 @@ public:
 public:
 static:
 /**
- * Digests arguments by the given provider `T`
+ * Digests arguments by the given provider `T`.
  * `T` must either have a `encrypt` or `hash` function present.
  *
  * Remarks:

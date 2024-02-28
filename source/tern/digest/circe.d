@@ -1,4 +1,4 @@
-/// Implementation of Circe digester
+/// Implementation of Circe digester.
 module tern.digest.circe;
 
 import tern.digest;
@@ -23,18 +23,18 @@ public:
 static:
 pure:
     /** 
-    * Derives a 256 bit key from `data`.
-    *
-    * Params:
-    *   data = Data to hash and derive from.
-    *   seed = Seed of the hash. (IV)
-    *
-    * Returns: 
-    *  The new key derived from `data`
-    *
-    * Remarks:
-    *  Does not validate the length of `data`
-    */
+     * Derives a 256 bit key from `data`.
+     *
+     * Params:
+     *   data = Data to hash and derive from.
+     *   seed = Seed of the hash. (IV)
+     *
+     * Returns: 
+     *  The new key derived from `data`.
+     *
+     * Remarks:
+     *  Does not validate the length of `data`.
+     */
     pragma(inline)
     ubyte[] hash(ubyte[] data, ulong seed = 0)
     {

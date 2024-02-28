@@ -1,4 +1,4 @@
-/// Arbitrary vector implementation and utilities for working with vectors
+/// Arbitrary vector implementation and utilities for working with vectors.
 module tern.vector;
 
 import tern.traits;

@@ -1,9 +1,10 @@
-/// Simple and easy mathematical equation evaluator
+/// Simple and easy mathematical equation evaluator.
 module tern.eval;
 
+// TODO: Add log, ln, sin, cos, tan, and pi
+import tern.string;
 import std.conv;
 import std.traits;
-import tern.string;
 
 public:
 static:
@@ -13,7 +14,7 @@ pure:
  *
  * Params:
  *  exp = The arithmetic expression to be evaluated.
- *  op = Specific operation to be evaluated out of `exp`
+ *  op = Specific operation to be evaluated out of `exp`.
  *
  * Returns:
  *  The evaluated arithmetic expression.

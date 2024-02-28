@@ -1,4 +1,4 @@
-/// Parameterizable benchmarking with support for parallel, global results, reports, etc
+/// Parameterizable benchmarking with support for parallel, global results, reports, etc.
 module tern.benchmark;
 
 import tern.meta;

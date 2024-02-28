@@ -1,4 +1,4 @@
-/// Implementation of CRC32 digester
+/// Implementation of CRC32 digester.
 module tern.digest.crc32;
 
 import tern.serialization;
@@ -11,13 +11,13 @@ import tern.digest;
  * produces a 32-bit (4-byte) hash value. It is commonly used in network communications, storage 
  * systems, and other applications where data integrity is crucial.
  *
-* Example:
-* ```d
-* import tern.digest.crc;
-*
-* ubyte[] data = [1, 2, 3, 4, 5];
-* auto hashValue = CRC32.hash(data);
-* ```
+ * Example:
+ * ```d
+ * import tern.digest.crc;
+ *
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * auto hashValue = CRC32.hash(data);
+ * ```
  */
 public static @digester class CRC32
 {

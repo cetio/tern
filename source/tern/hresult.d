@@ -1,4 +1,4 @@
-/// HResult implementation and functions for easily interacting with HResult
+/// Windows `HResult` enum implementation and helper functions.
 module tern.hresult;
 
 import tern.accessors : exempt;

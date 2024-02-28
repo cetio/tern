@@ -1,4 +1,4 @@
-/// Implementation of DJB2 digester
+/// Implementation of DJB2 digester.
 module tern.digest.djb2;
 
 import tern.digest;
@@ -24,14 +24,14 @@ public:
 static:
 pure:
     /**
-    * Computes the DJB2 hash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the DJB2 hash is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed DJB2 hash digest.
-    */
+     * Computes the DJB2 hash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the DJB2 hash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed DJB2 hash digest.
+     */
     ubyte[] hash(ubyte[] data)
     {
         uint ret = 5381;

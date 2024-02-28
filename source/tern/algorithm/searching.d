@@ -1,7 +1,7 @@
-/// Algorithms for finding some kind of sequence or element in an range
+/// Algorithms for finding some kind of sequence or element in an range.
 module tern.algorithm.searching;
 
-public import tern.algorithm.plane;
+public import tern.functional;
 import tern.traits;
 import tern.meta;
 import tern.blit;
@@ -9,6 +9,15 @@ import tern.algorithm.iteration;
 import tern.lambda;
 
 public:
+/**
+ * Searches for the index of the given argument in `range`.
+ *
+ * Params:
+ *  range = The range to search in.
+ *
+ * Return:
+ *  The index of the given argument in `range` or -1 if not found.
+ */
 size_t indexOf(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
@@ -20,6 +29,7 @@ size_t indexOf(A, B)(A range, B elem)
     return -1;
 }
 
+/// ditto
 size_t indexOf(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
@@ -34,6 +44,7 @@ size_t indexOf(A, B)(A range, B subrange)
     return -1;
 }
 
+/// ditto
 size_t indexOf(alias F, A)(A range)
     if (isIndexable!A && isCallable!F)
 {
@@ -45,6 +56,15 @@ size_t indexOf(alias F, A)(A range)
     return -1;
 }
 
+/**
+ * Searches for the last index of the given argument in `range`.
+ *
+ * Params:
+ *  range = The range to search in.
+ *
+ * Return:
+ *  The last index of the given argument in `range` or -1 if not found.
+ */
 size_t lastIndexOf(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
@@ -56,6 +76,7 @@ size_t lastIndexOf(A, B)(A range, B elem)
     return -1;
 }
 
+/// ditto
 size_t lastIndexOf(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
@@ -70,6 +91,7 @@ size_t lastIndexOf(A, B)(A range, B subrange)
     return -1;
 }
 
+/// ditto
 size_t lastIndexOf(alias F, A)(A range)
     if (isIndexable!A && isCallable!F)
 {
@@ -90,7 +112,7 @@ size_t lastIndexOf(alias F, A)(A range)
  *  pad = Should the range be padded? Defaults to true.
  *
  * Returns: 
- *  `range` portioned into blocks of `blockSize`
+ *  `range` portioned into blocks of `blockSize`.
  */
 T[] portionBy(T)(ref T range, size_t blockSize, bool pad = true)
     if (isIndexable!T)
@@ -113,7 +135,7 @@ T[] portionBy(T)(ref T range, size_t blockSize, bool pad = true)
  *  pad = Should the range be padded? Defaults to true.
  *
  * Returns: 
- *  `range` portioned into blocks of `blockSize`
+ *  `range` portioned into blocks of `blockSize`.
  */
 P[] portionTo(P, T)(ref T range)
     if (isIndexable!T)
@@ -129,36 +151,76 @@ P[] portionTo(P, T)(ref T range)
     return ret;
 }
 
+/**
+ * Searches for the index of the given argument in `range`.
+ *
+ * Params:
+ *  range = The range to search in.
+ *
+ * Return:
+ *  The index of the given argument in `range` or -1 if not found.
+ */
 size_t countUntil(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     return range.indexOf(elem);
 }
 
+/// ditto
 size_t countUntil(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
     return range.indexOf(subrange);
 }
 
+/// ditto
 size_t countUntil(alias F, A)(A range)
     if (isForward!A)
 {
     return range.indexOf!F;
 }
 
+/**
+ * Searches for the last index of the given argument in `range`.
+ *
+ * Params:
+ *  range = The range to search in.
+ *
+ * Return:
+ *  The last index of the given argument in `range` with 1-based indexing or -1 if not found.
+ */
 size_t among(alias F, A)(A range)
     if (isIndexable!A)
 {
     return range.indexOf!F + 1;
 }
 
+/**
+ * Checks if `range` contains `elem`.
+ *
+ * Params:
+ *  range = The range to search in.
+ *  elem = The element to search for.
+ *
+ * Return:
+ *  True if `range` contains `elem`.
+ */
 bool contains(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     return range.indexOf(elem) != -1;
 }
 
+/**
+ * Checks if `range` contains `subrange`.
+ *
+ * Params:
+ *  range = The range to search in.
+ *  subrange = The range to search for.
+ *
+ * Return:
+ *  True if `range` contains `subrange`.
+ */
 bool contains(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {

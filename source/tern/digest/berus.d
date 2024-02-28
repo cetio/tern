@@ -1,9 +1,9 @@
-/// Implementation of Berus digester
+/// Implementation of Berus digester.
 module tern.digest.berus;
 
-import std.conv;
 import tern.serialization;
 import tern.digest;
+import std.conv;
 
 /**
  * Implementation of Berus digester.
@@ -31,15 +31,15 @@ pure:
 
 public:
     /**
-    * Computes the Berus digest of the given data.
-    * 
-    * Params:
-    *  data - The data to be hashed.
-    *  salt - The salt to be used in the hashing process.
-    * 
-    * Returns:
-    *  The hashed result as an array of ubytes.
-    */
+     * Computes the Berus digest of the given data.
+     * 
+     * Params:
+     *  data - The data to be hashed.
+     *  salt - The salt to be used in the hashing process.
+     * 
+     * Returns:
+     *  The hashed result as an array of ubytes.
+     */
     ubyte[] hash(ubyte[] data, ubyte[] salt) 
     {
         ulong[BLOCK_SIZE] block;

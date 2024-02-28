@@ -1,14 +1,16 @@
+/// Lazy substitute-based _range (replace on state.)
 module tern.algorithm.lazy_substitute;
 
 import tern.traits;
 import tern.blit : loadLength, loadSlice, storeElem, storeSlice;
 import std.conv;
 
+/// Lazy substitute-based _range implementation.
 public struct LazySubstitute(A, B, C)
     if (isForward!A && isIndexable!A && isCallable!F)
 {
-    A range;
-    alias range this;
+    A _range;
+    alias _range this;
     
 public:
 final:
@@ -22,10 +24,16 @@ pure:
     B from;
     C to;
 
-    this(A range, B from, C to)
+    /// Gets the internally held range after predication.
+    T range()
     {
-        range = range;
-        length = range.loadLength;
+        return this[0..length];
+    }
+    
+    this(A _range, B from, C to)
+    {
+        _range = _range;
+        length = _range.loadLength;
         this.from = from;
         this.to = to;
     }
@@ -33,7 +41,7 @@ pure:
     A opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         A slice;
-        foreach (ref u; range)
+        foreach (ref u; _range)
         {
             slice ~= opIndex(start++);        
 
@@ -46,7 +54,7 @@ pure:
     auto opSliceAssign(T)(T ahs, ptrdiff_t start, ptrdiff_t end) 
     {
         A slice;
-        foreach (ref u; range)
+        foreach (ref u; _range)
         {
             slice ~= opIndex(ahs[start], start++);        
 
@@ -58,15 +66,15 @@ pure:
 
     ref auto opIndex(ptrdiff_t index)
     {
-        if (range[index] == from)
-            return range.storeElem(to, index);
+        if (_range[index] == from)
+            return _range.storeElem(to, index);
         else
-            return range[index];
+            return _range[index];
     }
 
     auto opIndexAssign(T)(T ahs, ptrdiff_t index) 
     {
-        return range.storeElem(ahs, index);
+        return _range.storeElem(ahs, index);
     }
 
     size_t opDollar()
