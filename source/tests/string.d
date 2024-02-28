@@ -1,6 +1,6 @@
 module tests.string;
 import tern.string;
-
+import std.stdio;
 unittest
 {
     foreach(c; "1234567890"){
@@ -29,4 +29,16 @@ unittest
         assert(!c.isLower());
         assert(c.isUpper());
     }
+}
+unittest{
+    assert("Test".padLeft(10).length == 10);
+    assert("Test".padLeft(10) == "      Test");
+
+    assert("Test".padRight(10).length == 10);
+    assert("Test".padRight(10) == "Test      ");
+}
+unittest
+{
+    assert("hello-world-this-looks-like-shit" == toKebabCase("helloWorldThisLooksLikeShit"));
+    assert("HelloWorldThisLooksLikeShit" == toPascalCase("helloWorldThisLooksLikeShit"));
 }

@@ -101,7 +101,7 @@ string toPascalCase(string str)
     ret[0] = str[0].toUpper;
     foreach (i, c; str[1..$])
     {
-        ret[i] = c;
+        ret[i+1] = c;
     }
     return cast(string)ret;
 }
