@@ -90,7 +90,7 @@ string toCamelCase(string str)
     ret[0] = str[0].toLower;
     foreach (i, c; str[1..$])
     {
-        ret[i] = c;
+        ret[i+1] = c;
     }
     return cast(string)ret;
 }

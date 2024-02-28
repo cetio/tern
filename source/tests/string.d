@@ -41,4 +41,6 @@ unittest
 {
     assert("hello-world-this-looks-like-shit" == toKebabCase("helloWorldThisLooksLikeShit"));
     assert("HelloWorldThisLooksLikeShit" == toPascalCase("helloWorldThisLooksLikeShit"));
+    assert("hello_world_this_looks_like_shit" == toSnakeCase("helloWorldThisLooksLikeShit"));
+    assert("helloWorldThisLooksLikeShit" == toCamelCase("HelloWorldThisLooksLikeShit"));
 }
