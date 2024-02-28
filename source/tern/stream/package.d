@@ -1,4 +1,4 @@
-/// Diverse stream implementation focused towards in-memory performant stream access
+/// Diverse stream implementation focused towards in-memory performant stream access.
 module tern.stream;
 
 public import tern.stream.atomic_stream;

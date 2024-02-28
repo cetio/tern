@@ -1,15 +1,6 @@
-/// Traits templates intended to fill the gaps in `std.traits`
+/// Traits templates intended to fill the gaps in `std.traits`.
 module tern.traits;
 
-import tern.meta;
-import tern.serialization;
-import tern.blit;
-import std.string;
-import std.algorithm;
-import std.array;
-import std.meta;
-import std.traits;
-import std.functional;
 public import std.traits : fullyQualifiedName, mangledName, moduleName, packageName,
     isFunction, arity, functionAttributes, hasFunctionAttributes, functionLinkage, FunctionTypeOf, isSafe, isUnsafe,
     isFinal, ParameterDefaults, SetFunctionAttributes, FunctionAttribute, variadicFunctionStyle, EnumMembers, Fields,
@@ -23,6 +14,11 @@ public import std.traits : fullyQualifiedName, mangledName, moduleName, packageN
     isStaticArray, isUnsigned, isAbstractClass, isAbstractFunction, isDelegate, isExpressions, isFinalClass, isFinalFunction, isFunctionPointer,
     isInstanceOf, isSomeFunction, isTypeTuple, Unconst, Unshared, Unqual, Signed, Unsigned, ValueType, Promoted, Select, select,
     hasUDA, getUDAs, getSymbolsByUDA;
+import tern.meta;
+import tern.serialization;
+import tern.blit;
+import tern.string;
+import std.traits;
 
 /// True if `T` is a class, interface, pointer, or a wrapper for a pointer (like arrays.)
 public alias isIndirection(T) = Alias!(is(T == class) || is(T == interface) || isPointer!T || wrapsIndirection!T);
@@ -39,7 +35,7 @@ public alias isModule(alias A) = Alias!(__traits(isModule, A));
 /// True if `A` is a package.
 public alias isPackage(alias A) = Alias!(__traits(isPackage, A));
 /// True if `A` is a field, otherwise false.  
-/// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`
+/// This is functionally equivalent to `!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A`.
 public alias isField(alias A) = Alias!(!isType!A && !isFunction!A && !isTemplate!A && !isModule!A && !isPackage!A);
 /// True if `A` has any parents.
 public alias hasParents(alias A) = Alias!(Derequirement!(A, false, isType, false, isIntrinsicType) && !isPackage!A);
@@ -72,11 +68,11 @@ public alias isOrganic(alias A) = Alias!(!isDImplDefined!A);
 public alias isConstructor(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("__ctor") || __traits(identifier, F).startsWith("_staticCtor")));
 /// True if `F` is a destructor.
 public alias isDestructor(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("__dtor") || __traits(identifier, F).startsWith("__xdtor") || __traits(identifier, F).startsWith("_staticDtor")));
-/// True if `F` is `toHash` or `toString`
+/// True if `F` is `toHash` or `toString`.
 public alias isDManyThing(alias F) = Alias!(isFunction!F && (__traits(identifier, F).startsWith("toHash") || __traits(identifier, F).startsWith("toString")));
 /// True if `F` is a static field.
 public alias isStatic(alias F) = Alias!(isField!F && !isEnum!F && __traits(compiles, { auto _ = __traits(getMember, __traits(parent, F), __traits(identifier, F)); }));
-/// True if `F` is an enum field.
+/// True if `F` is an enum field or local.
 public alias isEnum(alias F) = Alias!(__traits(compiles, { enum _ = __traits(getMember, __traits(parent, F), __traits(identifier, F)); }));
 /// True if `A` is an implementation defined alias (ie: __ctor, std, factory, etc.)
 public template isDImplDefined(alias A)
@@ -148,7 +144,7 @@ public template isBackward(T)
 }
 /// True if `B` is an element type of `A` (assignable as element)
 public alias isElement(A, B) = Alias!(isAssignable!(B, ElementType!A));
-/// True if `B` is able to be used as a range the same as `A`
+/// True if `B` is able to be used as a range the same as `A`.
 public alias isSimRange(A, B) = Alias!(isAssignable!(ElementType!B, ElementType!A));
 /// True if `F` is a function, lambda, or otherwise may be called using `(...)`
 public alias isCallable(alias F) = Alias!(std.traits.isCallable!F || __traits(identifier, F).startsWith("__lambda"));
@@ -270,11 +266,11 @@ public template FieldSignature(alias F)
     }();
 }
 
-/// Gets an all default arguments for `T` as a mixin (`void[]` for types or variadic)
-public template TemplateDefaults(alias T)
+/// Instantiates `T` using all default arguments (`void[]` for types or variadic)
+public template DefaultInstantiate(alias T)
     if (isTemplate!T)
 {
-    enum TemplateDefaults =
+    string args()
     {
         string ret;
         static foreach (arg; T.stringof[(T.stringof.indexOf('(') + 1)..T.stringof.indexOf(')')].split(", "))
@@ -285,7 +281,9 @@ public template TemplateDefaults(alias T)
                 ret ~= arg.split(' ')[0]~".init, ";
         }
         return ret[0..(ret.length >= 2 ? $-2 : $)];
-    }();
+    }
+
+    alias DefaultInstantiate = mixin("T!("~args~')');
 }
 
 /// Gets the type of member `MEMBER` in `A`  
@@ -356,7 +354,7 @@ public template Implements(T)
     }  
 }
 
-/// Gets an `AliasSeq` of the names of all fields in `A`
+/// Gets an `AliasSeq` of the names of all fields in `A`.
 public template FieldNames(alias A)
 {
     alias FieldNames = AliasSeq!();
@@ -369,7 +367,7 @@ public template FieldNames(alias A)
     }
 }
 
-/// Gets an `AliasSeq` of the names all functions in `A`
+/// Gets an `AliasSeq` of the names all functions in `A`.
 public template FunctionNames(alias A)
 {
     alias FunctionNames = AliasSeq!();
@@ -382,7 +380,7 @@ public template FunctionNames(alias A)
     }
 }
 
-/// Gets an `AliasSeq` of the names of all types in `A`
+/// Gets an `AliasSeq` of the names of all types in `A`.
 public template TypeNames(alias A)
 {
     alias TypeNames = AliasSeq!();
@@ -395,7 +393,7 @@ public template TypeNames(alias A)
     }
 }
 
-/// Gets an `AliasSeq` of the names of all templates in `A`
+/// Gets an `AliasSeq` of the names of all templates in `A`.
 public template TemplateNames(alias A)
 {
     alias TemplateNames = AliasSeq!();
@@ -408,7 +406,7 @@ public template TemplateNames(alias A)
     }
 }
 
-/// Gets an `AliasSeq` of all modules publicly imported by `mod`
+/// Gets an `AliasSeq` of all modules publicly imported by `mod`.
 public template Imports(alias M)
 {
     private pure string[] _Imports()

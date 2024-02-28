@@ -1,4 +1,4 @@
-/// Tern core library
+/// Tern core library.
 module tern;
 
 public import tern.algorithm;
@@ -18,6 +18,7 @@ public import tern.concurrency;
 public import tern.ctrand;
 public import tern.eval;
 public import tern.exception;
+public import tern.functional;
 public import tern.hardware;
 public import tern.hresult;
 public import tern.integer;
@@ -26,6 +27,7 @@ public import tern.matrix;
 public import tern.meld;
 public import tern.memory;
 public import tern.meta;
+public import tern.functional;
 public import tern.serialization;
 public import tern.state;
 public import tern.string;

@@ -1,4 +1,4 @@
-/// Implementation of Mira digesters
+/// Implementation of Mira digesters.
 module tern.digest.mira;
 
 import core.simd;
@@ -7,7 +7,7 @@ import tern.digest.circe;
 import tern.algorithm;
 
 /**
- * Implementation of Mira256 digester, internally backed by `tern.digest.circe`
+ * Implementation of Mira256 digester, internally backed by `tern.digest.circe`.
  *
  * Mira is an incredibly fast stream encryption algorithm based on shuffling and vector
  * xor operations on data.
@@ -25,16 +25,16 @@ public:
 static:
 pure:
     /**
-    * Encrypts the given byte array `data`
-    *
-    * This method encrypts the data using the Mira algorithm with the specified encryption `key`
-    * and an optional `seed` value. The encryption is done in place.
-    *
-    * Params:
-    *  data = Reference to the byte array to be encrypted.
-    *  key = The encryption key as a string. Must be either 256 or 512 bits.
-    *  seed = An optional seed value used for encryption. Defaults to 0.
-    */
+     * Encrypts the given byte array `data`.
+     *
+     * This method encrypts the data using the Mira algorithm with the specified encryption `key`.
+     * and an optional `seed` value. The encryption is done in place.
+     *
+     * Params:
+     *  data = Reference to the byte array to be encrypted.
+     *  key = The encryption key as a string. Must be either 256 or 512 bits.
+     *  seed = An optional seed value used for encryption. Defaults to 0.
+     */
     void encrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 32)
@@ -92,16 +92,16 @@ pure:
     }
 
     /**
-    * Decrypts the given byte array `data`
-    *
-    * This method decrypts the data using the Mira algorithm with the specified decryption `key`
-    * and an optional `seed` value. The decryption is done in place.
-    *
-    * Params:
-    *  data = Reference to the byte array to be decrypted.
-    *  key = The decryption key as a string. Must be either 256 or 512 bits.
-    *  seed = An optional seed value used for decryption. Defaults to 0.
-    */
+     * Decrypts the given byte array `data`.
+     *
+     * This method decrypts the data using the Mira algorithm with the specified decryption `key`.
+     * and an optional `seed` value. The decryption is done in place.
+     *
+     * Params:
+     *  data = Reference to the byte array to be decrypted.
+     *  key = The decryption key as a string. Must be either 256 or 512 bits.
+     *  seed = An optional seed value used for decryption. Defaults to 0.
+     */
     void decrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 32)
@@ -131,11 +131,11 @@ pure:
         {
             size_t ri = ~i;
             size_t si = i % 8;
-            *vptr ^= (a << si) ^ ri; 
-            *vptr ^= (b << si) ^ ri;
-            *vptr ^= (c << si) ^ ri; 
-            *vptr ^= (d << si) ^ ri;
-            *vptr -= factor;
+     *vptr ^= (a << si) ^ ri; 
+     *vptr ^= (b << si) ^ ri;
+     *vptr ^= (c << si) ^ ri; 
+     *vptr ^= (d << si) ^ ri;
+     *vptr -= factor;
             vptr += 1;
         }
 
@@ -163,7 +163,7 @@ pure:
 }
 
 /**
- * Implementation of Mira512 digester, internally backed by `tern.digest.circe`
+ * Implementation of Mira512 digester, internally backed by `tern.digest.circe`.
  *
  * Mira is an incredibly fast stream encryption algorithm based on shuffling and vector
  * xor operations on data.
@@ -181,16 +181,16 @@ public:
 static:
 pure:
     /**
-    * Encrypts the given byte array `data`
-    *
-    * This method encrypts the data using the Mira algorithm with the specified encryption `key`
-    * and an optional `seed` value. The encryption is done in place.
-    *
-    * Params:
-    *  data = Reference to the byte array to be encrypted.
-    *  key = The encryption key as a string. Must be either 256 or 512 bits.
-    *  seed = An optional seed value used for encryption. Defaults to 0.
-    */
+     * Encrypts the given byte array `data`.
+     *
+     * This method encrypts the data using the Mira algorithm with the specified encryption `key`.
+     * and an optional `seed` value. The encryption is done in place.
+     *
+     * Params:
+     *  data = Reference to the byte array to be encrypted.
+     *  key = The encryption key as a string. Must be either 256 or 512 bits.
+     *  seed = An optional seed value used for encryption. Defaults to 0.
+     */
     void encrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 64)
@@ -223,11 +223,11 @@ pure:
         {
             size_t ri = ~i;
             size_t si = i % 8;
-            *vptr += factor;
-            *vptr ^= (a << si) ^ ri; 
-            *vptr ^= (b << si) ^ ri;
-            *vptr ^= (c << si) ^ ri; 
-            *vptr ^= (d << si) ^ ri;
+     *vptr += factor;
+     *vptr ^= (a << si) ^ ri; 
+     *vptr ^= (b << si) ^ ri;
+     *vptr ^= (c << si) ^ ri; 
+     *vptr ^= (d << si) ^ ri;
             vptr += 1;
         }
 
@@ -244,16 +244,16 @@ pure:
     }
 
     /**
-    * Decrypts the given byte array `data`
-    *
-    * This method decrypts the data using the Mira algorithm with the specified decryption `key`
-    * and an optional `seed` value. The decryption is done in place.
-    *
-    * Params:
-    *  data = Reference to the byte array to be decrypted.
-    *  key = The decryption key as a string. Must be either 256 or 512 bits.
-    *  seed = An optional seed value used for decryption. Defaults to 0.
-    */
+     * Decrypts the given byte array `data`.
+     *
+     * This method decrypts the data using the Mira algorithm with the specified decryption `key`.
+     * and an optional `seed` value. The decryption is done in place.
+     *
+     * Params:
+     *  data = Reference to the byte array to be decrypted.
+     *  key = The decryption key as a string. Must be either 256 or 512 bits.
+     *  seed = An optional seed value used for decryption. Defaults to 0.
+     */
     void decrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
         if (key.length != 64)
@@ -279,11 +279,11 @@ pure:
         {
             size_t ri = ~i;
             size_t si = i % 8;
-            *vptr ^= (a << si) ^ ri; 
-            *vptr ^= (b << si) ^ ri;
-            *vptr ^= (c << si) ^ ri; 
-            *vptr ^= (d << si) ^ ri;
-            *vptr -= factor;
+     *vptr ^= (a << si) ^ ri; 
+     *vptr ^= (b << si) ^ ri;
+     *vptr ^= (c << si) ^ ri; 
+     *vptr ^= (d << si) ^ ri;
+     *vptr -= factor;
             vptr += 1;
         }
 

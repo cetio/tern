@@ -1,4 +1,4 @@
-/// Implements all encrypting digests
+/// Implements all encrypting digests.
 module tern.digest.cipher;
 
 public import tern.digest.chacha20;

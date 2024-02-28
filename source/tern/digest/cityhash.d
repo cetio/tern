@@ -1,4 +1,4 @@
-/// Implementation of CityHash digester
+/// Implementation of CityHash digester.
 module tern.digest.cityhash;
 
 import tern.digest;
@@ -24,14 +24,14 @@ public:
 static:
 pure:
     /**
-    * Computes the CityHash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the CityHash digest is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed CityHash digest.
-    */
+     * Computes the CityHash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the CityHash digest is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed CityHash digest.
+     */
     ubyte[] hash(ubyte[] data)
     {
         ulong seed = 0x9ae16a3b2f90404f;

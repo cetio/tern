@@ -1,4 +1,4 @@
-/// Implementation of Gimli digester
+/// Implementation of Gimli digester.
 module tern.digest.gimli;
 
 import tern.digest;
@@ -26,14 +26,14 @@ public:
 static:
 pure:
     /**
-    * Computes the Gimli hash digest of the given data.
-    *
-    * Params:
-    *  data = The input byte array for which the Gimli hash is to be computed.
-    *
-    * Returns:
-    *  A byte array representing the computed Gimli hash digest.
-    */
+     * Computes the Gimli hash digest of the given data.
+     *
+     * Params:
+     *  data = The input byte array for which the Gimli hash is to be computed.
+     *
+     * Returns:
+     *  A byte array representing the computed Gimli hash digest.
+     */
     ubyte[] hash(ubyte[] data) 
     {
         sachp(data, 128);

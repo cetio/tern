@@ -1,10 +1,11 @@
-/// Lazy filter-based range (destroy on function)
+/// Lazy filter-based range (destroy on function.)
 module tern.algorithm.lazy_filter;
 
 import tern.traits;
 import tern.algorithm.searching;
 import std.conv;
 
+/// Lazy filter-based range implementation.
 public struct LazyFilter(alias F, T)
     if (isForward!T && isCallable!F)
 {
@@ -22,6 +23,7 @@ public:
     }
 
 pure:
+    /// Gets the internally held range after predication.
     T range()
     {
         return this[0..length];

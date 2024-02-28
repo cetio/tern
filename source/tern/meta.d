@@ -1,10 +1,12 @@
-/// Comptime algorithm templates for working with `AliasSeq`
+/// Comptime algorithm templates for working with `AliasSeq`.
 module tern.meta;
 
+public import std.meta : Alias, AliasSeq, aliasSeqOf, Erase, EraseAll, NoDuplicates, Stride,
+    DerivedToFront, MostDerived, Repeat, Replace, ReplaceAll, Reverse, staticSort,
+    templateAnd, templateNot, templateOr, ApplyLeft, ApplyRight;
 import tern.traits;
 import tern.state;
 import tern.serialization;
-public import std.meta;
 
 /**
  * Checks if an `AliasSeq` contains an alias.
@@ -125,7 +127,7 @@ public template seqMap(string F, A...)
 
 
 /**
- * Finds the index of an alias in an `AliasSeq`
+ * Finds the index of an alias in an `AliasSeq`.
  *
  * Example:
  * ```d
@@ -192,7 +194,7 @@ public template seqStringOf(string SEPARATOR, A...)
  * static assert(isSame!(A, B));
  * ```
  */
- // Ripped from `std.meta`
+ // Ripped from `std.meta`.
 public template isSame(alias A, alias B)
 {
     static if (!is(typeof(&A && &B)) // at least one is an rvalue

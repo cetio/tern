@@ -1,3 +1,4 @@
+/// Boilerplate for working with arbitrarily typed ranges.
 module tern.algorithm.range;
 
 import tern.typecons;
@@ -24,7 +25,7 @@ public enum FILO;
 
 public:
 /**
- * Swaps elements `i0` and `i1` in `range`
+ * Swaps elements `i0` and `i1` in `range`.
  *
  * Params:
  *  range = The range.
@@ -51,7 +52,7 @@ void swap(T)(ref T range, size_t i0, size_t i1)
  *  The value that was popped off the stack.
  *
  * Remarks:returns:
- *  Defaults to `LIFO`
+ *  Defaults to `LIFO`.
  */
 pragma(inline)
 ElementType!T pop(O = LIFO, T)(ref T range)
@@ -80,7 +81,7 @@ ElementType!T pop(O = LIFO, T)(ref T range)
  *  The duplicated value from the top of the stack.
  *
  * Remarks:
- *  Defaults to `LIFO`
+ *  Defaults to `LIFO`.
  */
 pragma(inline)
 ElementType!T peek(O, T)(ref T range)
@@ -100,7 +101,7 @@ ElementType!T peek(O, T)(ref T range)
  *  range = The range.
  *
  * Remarks:
- *  Defaults to `LIFO`
+ *  Defaults to `LIFO`.
  */
 pragma(inline)
 void swap(O = LIFO, T)(ref T range)
@@ -113,7 +114,7 @@ void swap(O = LIFO, T)(ref T range)
 }
 
 /**
- * Pushes a value onto `range`
+ * Pushes a value onto `range`.
  *
  * Params:
  *  range = The range being pushed to.

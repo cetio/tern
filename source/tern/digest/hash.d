@@ -1,4 +1,4 @@
-/// Implements all hashing digests
+/// Implements all hashing digests.
 module tern.digest.hash;
 
 public import tern.digest.adler32;

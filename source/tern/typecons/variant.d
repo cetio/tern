@@ -1,11 +1,11 @@
-/// Constructions for `SumType`, `UnionType`, and `VadType` (variadic)
+/// Constructions for `SumType`, `UnionType`, and `VadType` (variadic.)
 module tern.typecons.variant;
 
-import std.conv;
 import tern.meld;
 import tern.meta;
 import tern.traits;
 import tern.blit;
+import std.conv;
 
 // TODO: Fix
 /* public struct SumType(T...)
@@ -46,14 +46,14 @@ public struct UnionType(T...)
 } */
 
 /** 
- * Wraps a type with modified or optional fields.  
- * Short for VariadicType.
+ * Wraps a type with modified or optional fields.
  *
  * Remarks:
  *  - Cannot wrap an intrinsic type (ie: `string`, `int`, `bool`)
  *  - Accepts syntax `VadType!A(TYPE, NAME, CONDITION...)` or `VadType!A(TYPE, NAME...)` interchangably.
  *  - Use `VadType.as!T` to extract `T` in the original layout.
  *  - Does not support functions for local/voldemort types.
+ *  - May be used to mock types, but functions cannot be mocked.
  * 
  * Example:
  * ```d
@@ -63,7 +63,6 @@ public struct UnionType(T...)
  * ```
  */
  // TODO: Static fields
- //       Preserve variant fields after a call!!!!!!!!!!!!
 public struct VadType(T, ARGS...)
     if (hasChildren!T)
 {

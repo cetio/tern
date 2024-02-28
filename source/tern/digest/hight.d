@@ -1,4 +1,4 @@
-/// Implementation of HIGHT digester
+/// Implementation of HIGHT digester.
 module tern.digest.hight;
 
 // TODO: Fix?
@@ -28,12 +28,12 @@ public:
 static:
 pure:
     /**
-    * Encrypts the given data using the HIGHT algorithm with the specified key.
-    *
-    * Params:
-    *  data = Reference to the input byte array to be encrypted.
-    *  key = The key used for encryption. Must be 128 bits (16 bytes) long.
-    */
+     * Encrypts the given data using the HIGHT algorithm with the specified key.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be encrypted.
+     *  key = The key used for encryption. Must be 128 bits (16 bytes) long.
+     */
     void encrypt(ref ubyte[] data, string key)
     {
         if (key.length != 16)
@@ -71,12 +71,12 @@ pure:
     }
 
     /**
-    * Decrypts the given data using the HIGHT algorithm with the specified key.
-    *
-    * Params:
-    *  data = Reference to the input byte array to be decrypted.
-    *  key = The key used for decryption. Must be 128 bits (16 bytes) long.
-    */
+     * Decrypts the given data using the HIGHT algorithm with the specified key.
+     *
+     * Params:
+     *  data = Reference to the input byte array to be decrypted.
+     *  key = The key used for decryption. Must be 128 bits (16 bytes) long.
+     */
     void decrypt(ref ubyte[] data, string key)
     {
         if (key.length != 16)

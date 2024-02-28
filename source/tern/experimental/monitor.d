@@ -1,4 +1,4 @@
-/// Access to creation and deletion of object monitors abstracted out by the runtime
+/// Access to creation and deletion of object monitors abstracted out by the runtime.
 module tern.experimental.monitor;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string;
@@ -78,7 +78,7 @@ shared static this()
 public:
 static:
 /** 
- * Creates a monitor for `val`
+ * Creates a monitor for `val`.
  *
  * Params:
  *  val = Value to create a monitor for.
@@ -109,7 +109,7 @@ bool createMonitor(T)(ref T val)
 }
 
 /** 
- * Deletes the monitor `m`
+ * Deletes the monitor `m`.
  *
  * Params:
  *  m = Pointer to the monitor to be deleted.
@@ -128,13 +128,13 @@ pure:
 }
 
 /** 
- * Gets the monitor of `val`
+ * Gets the monitor of `val`.
  *
  * Params:
  *  val = Value to get the monitor of.
  *
  * Returns: 
- *  The monitor of `val`
+ *  The monitor of `val`.
  */
 shared(Monitor)* getMonitor(T)(T val)
     if (isAssignable!(T, Object))
@@ -143,11 +143,11 @@ shared(Monitor)* getMonitor(T)(T val)
 }
 
 /** 
- * Sets the monitor of `val`
+ * Sets the monitor of `val`.
  *
  * Params:
  *  val = Value to set the monitor of.
- *  m = The new monitor of `val`
+ *  m = The new monitor of `val`.
  */
 void setMonitor(T)(T val, shared(Monitor)* m)
     if (isAssignable!(T, Object))

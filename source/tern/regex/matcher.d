@@ -1,11 +1,11 @@
 module tern.regex.matcher;
 
+import tern.state;
+import tern.regex.builder;
 import std.string;
 import std.conv;
 import std.algorithm;
 import std.stdio;
-import tern.state;
-import tern.regex.builder;
 
 package class State
 {

@@ -1,4 +1,4 @@
-/// Wrappers for automatically managing memory
+/// Wrappers for automatically managing memory.
 module tern.typecons.automem;
 
 import tern.typecons.security;

@@ -1,12 +1,13 @@
+/// Basic file stream implementation inheriting `IStream`.
 module tern.stream.file_stream;
 
-import std.stdio;
+public import tern.stream.impl;
 import tern.typecons;
 import tern.serialization;
 import tern.traits;
 import tern.memory;
 import tern.digest.mira;
-public import tern.stream.impl;
+import std.stdio;
 
 public enum Mode
 {

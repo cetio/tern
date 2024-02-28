@@ -1,12 +1,12 @@
-/// Provides interface to MSABI/SystemV ABI as well as generic register shenanigans
+/// Provides interface to MSABI/SystemV ABI as well as generic register shenanigans.
 module tern.experimental.assembly;
 
+public import tern.memory;
+import tern.meta;
 import std.conv;
 import std.traits;
 import std.meta;
 import std.string;
-import tern.meta;
-public import tern.memory;
 
 public:
 static:
@@ -127,7 +127,7 @@ alias NATIVE = size_t;
 alias ARRAY = void[];
 /// Struct to act as a reference (`ubyte[33]`)
 public struct REFERENCE { ubyte[33] bytes; }
-/// Struct to act as an inout, reference with special treatment by `mov`
+/// Struct to act as an inout, reference with special treatment by `mov`.
 public struct INOUT { ubyte[33] bytes; }
 
 public:
@@ -183,7 +183,7 @@ shared ubyte[8] movBuff;
  *
  * Params:
  *  ID = Register (or argument index) to put `VAR` into.
- *  VAR = Value to put into `ID`
+ *  VAR = Value to put into `ID`.
  *  AS = Type to emulate `VAR` as, defaults to void for the same type as `VAR` is.
  *  _LINE = Used for preventing collisions when storing high/low of `VAR`. Change to a different value if getting errors.
  *
@@ -195,7 +195,7 @@ shared ubyte[8] movBuff;
  *   mixin(mov!(rcx, a, void, true));
  * }
  * ```
-*/
+ */
 // TODO: isOverflow!T
 //       Fix stack arguments
 public template mov(uint ID, alias VAR, AS = void, uint _LINE = __LINE__)

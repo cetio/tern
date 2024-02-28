@@ -1,4 +1,4 @@
-/// Implementation of SHA digesters
+/// Implementation of SHA digesters.
 module tern.digest.sha;
 
 import tern.digest;

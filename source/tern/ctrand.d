@@ -1,11 +1,11 @@
-/// Simple seeded compile-time randomization implementation
+/// Simple seeded compile-time randomization implementation.
 module tern.ctrand;
 
 import std.meta;
 import std.traits;
 
 /** 
- * Generates a random boolean with the odds `1/max`
+ * Generates a random boolean with the odds `1/max`.
  *
  * Params:
  *  max = Maximum odds, this is what the chance is out of.

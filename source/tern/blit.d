@@ -1,11 +1,11 @@
-/// Blitting of data from one type to another, cloning, and more
+/// Blitting of data from one type to another, cloning, and more.
 module tern.blit;
 
-import std.conv;
 import tern.traits;
 import tern.meta;
 import tern.memory;
 import tern.serialization;
+import std.conv;
 
 public:
 static:
@@ -98,7 +98,7 @@ pragma(inline)
  *  val = The value to be duplicated.
  *
  * Returns:
- *  Clone of `val`
+ *  Clone of `val`.
  */
 pragma(inline)
 @trusted T qdup(T)(T val)
@@ -154,7 +154,7 @@ pragma(inline)
 }
 
 /** 
- * Checks if `F` may be converted to `T`
+ * Checks if `F` may be converted to `T`.
  *
  * Params:
  *  F = Type to check if can convert from
@@ -261,7 +261,7 @@ pragma(inline)
  *  val = Value to reinterpret cast.
  *
  * Returns: 
- *  `val` as `T`
+ *  `val` as `T`.
  */
 pragma(inline)
 @trusted auto ref T reinterpret(T, F)(F val)
@@ -281,7 +281,7 @@ pragma(inline)
  *  val = Value to convert.
  *
  * Returns: 
- *  `val` as `T`
+ *  `val` as `T`.
  */
 pragma(inline)
 @trusted auto ref T conv(T, F)(F val)
@@ -336,7 +336,7 @@ T factory(T, ARGS...)(ARGS args)
  * Dynamically tries to load an element from `val`, this is useful for arbitrary range types.
  *
  * Params:
- *  index = Index to load from `val`
+ *  index = Index to load from `val`.
  *  val = The value to store the element into.
  *
  * Returns:

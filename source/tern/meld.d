@@ -1,17 +1,17 @@
-/// Type melding and arbitrary inheritance implementation
+/// Type melding and arbitrary inheritance implementation.
 module tern.meld;
 
-import std.array;
-import std.ascii;
-import std.algorithm;
 import tern.traits;
 import tern.serialization;
 import tern.string;
+import std.array;
+import std.ascii;
+import std.algorithm;
 
 /** 
  * Sets `T` as an inherited type, this can be anything, so long as it isn't an intrinsic type.  
  *
- * This is an attribute and should be used like `@inherit!T`
+ * This is an attribute and should be used like `@inherit!T`.
  *
  * Example:
  * ```d
@@ -113,14 +113,13 @@ public template meld()
 } */
 
 /** 
- * Generates a mixin for implementing all possible functions of `T`
+ * Generates a mixin for implementing all possible functions of `T`.
  * 
  * Remarks:
  *  - Any function that returns true for `isDImplDefined` is discarded.  
  *  - `nothrow`, `pure`, and `const` attributes are discarded.  
  *  - `opCall`, `opAssign`, `opIndex`, `opSlice`, `opCast` and `opDollar` are discarded even if `mapOperators` is true.
  */
- // TODO: typeof(this) attributes (ie: shared)
 public template functionMap(T, bool mapOperators = false)
     if (hasChildren!T)
 {

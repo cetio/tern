@@ -1,9 +1,9 @@
-/// Implementation of custom sized integers
+/// Implementation of arbitrarily sized integers
 module tern.integer;
 
+import tern.serialization;
 import std.conv;
 import std.traits;
-import tern.serialization;
 
 /// Represents the shorthand for an integer
 public alias utri = UInt!24;
@@ -141,7 +141,7 @@ public:
     }
 } */
 
-/// Represents an arbitrary unsigned integer of `SIZE`
+/// Represents an arbitrary unsigned integer of `SIZE`.
 public struct UInt(size_t SIZE)
     if (SIZE <= 64 && SIZE >= 8 && SIZE % 8 == 0)
 {
@@ -215,7 +215,7 @@ public:
     }
 }
 
-/// Represents an arbitrary signed integer of `SIZE`
+/// Represents an arbitrary signed integer of `SIZE`.
 public struct Int(size_t SIZE)
     if (SIZE <= 64 && SIZE >= 8 && SIZE % 8 == 0)
 {

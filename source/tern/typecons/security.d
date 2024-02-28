@@ -1,4 +1,4 @@
-/// Wrappers for thread and side-channel [mitigation] behavior
+/// Wrappers for thread and side-channel [mitigation] behavior.
 module tern.typecons.security;
 
 public import core.atomic;
@@ -33,7 +33,7 @@ public alias b64 = Blind!ulong;
  * Wraps `T` to make every operation atomic, if possible.
  *
  * Remarks:
- *  `opOpAssign` is not supported for fields of `T`
+ *  `opOpAssign` is not supported for fields of `T`.
  */
  // There are some shenanigans with operator overloading that seems to cause a segfault,
  // not sure how to make a good check for this, so for safety mutexes are sometimes used instead of
@@ -394,7 +394,7 @@ unittest
 }
 
 /**
- * Prevents timing and power side channel attacks by obfuscating the processing of `T`
+ * Prevents timing and power side channel attacks by obfuscating the processing of `T`.
  *
  * Remarks:
  *  - This obviously has performance impacts and is designed to be used in cryptography.

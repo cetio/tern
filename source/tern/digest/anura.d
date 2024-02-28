@@ -1,4 +1,4 @@
-/// Implementation of Anura digester
+/// Implementation of Anura digester.
 module tern.digest.anura;
 
 // TODO: Fix?
@@ -30,12 +30,12 @@ public:
 static:
 pure:
     /**
-    * Encrypts the given data using Anura256 algorithm.
-    *
-    * Params:
-    *  data = The data to be encrypted.
-    *  key = The encryption key, must be 256 bits (32 bytes).
-    */
+     * Encrypts the given data using Anura256 algorithm.
+     *
+     * Params:
+     *  data = The data to be encrypted.
+     *  key = The encryption key, must be 256 bits (32 bytes).
+     */
     void encrypt(ref ubyte[] data, string key)
     {
         if (key.length != 32)
@@ -97,12 +97,12 @@ pure:
     }
 
     /**
-    * Decrypts the given data using Anura256 algorithm.
-    *
-    * Params:
-    *  data = The data to be decrypted.
-    *  key = The decryption key, must be 256 bits (32 bytes).
-    */
+     * Decrypts the given data using Anura256 algorithm.
+     *
+     * Params:
+     *  data = The data to be decrypted.
+     *  key = The decryption key, must be 256 bits (32 bytes).
+     */
     void decrypt(ref ubyte[] data, string key)
     {
         if (key.length != 32)
@@ -185,12 +185,12 @@ public:
 static:
 pure:
     /**
-    * Encrypts the given data using Anura1024 algorithm.
-    *
-    * Params:
-    *  data = The data to be encrypted.
-    *  key = The encryption key, must be 1024 bits (128 bytes).
-    */
+     * Encrypts the given data using Anura1024 algorithm.
+     *
+     * Params:
+     *  data = The data to be encrypted.
+     *  key = The encryption key, must be 1024 bits (128 bytes).
+     */
     void encrypt(ref ubyte[] data, string key)
     {
         if (key.length != 128)
@@ -263,12 +263,12 @@ pure:
     }
 
     /**
-    * Decrypts the given data using Anura1024 algorithm.
-    *
-    * Params:
-    *  data = The data to be decrypted.
-    *  key = The decryption key, must be 1024 bits (128 bytes).
-    */
+     * Decrypts the given data using Anura1024 algorithm.
+     *
+     * Params:
+     *  data = The data to be decrypted.
+     *  key = The decryption key, must be 1024 bits (128 bytes).
+     */
     void decrypt(ref ubyte[] data, string key)
     {
         if (key.length != 128)

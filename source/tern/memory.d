@@ -1,11 +1,11 @@
-/// General-purpose memory optimized memory utilities. For memory management, see `tern.typecons.automem`
+/// General-purpose memory optimized memory utilities. For memory management, see `tern.typecons.automem`.
 module tern.memory;
 
 public import core.lifetime : emplace, copyEmplace, move, moveEmplace;
-import std.algorithm;
-import tern.traits;
 import core.simd;
 import tern.experimental.heap_allocator;
+import tern.traits;
+import std.algorithm;
 
 public enum Endianness
 {
@@ -16,6 +16,15 @@ public enum Endianness
 
 public:
 static:
+/**
+ * Gets all bits in `val` as a boolean array.
+ *
+ * Params:
+ *  val = The value to get bits from.
+ *
+ * Returns:
+ *  Boolean array representing the state of all bits.
+ */
 @trusted bool[] getBits(T)(T val)
 {
     bool[] ret;
@@ -27,6 +36,15 @@ static:
     return ret;
 }
 
+/**
+ * Gets all bits in `val` as a string of 0 and 1.
+ *
+ * Params:
+ *  val = The value to get bits from.
+ *
+ * Returns:
+ *  String representing the state of all bits.
+ */
 string toBitString(bool[] bits)
 {
     string ret;
@@ -69,7 +87,7 @@ string toBitString(bool[] bits)
 @trusted void realloc(ref void* ptr, size_t size) => tern.experimental.heap_allocator.realloc!true(ptr, size);
 
 /**
- * Zeroes the entry pointed to by `ptr`
+ * Zeroes the entry pointed to by `ptr`.
  *
  * Params:
  *  ptr = Pointer to entry to be zeroed.
@@ -88,11 +106,11 @@ string toBitString(bool[] bits)
 @trusted bool free(void* ptr) => tern.experimental.heap_allocator.free!true(ptr);
 
 /**
- * Clears and then frees `ptr` before allocating `ptr` as a new entry with `calloc`
+ * Clears and then frees `ptr` before allocating `ptr` as a new entry with `calloc`.
  *
  * Params:
  *  ptr = Pointer to entry to be exchanged.
- *  size = New size of `ptr`
+ *  size = New size of `ptr`.
  */
 @trusted bool exchange(ref void* ptr, size_t size)
 {
@@ -104,7 +122,7 @@ string toBitString(bool[] bits)
 
 pure:
 /** 
- * Copies all data from `src` to `dest` within range `0..length`
+ * Copies all data from `src` to `dest` within range `0..length`.
  *
  * Params:
  *  src = Data source pointer.
@@ -143,7 +161,7 @@ pure:
 
 
 /** 
- * Sets all bytes at `dest` to `val` within range `0..length`
+ * Sets all bytes at `dest` to `val` within range `0..length`.
  *
  * Params:
  *  dest = Data destination pointer.
@@ -181,7 +199,7 @@ pure:
 }
 
 /** 
- * Zeros all bytes at `ptr` within range `0..length`
+ * Zeros all bytes at `ptr` within range `0..length`.
  *
  * Params:
  *  ptr = Data destination pointer.

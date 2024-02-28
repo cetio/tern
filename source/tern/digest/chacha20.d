@@ -10,18 +10,18 @@ import tern.digest.circe;
  * ChaCha20 is a symmetric encryption algorithm designed to provide both high performance 
  * and high security. It operates on 512-bit (64-byte) blocks and accepts a 256-bit (32-byte) 
  * key and a 96-bit (12-byte) nonce.
-*
-* Example:
-* ```d
-* import tern.digest.chacha20;
-*
-* ubyte[] data = [1, 2, 3, 4, 5];
-* string key = "my_secret_key"; // Must be exactly 256 bits (32 bytes) in length.
-* ubyte[12] nonce = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Must be exactly 96 bits (12 bytes) in length.
-* uint counter = 0;
-* ChaCha20.encrypt(data, key, nonce, counter);
-* ```
-*/
+ *
+ * Example:
+ * ```d
+ * import tern.digest.chacha20;
+ *
+ * ubyte[] data = [1, 2, 3, 4, 5];
+ * string key = "my_secret_key"; // Must be exactly 256 bits (32 bytes) in length.
+ * ubyte[12] nonce = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Must be exactly 96 bits (12 bytes) in length.
+ * uint counter = 0;
+ * ChaCha20.encrypt(data, key, nonce, counter);
+ * ```
+ */
 public static @digester class ChaCha20
 {
 private:
@@ -52,7 +52,7 @@ static:
 
 public:
     /**
-     * Encrypts the given byte array `data`
+     * Encrypts the given byte array `data`.
      *
      * Params:
      *  data: Reference to the input byte array to be encrypted.
@@ -93,7 +93,7 @@ public:
     }
 
     /**
-     * Decrypts the given byte array `data`
+     * Decrypts the given byte array `data`.
      *
      * Params:
      *  data: Reference to the input byte array to be encrypted.

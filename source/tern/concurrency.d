@@ -1,9 +1,12 @@
-/// Multi-threaded easy function invocation and Queue
+/// Multi-threaded easy arbitrary function invocation and queueing.
 module tern.concurrency;
 
-public import std.concurrency;
+public import std.concurrency : Tid, send, receiveTimeout, receiveOnly, receive;
 import tern.traits;
-import tern.typecons;
+import tern.blit;
+import tern.lambda;
+import tern.functional;
+import std.parallelism;
 
 public:
 /**
@@ -14,9 +17,9 @@ public:
  *  args = Arguments to invoke `F` on.
  *
  * Returns:
- *  The return of `F`
+ *  The return of `F`.
  */
-ReturnType!F await(alias F, ARGS...)(ARGS args)
+auto await(alias F, ARGS...)(ARGS args)
     if (!is(ReturnType!F == void))
 {
     void function(ARGS args) f = (ARGS args) { auto ret = F(args); send(ownerTid, ret); };
@@ -25,7 +28,7 @@ ReturnType!F await(alias F, ARGS...)(ARGS args)
 }
 
 /// ditto
-ReturnType!F await(alias F, ARGS...)(ARGS args)
+auto await(alias F, ARGS...)(ARGS args)
     if (isCallable!F && !__traits(compiles, is(ReturnType!F == void)))
 {
     void function(ARGS args) f = (ARGS args) { auto ret = F(args); send(ownerTid, ret); };
@@ -55,52 +58,110 @@ void async(alias F, ARGS...)(ARGS args)
     spawn(f, args);
 }
 
-/// Thread-safe queue implementation with range capabilities
-public struct Queue(T)
+/**
+ * Spins up a group of `WORKERS` to run `F` on the given `args`.
+ *
+ * Params:
+ *  WORKERS = The number of workers to delegate the task to.
+ *  F = The function to be invoked.
+ *  args = Arguments to invoke `F` on.
+ */
+void spinGroup(size_t WORKERS, alias F, ARGS...)(ARGS args)
 {
-private:
-final:
-    shared Atomic!(T[]) queue;
+    enum range = iota(0, WORKERS);
+    foreach (worker; parallel(range))
+        F(args, worker);
+}
 
-public:
-    void enqueue(T val) shared
-    {
-        queue ~= val;
-    }
+/**
+ * Spins up a group to iterate across all elements in `range` on.
+ *
+ * Params:
+ *  F = The function to be invoked.
+ *  range = The range to iterate across.
+ */
+void parallelForeach(alias F, T)(auto ref T range)
+{
+    immutable size_t chunk = range.loadLength / ((range.loadLength / 4) | 1);
+    spinGroup!(4, (size_t worker) {
+        size_t index = worker * chunk;
+        size_t len = index + chunk;
+        if (len >= range.loadLength)
+        {
+            if (len - chunk >= range.loadLength)
+                return;
+            size_t rem = range.loadLength % chunk;
+            len -= rem != 0 ? chunk - rem : 0;
+        }
+        
+        foreach (i; index..len)
+            barter!F(i, range[i]);
+    })();
+}
 
-    T dequeue() shared
-    {
-        scope (exit) queue = queue[1..$];
-        return queue[0];
-    }
+/// ditto
+void parallelForeachReverse(alias F, T)(auto ref T range)
+{
+    immutable size_t chunk = range.loadLength / ((range.loadLength / 4) | 1);
+    spinGroup!(4, (size_t worker) {
+        size_t index = worker * chunk;
+        size_t len = index + chunk;
+        if (len >= range.loadLength)
+        {
+            if (len - chunk >= range.loadLength)
+                return;
+            size_t rem = range.loadLength % chunk;
+            len -= rem != 0 ? chunk - rem : 0;
+        }
+        
+        foreach_reverse (i; index..len)
+            barter!F(i, range[i]);
+    })();
+}
 
-    size_t length() shared
-    {
-        return queue.length;
-    }
+/**
+ * Spins up a group to iterate from `start` to `end` with increments of `step`.
+ *
+ * Params:
+ *  F = The function to be invoked.
+ *  start = The starting value.
+ *  end = The ending value.
+ *  step = The increment.
+ */
+void parallelFor(alias F)(ptrdiff_t start, ptrdiff_t end, ptrdiff_t step)
+{
+    ptrdiff_t cycles = end - start < 0 ? -(end - start) : end - start;
+    immutable size_t chunk = cycles / ((cycles / (4 * step)) | 1);
+    spinGroup!(4, (size_t worker) {
+        size_t index = worker * chunk;
+        size_t len = index + chunk;
+        if (len >= cycles)
+        {
+            if (len - chunk >= cycles)
+                return;
+            size_t rem = cycles % chunk;
+            len -= rem != 0 ? chunk - rem : 0;
+        }
+        
+        foreach (i; index..len)
+            barter!F(i);
+    })();
+}
 
-    bool empty() shared
-    {
-        return queue.length == 0;
-    }
+/**
+ * Spins up a group to call `F` while `W`.
+ *
+ * Params:
+ *  W = The conditional function.
+ *  F = The function to be invoked.
+ */
+void parallelWhile(alias W, alias F)()
+{
+    size_t index;
+    spinGroup!(4, (size_t worker) {
+        if (!barter!W(index, worker))
+            return;
 
-    T front() shared
-    {
-        return queue.value[0];
-    }
-
-    T back() shared
-    {
-        return queue.value[$-1];
-    }
-
-    void popFront()
-    {
-        queue = queue[1..$];
-    }
-
-    void popBack()
-    {
-        queue = queue[0..$-1];
-    }
+        barter!F(index++);
+    })();
 }

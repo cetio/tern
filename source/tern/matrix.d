@@ -1,4 +1,4 @@
-/// Matrix implementation backed by a multi-dimensional vector array
+/// Matrix implementation backed by a multi-dimensional vector array.
 module tern.matrix;
 
 import tern.vector;

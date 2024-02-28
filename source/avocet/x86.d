@@ -1,14 +1,11 @@
 module avocet.x86;
 
 // TODO: Improve inference
-//       Rewrite
 
-import std.bitmanip;
-import std.algorithm;
-import std.string;
-import std.conv;
 import tern.exception;
-import tern.algorithm : levenshteinDistance;
+import tern.string;
+import std.bitmanip;
+import std.conv;
 
 public static class X86
 {

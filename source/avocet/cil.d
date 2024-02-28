@@ -1,10 +1,10 @@
 module avocet.cil;
 
+import tern.stream;
 import std.conv;
 import std.string;
 import std.format;
 import std.algorithm;
-import tern.stream;
 
 public static class CIL
 {
@@ -246,14 +246,14 @@ public:
     }
 
     /**
-    * Assembles a string of CIL instructions into their corresponding bytecode representation.
-    *
-    * Params:
-    *   - `str`: The string containing CIL instructions to be assembled.
-    *
-    * Returns:
-    *   An array of bytes representing the assembled bytecode.
-    */
+     * Assembles a string of CIL instructions into their corresponding bytecode representation.
+     *
+     * Params:
+     *   - `str`: The string containing CIL instructions to be assembled.
+     *
+     * Returns:
+     *   An array of bytes representing the assembled bytecode.
+     */
     @trusted ubyte[] assemble(string str)
     {
         ubyte[] assembly;
@@ -430,14 +430,14 @@ public:
     }
 
     /**
-    * Disassembles an array of bytes representing CIL bytecode into a human-readable string of CIL instructions.
-    *
-    * Params:
-    *   - `bytes`: An array of bytes representing the CIL bytecode.
-    *
-    * Returns:
-    *   A string containing the disassembled CIL instructions.
-    */
+     * Disassembles an array of bytes representing CIL bytecode into a human-readable string of CIL instructions.
+     *
+     * Params:
+     *   - `bytes`: An array of bytes representing the CIL bytecode.
+     *
+     * Returns:
+     *   A string containing the disassembled CIL instructions.
+     */
     @trusted string disassemble(ubyte[] bytes)
     {
         string disassembly;

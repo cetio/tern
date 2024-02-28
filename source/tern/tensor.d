@@ -1,4 +1,4 @@
-/// Tensor implementation backed by a multi-dimensional matrix array
+/// Tensor implementation backed by a multi-dimensional matrix array.
 module tern.tensor;
 
 import tern.matrix;

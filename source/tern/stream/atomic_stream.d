@@ -1,4 +1,4 @@
-/// Thread-safe atomic stream implementation using `IStream`
+/// Thread-safe atomic stream implementation using `IStream`.
 module tern.stream.atomic_stream;
 
 // TODO: Serialization
@@ -9,7 +9,7 @@ import tern.serialization;
 import tern.traits;
 import tern.memory;
 
-/// Thread-safe implementation of `BinaryStream`
+/// Thread-safe implementation of `BinaryStream`.
 public class AtomicStream : IStream
 {
 public:
@@ -402,16 +402,16 @@ shared:
     }
 
     /**
-    * Reads data from a byte stream into a structured type based on specified field names and read kinds.  
-    * Designed specifically for better control reading string and array fields.
-    *
-    * Params:
-    *   T = The type representing the structure to read into.
-    *   ARGS = Variadic template parameter representing field names and read kinds.
-    *
-    * Returns:
-    *  Returns an instance of type T with fields populated based on the specified read operations.
-    */
+     * Reads data from a byte stream into a structured type based on specified field names and read kinds.  
+     * Designed specifically for better control reading string and array fields.
+     *
+     * Params:
+     *   T = The type representing the structure to read into.
+     *   ARGS = Variadic template parameter representing field names and read kinds.
+     *
+     * Returns:
+     *  Returns an instance of type T with fields populated based on the specified read operations.
+     */
     T read(T, ARGS...)()
     {
         T val;
@@ -518,15 +518,15 @@ shared:
     }
 
     /**
-    * Reads a type from the stream using optional fields.
-    *
-    * Params:
-    *   T = The type to be read from the stream.
-    *   ARGS... = The arguments for optional fields.
-    *
-    * Returns:
-    *  The read type read from the stream.
-    */
+     * Reads a type from the stream using optional fields.
+     *
+     * Params:
+     *   T = The type to be read from the stream.
+     *   ARGS... = The arguments for optional fields.
+     *
+     * Returns:
+     *  The read type read from the stream.
+     */
     T readPlasticized(T, ARGS...)()
         if (ARGS.length % 3 == 0)
     {
