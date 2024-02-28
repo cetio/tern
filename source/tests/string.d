@@ -1,9 +1,15 @@
 module tests.string;
 import tern.string;
 
-import std.stdio;
 unittest
 {
+    foreach(c; "1234567890"){
+        assert(c.isDigit);
+    }
+    foreach(c; "1234567890abcdef"){
+        assert(c.isDigit(16));
+    }
+    assert(!'g'.isDigit(16));
     foreach(c; "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"){
         assert(c.isAlpha());
         assert(c.isAlphaNum());

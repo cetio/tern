@@ -208,7 +208,7 @@ string highlight(AnsiColor color, string matchTo, size_t matchStart, size_t matc
 
 @nogc:
 bool isAlpha(T)(T c) if (isSomeChar!T) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-bool isDigit(T)(T c, uint base = 10) if (isSomeChar!T) => (c >= '0' && c <= ('9' - base)) || (base > 10 && (c >= 'a' && c <= ('f' - base)) || (c >= 'A' && c <= ('F' - base)));
+bool isDigit(T)(T c, uint base = 10) if (isSomeChar!T) => (c >= '0' && c <= '9'- (base > 10 ? 0 : 10-base) ) || (base > 10 && c <= 'a' + base-11);
 bool isAlphaNum(T)(T c, uint base = 10) if (isSomeChar!T) => c.isAlpha || c.isDigit(base);
 bool isUpper(T)(T c) if (isSomeChar!T) => (c >= 'A' && c <= 'Z');
 bool isLower(T)(T c) if (isSomeChar!T) => (c >= 'a' && c <= 'z');
