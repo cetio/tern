@@ -68,18 +68,18 @@ string toLower(string str)
     return cast(string)ret;
 }
 
-char toUpper(char c)
+T toUpper(T)(T c) if (isSomeChar!T)
 {
     if (c.isLower)
-        return cast(char)(c - ('a' - 'A'));
+        return cast(T)(c - ('a' - 'A'));
     else
         return c;
 }
 
-char toLower(char c)
+T toLower(T)(T c) if (isSomeChar!T)
 {
     if (c.isUpper)
-        return cast(char)(c + ('a' - 'A'));
+        return cast(T)(c + ('a' - 'A'));
     else
         return c;
 }

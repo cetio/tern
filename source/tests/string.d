@@ -15,19 +15,28 @@ unittest
         assert(c.isDigit(8));
     }
     assert(!'8'.isDigit(8));
-    
-    foreach(c; "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"){
+
+    const upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowerCase = "abcdefghijklmnopqrstuvwxyz";
+
+
+    foreach(c; upperCase ~ lowerCase){
         assert(c.isAlpha());
         assert(c.isAlphaNum());
         assert(!c.isDigit());
     }
-    foreach(c; "abcdefghijklmnopqrstuvwxyz"){
+    foreach(c; lowerCase){
         assert(c.isLower());
         assert(!c.isUpper());
     }
-    foreach(c; "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){
+    foreach(c; upperCase){
         assert(!c.isLower());
         assert(c.isUpper());
+    }
+
+    foreach(i,c; lowerCase){
+        assert(c.toUpper == upperCase[i]);
+        assert(c == upperCase[i].toLower);
     }
 }
 unittest{
