@@ -10,6 +10,12 @@ unittest
         assert(c.isDigit(16));
     }
     assert(!'g'.isDigit(16));
+
+    foreach(c; "01234567"){
+        assert(c.isDigit(8));
+    }
+    assert(!'8'.isDigit(8));
+    
     foreach(c; "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"){
         assert(c.isAlpha());
         assert(c.isAlphaNum());
