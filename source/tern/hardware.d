@@ -145,9 +145,10 @@ else version (linux)
     /// Retrieves the disk serial number. May fail and return null.
     string diskSerial()
     {
-        auto process = pipeProcess(command, Redirect.stdout);
-        scope (exit) process.close();
-        return process.read().idup;
+        // auto process = pipeProcess("", Redirect.stdout);
+        // scope (exit) process.close();
+        // return process.read().idup;
+        assert(0);
     }
 
     /// Summation of all serials hashes into a single hardware id. Could be an invalid identifier but unlikely.
