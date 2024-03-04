@@ -154,13 +154,13 @@ align(8):
         switch (modifiers)
         {
             case NONE: ret = "NONE"; break;
-            case ALTERNATE: (ret != null) ? ret ~= " | ALTERNATE" : ret ~= "ALTERNATE"; break;
-            case EXCLUSIONARY: (ret != null) ? ret ~= " | EXCLUSIONARY" : ret ~= "EXCLUSIONARY"; break;
-            case QUANTIFIED: (ret != null) ? ret ~= " | QUANTIFIED" : ret ~= "QUANTIFIED"; break;
-            case NONCAPTURE: (ret != null) ? ret ~= " | NONCAPTURE" : ret ~= "NONCAPTURE"; break;
-            case NEGATIVE: (ret != null) ? ret ~= " | NEGATIVE" : ret ~= "NEGATIVE"; break;
-            case LAZY: (ret != null) ? ret ~= " | LAZY" : ret ~= "LAZY"; break;
-            case GREEDY: (ret != null) ? ret ~= " | GREEDY" : ret ~= "GREEDY"; break;
+            case ALTERNATE: (ret != null) ? (ret ~= " | ALTERNATE") : (ret ~= "ALTERNATE"); break;
+            case EXCLUSIONARY: (ret != null) ? (ret ~= " | EXCLUSIONARY") : (ret ~= "EXCLUSIONARY"); break;
+            case QUANTIFIED: (ret != null) ? (ret ~= " | QUANTIFIED") : (ret ~= "QUANTIFIED"); break;
+            case NONCAPTURE: (ret != null) ? (ret ~= " | NONCAPTURE") : (ret ~= "NONCAPTURE"); break;
+            case NEGATIVE: (ret != null) ? (ret ~= " | NEGATIVE") : (ret ~= "NEGATIVE"); break;
+            case LAZY: (ret != null) ? (ret ~= " | LAZY") : (ret ~= "LAZY"); break;
+            case GREEDY: (ret != null) ? (ret ~= " | GREEDY") : (ret ~= "GREEDY"); break;
             default: assert(0);
         }
         return ret;
