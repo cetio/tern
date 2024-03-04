@@ -19,7 +19,7 @@ public:
  *  `A` and `B` must both be string types.
  */
 size_t levenshteinDistance(A, B)(A comparer, B comparee)
-    if (isSomeString!A && isSomeString!B)
+    if (isString!A && isString!B)
 {
     auto m = comparer.length + 1;
     auto n = comparee.length + 1;
