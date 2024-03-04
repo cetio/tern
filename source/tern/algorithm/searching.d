@@ -1,12 +1,11 @@
-/// Algorithms for finding some kind of sequence or element in an range.
 module tern.algorithm.searching;
 
-public import tern.functional;
+// TODO: Barter?
 import tern.traits;
-import tern.meta;
-import tern.blit;
-import tern.algorithm.iteration;
-import tern.lambda;
+import tern.typecons;
+import tern.functional;
+import tern.object : loadLength;
+import tern.memory : scan, reference;
 
 public:
 /**
@@ -21,6 +20,13 @@ public:
 size_t indexOf(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
+    static if ((B.sizeof == 1 || B.sizeof == 2 || B.sizeof == 4 ||
+        B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A))
+    {
+        if ((B.sizeof * range.loadLength) % 16 == 0)
+            return scan!0(reference!range, B.sizeof * range.loadLength, elem);
+    }
+
     foreach (i; 0..range.loadLength)
     {
         if (range[i] == elem)
@@ -68,7 +74,14 @@ size_t indexOf(alias F, A)(A range)
 size_t lastIndexOf(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
-    foreach_reverse (i; 0..range.loadLength)
+    static if ((B.sizeof == 1 || B.sizeof == 2 || B.sizeof == 4 ||
+        B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A))
+    {
+        if ((B.sizeof * range.loadLength) % 16 == 0)
+            return scan!1(reference!range, B.sizeof * range.loadLength, elem);
+    }
+
+    foreach (i; 0..range.loadLength)
     {
         if (range[i] == elem)
             return i;

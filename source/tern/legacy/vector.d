@@ -1,54 +1,56 @@
-/// Arbitrary vector implementation and utilities for working with vectors.
-module tern.vector;
+module tern.legacy.vector;
 
-import tern.traits;
 import core.simd;
-import tern.blit;
 
 /// Arbitrary vector implementation, allows any length vector less than or equal to 256 bits and can be interacted with as an array.
-public struct Vector(T)
-    if (is(T U : U[L], size_t L) && (isIntegral!U || isFloatingPoint!U))
+public struct Vector(T, size_t LENGTH)
+    if (isIntegral!T || isFloatingPoint!T)
 {
-    enum is256 = length * ElementType!T.sizeof > 16;
+    enum is256 = LENGTH * T.sizeof > 16;
     static if (is256)
     {
-        static if (ElementType!T.sizeof % 8 == 0)
-            ElementType!T[4] data;
-        else static if (ElementType!T.sizeof % 4 == 0)
-            ElementType!T[8] data;
-        else static if (ElementType!T.sizeof % 2 == 0)
-            ElementType!T[16] data;
+        static if (T.sizeof % 8 == 0)
+            T[4] data;
+        else static if (T.sizeof % 4 == 0)
+            T[8] data;
+        else static if (T.sizeof % 2 == 0)
+            T[16] data;
         else
-            ElementType!T[32] data;
+            T[32] data;
     }
     else
     {
-        static if (ElementType!T.sizeof % 8 == 0)
-            ElementType!T[2] data;
-        else static if (ElementType!T.sizeof % 4 == 0)
-            ElementType!T[4] data;
-        else static if (ElementType!T.sizeof % 2 == 0)
-            ElementType!T[8] data;
+        static if (T.sizeof % 8 == 0)
+            T[2] data;
+        else static if (T.sizeof % 4 == 0)
+            T[4] data;
+        else static if (T.sizeof % 2 == 0)
+            T[8] data;
         else
-            ElementType!T[16] data;
+            T[16] data;
     }
     alias data this;
 
 public:
 final:
-    enum length = Length!T;
-    static if (ElementType!T.sizeof == 1)
-        alias P = mixin(ElementType!T.stringof~"16");
-    else static if (ElementType!T.sizeof == 2)
-        alias P = mixin(ElementType!T.stringof~"8");
-    else static if (ElementType!T.sizeof == 4)
-        alias P = mixin(ElementType!T.stringof~"4");
-    else static if (ElementType!T.sizeof == 8)
-        alias P = mixin(ElementType!T.stringof~"2");
+    static if (T.sizeof == 1)
+        alias P = mixin(T.stringof~"16");
+    else static if (T.sizeof == 2)
+        alias P = mixin(T.stringof~"8");
+    else static if (T.sizeof == 4)
+        alias P = mixin(T.stringof~"4");
+    else static if (T.sizeof == 8)
+        alias P = mixin(T.stringof~"2");
+
+    this(A)(A ahs)
+    {
+        this = ahs;
+    }
 
     auto opAssign(A)(A ahs)
     {
-        data.blit(ahs);
+        foreach (i, u; ahs)
+            data[i] = cast(T)u;
         return this;
     }
 
@@ -57,14 +59,14 @@ final:
         static if (is256)
         {
             mixin("Vector!T vec = this;
-                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
-                (cast(P*)&vec)[1] "~op~"= cast(ElementType!T)rhs;
+                (cast(P*)&vec)[0] "~op~"= cast(T)rhs;
+                (cast(P*)&vec)[1] "~op~"= cast(T)rhs;
                 return vec;");
         }
         else
         {
             mixin("Vector!T vec = this;
-                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
+                (cast(P*)&vec)[0] "~op~"= cast(T)rhs;
                 return vec;");
         }
     }
@@ -74,14 +76,14 @@ final:
         static if (is256)
         {
             mixin("Vector!T vec = this;
-                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
-                (cast(P*)&vec)[1] "~op~"= cast(ElementType!T)rhs;
+                (cast(P*)&vec)[0] "~op~"= cast(T)rhs;
+                (cast(P*)&vec)[1] "~op~"= cast(T)rhs;
                 return vec;");
         }
         else
         {
             mixin("Vector!T vec = this;
-                (cast(P*)&vec)[0] "~op~"= cast(ElementType!T)rhs;
+                (cast(P*)&vec)[0] "~op~"= cast(T)rhs;
                 return vec;");
         }
     }
@@ -91,14 +93,14 @@ final:
         static if (is256)
         {
             mixin("Vector!T vec = this;
-                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
-                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[1];
+                cast(T)lhs "~op~"= (cast(P*)&vec)[0];
+                cast(T)lhs "~op~"= (cast(P*)&vec)[1];
                 return vec;");
         }
         else
         {
             mixin("Vector!T vec = this;
-                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
+                cast(T)lhs "~op~"= (cast(P*)&vec)[0];
                 return vec;");
         }
     }
@@ -108,14 +110,14 @@ final:
         static if (is256)
         {
             mixin("Vector!T vec = this;
-                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
-                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[1];
+                cast(T)lhs "~op~"= (cast(P*)&vec)[0];
+                cast(T)lhs "~op~"= (cast(P*)&vec)[1];
                 return vec;");
         }
         else
         {
             mixin("Vector!T vec = this;
-                cast(ElementType!T)lhs "~op~"= (cast(P*)&vec)[0];
+                cast(T)lhs "~op~"= (cast(P*)&vec)[0];
                 return vec;");
         }
     }
@@ -124,12 +126,12 @@ final:
     {
         static if (is256)
         {
-            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;
+            mixin("(cast(P*)&this)[0] "~op~"= cast(T)ahs;
                 (cast(P*)&this)[1] "~op~"= (cast(P*)&this)[1];");
         }
         else
         {
-            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;");
+            mixin("(cast(P*)&this)[0] "~op~"= cast(T)ahs;");
         }
         return this;
     }
@@ -138,12 +140,12 @@ final:
     {
         static if (is256)
         {
-            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;
+            mixin("(cast(P*)&this)[0] "~op~"= cast(T)ahs;
                 (cast(P*)&this)[1] "~op~"= (cast(P*)&this)[1];");
         }
         else
         {
-            mixin("(cast(P*)&this)[0] "~op~"= cast(ElementType!T)ahs;");
+            mixin("(cast(P*)&this)[0] "~op~"= cast(T)ahs;");
         }
         return this;
     }

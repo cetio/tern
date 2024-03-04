@@ -1,8 +1,6 @@
-/// Implementation of arbitrarily sized integers
 module tern.integer;
 
-import tern.serialization;
-import tern.meta;
+import tern.meta : isSame;
 import std.conv;
 import std.traits;
 
@@ -55,92 +53,6 @@ public alias nphept = Int!56;
 public alias npulong = UInt!64;
 /// ditto
 public alias nplong = Int!64;
-
-/* public struct udodeca
-{
-private:
-final:
-    uint hi;
-    ulong lo;
-
-public:
-    string toString()
-    {
-        auto temp = this;
-
-        string ret;
-        while (temp != 0)
-        {
-            ret = cast(char)('0' + cast(uint)(temp % 10))~ret;
-            temp /= 10;
-        }
-        return ret;
-    }
-
-@nogc:
-    this(T)(T val)
-        if (isIntegral!T)
-    {
-        hi = cast(uint)(val >> (T.sizeof * 4));
-        lo = cast(ulong)(val & (T.max / 2));
-    }
-
-    this(uint hi, ulong lo)
-    {
-        this.hi = hi;
-        this.lo = lo;
-    }
-
-    auto opCast(T)() const
-    {
-        return cast(T)((cast(T)hi << (T.sizeof * 4)) | lo);
-    }
-
-    auto opBinary(string op, R)(const R rhs)
-    {
-        static if (op == "*")
-        {
-            auto ret = mulCarry(hi, lo, rhs);
-            return udodeca(ret[0], ret[1]);
-        }
-        else static if (op == "/")
-        {
-            auto ret = divCarry(hi, lo, rhs);
-            return udodeca(ret[0], ret[1]);
-        }
-        else static if (op == "%")
-        {
-            auto ret = moduloCarry(hi, lo, rhs);
-            return udodeca(ret[0], ret[1]);
-        }
-        else static if (op == "+")
-        {
-            auto ret = addCarry(hi, lo, rhs);
-            return udodeca(ret[0], ret[1]);
-        }
-        else static if (op == "-")
-        {
-            auto ret = addCarry(hi, lo, rhs);
-            return udodeca(ret[0], ret[1]);
-        }
-    }
-
-    auto opOpAssign(string op, A)(A ahs)
-    {
-        this = mixin("this "~op~" ahs");
-        return this;
-    }
-
-    auto opEquals(A)(A ahs)
-    {
-        return cast(ulong)((this - ahs)) == 0;
-    }
-
-    int opCmp(A)(A ahs)
-    {
-        return cast(int)(this - ahs);
-    }
-} */
 
 /// Represents an arbitrary unsigned integer of `SIZE`.
 public struct UInt(size_t SIZE)

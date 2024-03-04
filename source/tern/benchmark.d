@@ -1,9 +1,9 @@
 /// Parameterizable benchmarking with support for parallel, global results, reports, etc.
 module tern.benchmark;
 
-import tern.meta;
 import tern.traits;
-import tern.algorithm;
+import tern.meta;
+import std.algorithm;
 import std.parallelism;
 import std.datetime;
 import std.stdio;
@@ -12,13 +12,17 @@ import std.range;
 
 public struct BenchmarkConfig
 {
-    uint warmup = 100;
-    uint iterations = 1000;
+public:
+final:
+    size_t warmup = 100;
+    size_t iterations = 1000;
     bool parallel = false;
 }
 
 public struct BenchmarkResult
 {
+public:
+final:
     string functionName;
     size_t index;
     Duration duration;
@@ -26,7 +30,6 @@ public struct BenchmarkResult
 }
 
 private:
-static:
 BenchmarkResult[] results;
 
 public:
@@ -40,8 +43,8 @@ public:
  * Remarks:
  *  May not be parameterized.
  */
-BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
-    if (seqAll!(isCallable, FUNCS))
+BenchmarkResult[] benchmark(FUNCS...)(const scope BenchmarkConfig config)
+    if (allSatisfy!(isCallable, FUNCS))
 {
     BenchmarkResult[FUNCS.length] ret;
     if (!config.parallel)
@@ -49,7 +52,7 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
         foreach (i, F; FUNCS)
         {
             auto timestamp = Clock.currTime;
-            writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ", __traits(identifier, F), "() benchmarking...");
+            writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ", identifier!F, "() benchmarking...");
             
             foreach (j; 0..config.warmup)
                 F();
@@ -58,12 +61,12 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
             foreach (j; 0..config.iterations)
                 F();
 
-            auto duration = (Clock.currTime - start) / cast(float) config.iterations;
-            ret[i] = BenchmarkResult(__traits(identifier, F)~"()", i, duration, config);
-            results ~= BenchmarkResult(__traits(identifier, F)~"()", results.length, duration, config);
+            auto duration = (Clock.currTime - start);
+            ret[i] = BenchmarkResult(identifier!F~"()", i, duration, config);
+            results ~= BenchmarkResult(identifier!F~"()", results.length, duration, config);
 
             timestamp = Clock.currTime;
-            writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ",  __traits(identifier, F), "() finished benchmark!");
+            writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ", identifier!F, "() finished benchmark!");
         }
     }
     else 
@@ -74,7 +77,7 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
                 mixin("if (i == "~j.to!string~")
                 {
                     auto timestamp = Clock.currTime;
-                    writeln(\"[\", timestamp.hour, \":\", timestamp.minute, \":\", timestamp.second, \"] \", __traits(identifier, F), \"() benchmarking...\");
+                    writeln(\"[\", timestamp.hour, \":\", timestamp.minute, \":\", timestamp.second, \"] \", identifier!F, \"() benchmarking...\");
                     foreach (k; 0..config.warmup)
                         FUNCS["~j.to!string~"]();
 
@@ -82,12 +85,12 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
                     foreach (k; 0..config.iterations)
                         FUNCS["~j.to!string~"]();
 
-                    auto duration = (Clock.currTime - start) / cast(float) config.iterations;
-                    ret[i] = BenchmarkResult(__traits(identifier, F)~\"()\", i, duration, config);
-                    results ~= BenchmarkResult(__traits(identifier, F)~\"()\", results.length, duration, config);
+                    auto duration = (Clock.currTime - start);
+                    ret[i] = BenchmarkResult(identifier!F~\"()\", i, duration, config);
+                    results ~= BenchmarkResult(identifier!F~\"()\", results.length, duration, config);
 
                     timestamp = Clock.currTime;
-                    writeln(\"[\", timestamp.hour, \":\", timestamp.minute, \":\", timestamp.second, \"] \",  __traits(identifier, F), \"() finished benchmark!\");
+                    writeln(\"[\", timestamp.hour, \":\", timestamp.minute, \":\", timestamp.second, \"] \",  identifier!F, \"() finished benchmark!\");
                 }");
         }
     }
@@ -102,10 +105,10 @@ BenchmarkResult[] benchmark(FUNCS...)(BenchmarkConfig config)
  *  config = Benchmark configuration.
  *  args = The arguments to invoke `F` with.
  */
-BenchmarkResult[] benchmark(alias F, ARGS...)(BenchmarkConfig config, ARGS args)
+BenchmarkResult[] benchmark(alias F, ARGS...)(const scope BenchmarkConfig config, ARGS args)
 {
     auto timestamp = Clock.currTime;
-    writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ", __traits(identifier, F)~ARGS.stringof, " benchmarking...");
+    writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ", SignatureOf!F, " benchmarking...");
 
     foreach (i; 0..config.warmup)
         F(args);
@@ -114,12 +117,12 @@ BenchmarkResult[] benchmark(alias F, ARGS...)(BenchmarkConfig config, ARGS args)
     foreach (i; 0..config.iterations)
         F(args);
 
-    auto duration = (Clock.currTime - start) / cast(float) config.iterations;
-    auto result = BenchmarkResult(__traits(identifier, F)~ARGS.stringof, 0, duration, config);
-    results ~= BenchmarkResult(__traits(identifier, F)~ARGS.stringof, results.length, duration, config);
+    auto duration = (Clock.currTime - start);
+    auto result = BenchmarkResult(SignatureOf!F, 0, duration, config);
+    results ~= BenchmarkResult(SignatureOf!F, results.length, duration, config);
 
     timestamp = Clock.currTime;
-    writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ",  __traits(identifier, F)~ARGS.stringof, " finished benchmark!");
+    writeln("[", timestamp.hour, ":", timestamp.minute, ":", timestamp.second, "] ",  SignatureOf!F, " finished benchmark!");
     
     return [result];
 }

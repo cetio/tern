@@ -1,7 +1,6 @@
-/// Flag enum to string conversion, flag get/sets, and mask interactions.
 module tern.state;
 
-import std.traits;
+import tern.traits;
 
 public:
 static:
@@ -17,12 +16,12 @@ pure:
  */
 string toString(T)(T val)
 {
-    foreach (string member; __traits(allMembers, T))
+    foreach (string member; Children!T)
     {
         if (val.hasFlag(__traits(getMember, T, member)))
         {
             string str;
-            foreach (m; __traits(allMembers, T))
+            foreach (m; Children!T)
             {
                 if (val.hasFlag(__traits(getMember, T, m)))
                     str ~= m~" | ";
@@ -30,7 +29,7 @@ string toString(T)(T val)
             return str[0 .. $-3];
         }
     }
-    return __traits(allMembers, T)[0];
+    return Children!T[0];
 }
 
 @nogc:

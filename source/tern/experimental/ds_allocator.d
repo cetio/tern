@@ -1,13 +1,10 @@
-/// Very fast and very not thread-safe fixed data segment allocator.
 module tern.experimental.ds_allocator;
 
 import tern.traits;
 import tern.memory;
-import tern.meld;
-import std.range;
+import tern.meta : random;
+import std.range : iota;
 import std.conv;
-
-alias ElementType = tern.traits.ElementType;
 
 private pure string generateCases(size_t r)()
 {
@@ -71,7 +68,7 @@ void dsResize(T : U[], U)(ref T arr, size_t length)
     else
     {
         T tarr = dsNew!T(length);
-        copy(cast(void*)arr.ptr, cast(void*)tarr.ptr, size);
+        memcpy(cast(void*)arr.ptr, cast(void*)tarr.ptr, size);
         (cast(size_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)tarr.ptr;
     }
@@ -103,7 +100,7 @@ void dsResizeBeneath(T : U[], U)(ref T arr, size_t length)
     else
     {
         T tarr = dsNew!T(length);
-        copy(cast(void*)arr.ptr + offset, cast(void*)tarr.ptr, size);
+        memcpy(cast(void*)arr.ptr + offset, cast(void*)tarr.ptr, size);
         (cast(size_t*)&arr)[0] = length;
         (cast(void**)&arr)[1] = cast(void*)tarr.ptr;
     }
@@ -137,11 +134,11 @@ T dsNew(T, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FUL
     else
     {
         enum rand = random!(size_t, 0, size_t.max, uint.max, R0, R1, R2, R3).to!string;
-        mixin("static ubyte[__traits(classInstanceSize, T)] bytes"~rand~";");
-        foreach (field; FieldNames!T)
+        mixin("static ubyte[sizeof!T] bytes"~rand~";");
+        foreach (field; Fields!T)
         {
-            auto init = __traits(getMember, T, field).init;
-            enum offset = __traits(getMember, T, field).offsetof;
+            auto init = getChild!(T, field).init;
+            enum offset = getChild!(T, field).offsetof;
             mixin("bytes"~rand~"[offset..(offset + TypeOf!(T, field).sizeof)] = (cast(ubyte*)&init)[0..TypeOf!(T, field).sizeof];");
         }
         // 8 bytes after this are __monitor, but we don't need to create one 
@@ -157,7 +154,7 @@ T dsbNew(T, bool ctor = true)()
 {
     static if (!is(T == class))
     {
-        static if (hasCtor!T)
+        static if (hasConstructor!T)
             T ret = T(args);
         else
             T ret;
@@ -165,16 +162,16 @@ T dsbNew(T, bool ctor = true)()
     }
     else
     {
-        enum capacity = 100_194_304 - __traits(classInstanceSize, T);
+        enum capacity = 100_194_304 - sizeof!T;
         static size_t offset;
         static ubyte[100_194_304] data;
-        //assert(offset < capacity, "DSB allocator ran out of available memory!");
+        assert(offset < capacity, "DSB allocator ran out of available memory!");
 
-        static foreach (field; FieldNames!T)
+        static foreach (field; Fields!T)
         {
             {
-                auto init = __traits(getMember, T, field).init;
-                size_t _offset = __traits(getMember, T, field).offsetof + offset;
+                auto init = getChild!(T, field).init;
+                size_t _offset = getChild!(T, field).offsetof + offset;
                 data[_offset..(_offset + TypeOf!(T, field).sizeof)] = (cast(ubyte*)&init)[0..TypeOf!(T, field).sizeof];
             }
         }
@@ -184,7 +181,7 @@ T dsbNew(T, bool ctor = true)()
         T ret = cast(T)(cast(ubyte*)&data + offset);
         static if (ctor)
             ret.__ctor();
-        offset += __traits(classInstanceSize, T);
+        offset += sizeof!T;
         return ret;
     }
 }

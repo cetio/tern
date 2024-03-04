@@ -1,9 +1,8 @@
-/// Algorithms for doing calculations on a range.
 module tern.algorithm.iteration;
 
 import tern.traits;
-import tern.algorithm.searching;
-import tern.blit;
+import tern.object : loadLength;
+import tern.functional;
 
 public:
 /**

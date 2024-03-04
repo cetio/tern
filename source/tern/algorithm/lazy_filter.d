@@ -1,8 +1,7 @@
-/// Lazy filter-based range (destroy on function.)
 module tern.algorithm.lazy_filter;
 
+// TODO: Barter?
 import tern.traits;
-import tern.algorithm.searching;
 import std.conv;
 
 /// Lazy filter-based range implementation.

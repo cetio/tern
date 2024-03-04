@@ -379,7 +379,7 @@ final:
     T read(T, ARGS...)()
     {
         T val;
-        foreach (field; FieldNames!T)
+        foreach (field; Fields!T)
         {
             alias M = TypeOf!(val, field);
             bool cread;
@@ -495,7 +495,7 @@ final:
         if (ARGS.length % 3 == 0)
     {
         T val;
-        foreach (field; FieldNames!T)
+        foreach (field; Fields!T)
         {
             bool cread = true;
             static foreach (i, ARG; ARGS)

@@ -1,4 +1,5 @@
 module tests.meta;
+
 import tern.meta;
 import tern.traits;
 
@@ -34,17 +35,4 @@ unittest
     alias Seq = AliasSeq!(int, byte, long);
     alias S = seqMap!("Alias!(X.sizeof)", Seq);
     static assert(S.stringof == "AliasSeq!(4LU, 1LU, 8LU)");
-}
-
-unittest
-{
-    alias Seq = AliasSeq!(int, float, string);
-    static assert(seqIndexOf!(string, Seq) == 2);
-}
-
-unittest
-{
-    alias A = int;
-    alias B = int;
-    static assert(isSame!(A, B));
 }

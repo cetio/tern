@@ -1,4 +1,3 @@
-/// Simple parser oriented throwable raising with highlighting.
 module tern.exception;
 
 import tern.string;

@@ -1,45 +1,57 @@
-/// Comptime algorithm templates for working with `AliasSeq`.
 module tern.meta;
 
 public import std.meta : Alias, AliasSeq, aliasSeqOf, Erase, EraseAll, NoDuplicates, Stride,
     DerivedToFront, MostDerived, Repeat, Replace, ReplaceAll, Reverse, staticSort,
     templateAnd, templateNot, templateOr, ApplyLeft, ApplyRight;
 import tern.traits;
-import tern.state;
-import tern.serialization;
+import std.string;
+import std.conv;
 
-/**
- * Checks if an `AliasSeq` contains an alias.
- *
- * Example:
- * ```d
- * static assert(seqContains!(string, AliasSeq!(int, float, string)) == true);
- * ```
- */
-public template seqContains(A...)
+// TODO: Function map try reinterpret
+
+public template seqLoad(A...)
 {
-    enum seqContains =
+    auto seqLoad(size_t index)
+    {
+        switch (index)
+        {
+            static foreach (j, B; A)
+            {
+                mixin("case "~j.to!string~":
+                return A["~j.to!string~"];");
+            }
+            default: assert(0);
+        }
+    }
+}
+
+/// Checks if an `AliasSeq` contains an alias.
+enum seqContains(A...) =
+{
+    static if (A.length != 0)
+    static foreach (C; A[1..$])
+    {
+        static if (isSame!(C, A[0]))
+            return true;
+    }
+    return false;
+}();
+
+public template seqIndexOf(A...)
+{
+    enum seqIndexOf =
     {
         static if (A.length != 0)
-        static foreach (C; A[1..$])
+        static foreach (i, C; A[1..$])
         {
             static if (isSame!(C, A[0]))
-                return true;
+                return i;
         }
-        return false;
+        return -1;
     }();
 }
 
-
-/**
- * Filters over an `AliasSeq` based on a predicate.
- *
- * Example:
- * ```d
- * alias S = seqFilter!(isFloatingPoint, AliasSeq!(int, float, string));
- * static assert(is(S == AliasSeq!(float)));
- * ```
- */
+/// Filters over an `AliasSeq` based on a predicate.
 public template seqFilter(A...)
 {
     alias seqFilter = AliasSeq!();
@@ -53,16 +65,7 @@ public template seqFilter(A...)
     }
 }
 
-
-/**
- * Filters over an `AliasSeq` based on a string predicate.
- *
- * Example:
- * ```d
- * alias S = seqFilter!("isFloatingPoint!A", AliasSeq!(int, float, string));
- * static assert(is(S == AliasSeq!(float)));
- * ```
- */
+/// Filters over an `AliasSeq` based on a string predicate.
 public template seqFilter(string F, A...)
 {
     alias seqFilter = AliasSeq!();
@@ -79,16 +82,7 @@ public template seqFilter(string F, A...)
         seqFilter = AliasSeq!(seqFilter, filter!(i, B));
 }
 
-
-/**
- * Maps a template over an `AliasSeq`, returning an `AliasSeq` of all of the return values.
- *
- * Example:
- * ```d
- * alias S = seqMap!(isIntegral, AliasSeq!(int, float, string));
- * static assert(is(S == AliasSeq!(true, false, false)));
- * ```
- */
+/// Maps a template over an `AliasSeq`, returning an `AliasSeq` of all of the return values.
 public template seqMap(A...)
 {
     alias seqMap = AliasSeq!();
@@ -99,16 +93,7 @@ public template seqMap(A...)
         seqMap = AliasSeq!(seqMap, F!B);
 }
 
-
-/**
- * Maps a string over an `AliasSeq`, returning an `AliasSeq` of all of the return values.
- *
- * Example:
- * ```d
- * alias S = seqMap!("A.sizeof", AliasSeq!(int, byte, long));
- * static assert(is(S == AliasSeq!(4, 1, 8)));
- * ```
- */
+/// Maps a string over an `AliasSeq`, returning an `AliasSeq` of all of the return values.
 public template seqMap(string F, A...)
 {
     alias seqMap = AliasSeq!();
@@ -125,134 +110,101 @@ public template seqMap(string F, A...)
         seqMap = AliasSeq!(seqMap, map!(i, B));
 }
 
-
-/**
- * Finds the index of an alias in an `AliasSeq`.
- *
- * Example:
- * ```d
- * static assert(seqIndexOf!(string, AliasSeq!(int, float, string)) == 2);
- * ```
- */
-public template seqIndexOf(A...)
-{
-    enum seqIndexOf =
-    {
-        static if (A.length != 0)
-        static foreach (i, C; A[1..$])
-        {
-            static if (isSame!(C, A[0]))
-                return i;
-        }
-        return -1;
-    }();
-}
-
 /// True if all elements in `A` meet the first given predicate.
-public template seqAll(A...)
+public enum seqAny(A...) =
 {
-    enum seqAll =
-    {
-        return seqFilter!A.length == A.length - 1;
-    }();
-}
+    return seqFilter!A.length == A.length - 1;
+}();
 
 /// True if any elements in `A` meet the first given predicate.
-public template seqAny(A...)
+public enum seqAny(A...) =
 {
-    enum seqAny =
-    {
-        return seqFilter!A.length != 0;
-    }();
-}
+    return seqFilter!A.length != 0;
+}();
 
-/** 
- * Creates a string representing `A` using the given separator.  
- * Avoids weird behavior with `stringof` by not using `stringof` for values.
- */
-public template seqStringOf(string SEPARATOR, A...)
+/// Creates a string representing `A` using the given separator.
+enum seqStringJoin(string SEPARATOR, A...) =
 {
-    enum seqStringOf =
-    {
-        string ret;
-        foreach (i, B; A)
-        {
-            static if (__traits(compiles, { enum _ = B; }))
-                ret ~= B.to!string~(i == A.length - 1 ? null : SEPARATOR);
-            else
-                ret ~= B.stringof~(i == A.length - 1 ? null : SEPARATOR);
-        }
-        return ret[0..$];
-    }();
-}
+    pragma(msg, A);
+    static if (A.length == 0)
+        return "";
 
-/**
- * Checks if two aliases are identical.
- *
- * Example:
- * ```d
- * static assert(isSame!(A, B));
- * ```
- */
- // Ripped from `std.meta`.
+    string ret;
+    foreach (i, B; A)
+    {
+        static if (__traits(compiles, { enum _ = B; }))
+            ret ~= B.to!string~(i == A.length - 1 ? null : SEPARATOR);
+        else
+            ret ~= B.stringof~(i == A.length - 1 ? null : SEPARATOR);
+    }
+    return ret[0..$];
+}();
+
+/// Checks if two aliases are identical.
+// Ripped from `std.meta`.
 public template isSame(alias A, alias B)
 {
     static if (!is(typeof(&A && &B)) // at least one is an rvalue
             && __traits(compiles, { enum isSame = A == B; })) // c-t comparable
         enum isSame = A == B;
     else
-        enum isSame = __traits(isSame, A, B);
+        enum isSame = __traits(isSame, A, B) || A.stringof == B.stringof;
 }
 
+/** 
+ * Generates a random boolean with the odds `1/max`.
+ *
+ * Params:
+ *  max = Maximum odds, this is what the chance is out of.
+ */
+public alias randomBool(uint max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
+    = Alias!(random!(uint, 0, max, seed, R0, R1, R2, R3) == 0);
 
-public template Prerequirement(A...)
+/** 
+ * Generates a random floating point value.
+ *
+ * Params:
+ *  min = Minimum value.
+ *  max = Maximum value.
+ *  seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
+ */
+public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__) 
+    if (is(T == float) || is(T == double))
 {
-    enum Prerequirement =
+    pure T random()
     {
-        static assert(A.length >= 3, "You stupid");
-        alias L = A[0];
-        alias R = A[2];
-        static if (!__traits(compiles, { enum _ = R!L == A[1]; }))
-            return false;
-        else static if (R!L != A[1])
-            return false;
-        else
-        {
-            static if (A.length > 3)
-            foreach (i, B; A[3..$])
-            {
-                static if (!isTemplate!B)
-                    continue;
-                else static if (B!L != A[i + 3 - 1])
-                    return false;
-            }
-            return true;
-        }
-    }();
+        return random!(ulong, cast(ulong)(min * cast(T)1000), cast(ulong)(max * cast(T)1000), seed, R0, R1, R2, R3) / cast(T)1000;
+    }
 }
 
-public template Derequirement(A...)
+/** 
+ * Generates a random integral value.
+ *
+ * Params:
+ *  min = Minimum value.
+ *  max = Maximum value.
+ *  seed = The seed to generate with, useful if you do multiple random generations in one line, as it causes entropy.
+ */
+public template random(T, T min, T max, uint seed = uint.max, uint R0 = __LINE__, string R1 = __TIMESTAMP__, string R2 = __FILE_FULL_PATH__, string R3 = __FUNCTION__)
+    if (isIntegral!T)
 {
-    enum Derequirement =
+    pure T random()
     {
-        static assert(A.length >= 3, "You stupid");
-        alias L = A[0];
-        alias R = A[2];
-        static if (!__traits(compiles, { enum _ = R!L == A[1]; }))
-            return true;
-        else static if (R!L == A[1])
-            return true;
-        else
-        {
-            static if (A.length > 3)
-            foreach (i, B; A[3..$])
-            {
-                static if (!isTemplate!B)
-                    continue;
-                else static if (B!L != A[i + 3 - 1])
-                    return false;
-            }
-            return true;
-        }
-    }();
+        static if (min == max)
+            return min;
+
+        ulong s0 = (seed * R0) || 1;
+        ulong s1 = (seed * R0) || 1;
+        ulong s2 = (seed * R0) || 1;
+        
+        static foreach (c; R1)
+            s0 *= (c * (R0 ^ seed)) || 1;
+        static foreach (c; R2)
+            s1 *= (c * (R0 - seed)) || 1;
+        static foreach (c; R3)
+            s2 *= (c * (R0 ^ seed)) || 1;
+        
+        ulong o = s0 + s1 + s2;
+        return min + (cast(T)o % (max - min));
+    }
 }

@@ -1,7 +1,6 @@
-/// Matrix implementation backed by a multi-dimensional vector array.
-module tern.matrix;
+module tern.legacy.matrix;
 
-import tern.vector;
+import tern.legacy.vector;
 import std.conv;
 
 /// Arbitrary matrix implementation, allows any row length less than or equal to 256 bits in total and can be interacted with as an array.
@@ -9,9 +8,9 @@ public struct Matrix(T, size_t ROWS, size_t COLUMNS)
 {
 public:
 final:
-    Vector!(T[ROWS])[COLUMNS] data;
+    Vector!(T, ROWS)[COLUMNS] data;
 
-    this(Vector!(T[ROWS])[COLUMNS] data)
+    this(Vector!(T, ROWS)[COLUMNS] data)
     {
         this.data = data;
     }

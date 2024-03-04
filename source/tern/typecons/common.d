@@ -1,32 +1,24 @@
-/// General-purpose wrapper/construct types for interacting with types.
 module tern.typecons.common;
 
-import tern.serialization;
+import tern.memory : memcpy;
 import tern.traits;
-import tern.meta;
-import tern.memory;
-import tern.blit : qdup, factory;
+import tern.object : qdup, factory;
 import std.conv;
 
 /// Implements all functions of an abstract class with an default/empty function.
 public class BlackHole(T)
     if (isAbstractClass!T)
 {
-    mixin(fullyQualifiedName!T~" val;
+    mixin(fullIdentifier!T~" val;
     alias val this;");
-    static foreach (func; FunctionNames!T)
+    static foreach (func; Functions!T)
     {
-        static if (isAbstractFunction!(__traits(getMember, T, func)))
+        static if (isAbstractFunction!(getChild!(T, func)))
         {
-            static if (!is(ReturnType!(__traits(getMember, T, func)) == void))
-            {
-                static if (isReferenceType!(ReturnType!(__traits(getMember, T, func))))
-                    mixin(FunctionSignature!(__traits(getMember, T, func))~" { return new "~fullyQualifiedName!(ReturnType!(__traits(getMember, T, func)))~"(); }");
-                else 
-                    mixin(FunctionSignature!(__traits(getMember, T, func))~" { "~fullyQualifiedName!(ReturnType!(__traits(getMember, T, func)))~" ret; return ret; }");
-            }
+            static if (isNoReturn!(getChild!(T, func)))
+                mixin(FunctionSignature!(getChild!(T, func))~" { return "~fullIdentifier!(ReturnType!(getChild!(T, func)))~".init; }");
             else
-                mixin(FunctionSignature!(__traits(getMember, T, func))~" { }");
+                mixin(FunctionSignature!(getChild!(T, func))~" { }");
         }
     }
 }
@@ -35,12 +27,12 @@ public class BlackHole(T)
 public class WhiteHole(T)
     if (isAbstractClass!T)
 {
-    mixin(fullyQualifiedName!T~" val;
+    mixin(fullIdentifier!T~" val;
     alias val this;");
-    static foreach (func; FunctionNames!T[0..$-5])
+    static foreach (func; Functions!T[0..$-5])
     {
-        static if (isAbstractFunction!(__traits(getMember, T, func)))
-            mixin(FunctionSignature!(__traits(getMember, T, func))~" { assert(0); }");
+        static if (isAbstractFunction!(getChild!(T, func)))
+            mixin(FunctionSignature!(getChild!(T, func))~" { assert(0); }");
     }
 }
 
@@ -51,16 +43,6 @@ public class WhiteHole(T)
  * Remarks:
  *  - `opOpAssign` is not supported for fields of `T`.
  *  - const Nullable(T) is not supported, but shared Nullable(T) is.
- *
- * Example:
- * ```d
- * Nullable!int b;
- * writeln(b == null); // true
- * b = 0;
- * b += 2;
- * writeln(b); // 2
- * writeln(b == null); // false
- * ```
  */
 private alias NULL = typeof(null);
 public struct Nullable(T)
@@ -150,7 +132,7 @@ final:
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
 
-        static if (isScalarType!T)
+        static if (isScalar!T)
             return cast(int)(value - ahs);
         else
             return mixin("value.opCmp(ahs)");
@@ -161,7 +143,7 @@ final:
         if (ptr == null)
             throw new Throwable("Null object reference T.T");
 
-        static if (isScalarType!T)
+        static if (isScalar!T)
             return cast(int)(value - ahs);
         else
             return mixin("value.opCmp(ahs)");
@@ -226,9 +208,9 @@ final:
                 if (ptr == null)
                     throw new Throwable("Null object reference T.T");
 
-                static if (seqContains!(member, FieldNames!T))
+                static if (seqContains!(member, Fields!T))
                     mixin("return value."~member~" = args[0];");
-                else static if (seqContains!(member, FunctionNames!T))
+                else static if (seqContains!(member, Functions!T))
                     mixin("return value."~member~"(args);");
             }
 
@@ -237,7 +219,7 @@ final:
                 if (ptr == null)
                     throw new Throwable("Null object reference T.T");
 
-                else static if (seqContains!(member, FunctionNames!T) || 
+                else static if (seqContains!(member, Functions!T) || 
                     __traits(compiles, { mixin("return value."~member~"(args);"); }) ||
                     !__traits(compiles, { mixin("return value."~member~" = args[0];"); }))
                     mixin("return value."~member~"(args);");
@@ -286,45 +268,8 @@ Nullable!T nullable(T)(NULL val)
     return Nullable!T(null);
 }
 
-unittest 
-{
-    Nullable!uint a;
-    assert(a == null);
-    a = 2;
-    assert(a++ == 2);
-    assert(++a == 4);
-
-    Nullable!(uint[]) b;
-    b.unnullify();
-    b ~= 1;
-    assert(b == [1]);
-
-    Nullable!(short*) c = cast(short*)&a;
-    assert(c[0] == cast(const(short))4);
-}
-
-/// Wraps a type as a static field, allowing only a single shared instance of `T` at any given time.
-public struct Singleton(T)
-{
-    static T value;
-    alias value this;
-
-public:
-final:
-    this(T val)
-    {
-        value = val;
-    }
-}
-
-/// Helper function for creating a singleton.
-Singleton!T singleton(T)(T val)
-{
-    return Singleton!T(val);
-}
-
-/// Highly mutable enumerable for working with any indexable or sliceable type.
-public struct Enumerable(T)
+/// Highly mutable range wrapper for working with any indexable or sliceable type.
+public struct Range(T)
 {
     T value;
     alias value this;
@@ -366,14 +311,14 @@ final:
     {
         static if (__traits(compiles, { auto _ = opDollar(); }))
             return opDollar();
-        static assert("Enumerable!"~T.stringof~" has no length!");
+        static assert("Range!"~T.stringof~" has no length!");
     }
 
     ref auto opIndex(size_t index)
     {
         static if (__traits(compiles, { auto _ = value[0]; }))
             return value[index];
-        static assert("Enumerable!"~T.stringof~" has no indexing!");
+        static assert("Range!"~T.stringof~" has no indexing!");
     }
 
     auto opIndexAssign(A)(A ahs, size_t index)
@@ -383,17 +328,17 @@ final:
             return value[index] = ahs;
         else static if (__traits(compiles, { auto _ = value[0]; }))
         {
-            copy(cast(void*)&ahs, cast(void*)&value[index], A.sizeof);
+            memcpy(cast(void*)&ahs, cast(void*)&value[index], A.sizeof);
             return value[index];
         }
-        static assert("Enumerable!"~T.stringof~" has no indexing!");
+        static assert("Range!"~T.stringof~" has no indexing!");
     }
 
     auto opSlice(size_t start, size_t end)
     {
         static if (__traits(compiles, { auto _ = value[start..end]; }))
             return value[start..end];
-        static assert("Enumerable!"~T.stringof~" has no slicing!");
+        static assert("Range!"~T.stringof~" has no slicing!");
     }
 
     auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
@@ -403,7 +348,7 @@ final:
             return value[start..end] = ahs;
         else static if (__traits(compiles, { auto _ = value[start]; }))
         {
-            copy(cast(void*)ahs.ptr, cast(void*)&value[start], ElementType!A.sizeof * ahs.length);
+            memcpy(cast(void*)ahs.ptr, cast(void*)&value[start], ElementType!A.sizeof * ahs.length);
             return value[start..end];
         }
         return value;
@@ -422,7 +367,7 @@ final:
                 length++;
             return length;
         }
-        static assert("Enumerable!"~T.stringof~" has no length!");
+        static assert("Range!"~T.stringof~" has no length!");
     }
 
     size_t opDollar()
@@ -438,7 +383,7 @@ final:
                 length++;
             return length;
         }
-        static assert("Enumerable!"~T.stringof~" has no length!");
+        static assert("Range!"~T.stringof~" has no length!");
     }
 
     auto front()
@@ -454,35 +399,5 @@ final:
     bool empty()
     {
         return length == 0;
-    }
-}
-
-public struct Blittable(T)
-{
-    static if (isIndexable!T)
-        Enumerable!T value;
-    else
-        T value;
-    alias value this;
-
-public:
-final:
-    static if (!isIndexable!T)
-    this(T val)
-    {
-        value = val;
-    }
-
-    static if (isIndexable!T)
-    this(Enumerable!T val)
-    {
-        value = val;
-    }
-
-    auto opAssign(A)(A ahs)
-        if (A.sizeof <= T.sizeof)
-    {
-        copy(cast(void*)&ahs, cast(void*)&value, A.sizeof);
-        return this;
     }
 }

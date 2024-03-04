@@ -1,8 +1,6 @@
-/// Reimplementation of `core.atomic` with better data support.
 module tern.atomic;
 
-import tern.typecons;
-import std.traits;
+import tern.traits;
 import core.atomic;
 import core.sync.mutex;
 import core.sync.condition;
@@ -28,7 +26,7 @@ void fence()
 pragma(inline)
 auto atomicLoad(R)(ref shared R rhs)
 {
-    static if (isScalarType!R)
+    static if (isScalar!R)
         return core.atomic.atomicLoad!(MemoryOrder.seq)(rhs);
     else
     {
@@ -61,7 +59,7 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
 pragma(inline)
 void atomicStore(R, L)(ref shared R rhs, L lhs)
 {
-    static if (isScalarType!R)
+    static if (isScalar!R)
         core.atomic.atomicStore!(MemoryOrder.seq)(rhs, lhs);
     else
     {
@@ -89,13 +87,11 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs, L lhs)
     return mixin("rhs."~ELEM~" = lhs");
 }
 
-
-
 /// Atomically exchanges `rhs` and `lhs`.
 pragma(inline)
 void atomicExchange(R, L)(ref shared R rhs, L lhs)
 {
-    static if (isScalarType!R)
+    static if (isScalar!R)
         core.atomic.atomicExchange!(MemoryOrder.seq)(&rhs, lhs);
     else
     {
@@ -107,12 +103,11 @@ void atomicExchange(R, L)(ref shared R rhs, L lhs)
     }
 }
 
-
 /// Performs an atomic operation `op` on `rhs` and `lhs`.
 pragma(inline)
 auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
 {
-    static if (isScalarType!R)
+    static if (isScalar!R)
         return core.atomic.atomicOp!op(rhs, lhs);
     else
     {
@@ -121,7 +116,6 @@ auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
         return mixin("rhs "~op~" lhs");
     }
 }
-
 
 /// Spinlock implementation backed by `Condition`.
 public class SpinLock

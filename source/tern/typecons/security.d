@@ -1,21 +1,14 @@
-/// Wrappers for thread and side-channel [mitigation] behavior.
 module tern.typecons.security;
 
 public import core.atomic;
+import tern.traits;
+import tern.meta;
+import tern.typecons;
 import core.sync.mutex;
 import core.thread;
 import core.builtins;
-import core.simd;
-
 import std.conv;
 import std.array;
-
-import tern.traits;
-import tern.meta;
-import tern.serialization;
-import tern.typecons;
-import tern.digest;
-import tern.digest.mira;
 
 public alias a8 = shared Atomic!ubyte;
 public alias a16 = shared Atomic!ushort;
@@ -54,7 +47,7 @@ final:
 
     auto opAssign(A)(A ahs) shared
     {
-        static if (isScalarType!T)
+        static if (isScalar!T)
             value.atomicStore!M(ahs);
         else
         {
@@ -84,7 +77,7 @@ final:
             scope (exit) mutex.unlock();
             return *value;
         }
-        else static if (isScalarType!T)
+        else static if (isScalar!T)
             return mixin("Atomic!(T, M)("~op~"value.atomicLoad!M())");
         else
         {
@@ -96,19 +89,19 @@ final:
         }
     }
 
-    static if (isScalarType!T)
+    static if (isScalar!T)
     auto opEquals(A)(A ahs) const
     {
         return mixin("value.atomicLoad!M() == ahs");
     }
 
-    static if (isScalarType!T)
+    static if (isScalar!T)
     auto opEquals(A)(A ahs) const shared
     {
         return mixin("value.atomicLoad!M() == ahs");
     }
 
-    static if (!isScalarType!T)
+    static if (!isScalar!T)
     auto opEquals(A)(A ahs)
     {
         if (mutex is null)
@@ -119,7 +112,7 @@ final:
         return value == ahs;
     }
 
-    static if (!isScalarType!T)
+    static if (!isScalar!T)
     auto opEquals(A)(A ahs) shared
     {
         if (mutex is null)
@@ -130,19 +123,19 @@ final:
         return value == ahs;
     }
 
-    static if (isScalarType!T)
+    static if (isScalar!T)
     int opCmp(R)(const R other) const
     {
         return cast(int)(value.atomicLoad() - other);
     }
 
-    static if (isScalarType!T)
+    static if (isScalar!T)
     int opCmp(R)(const R other) const shared
     {
         return cast(int)(value.atomicLoad() - other);
     }
 
-    static if (!isScalarType!T)
+    static if (!isScalar!T)
     int opCmp(A)(const A ahs)
     {
         if (mutex is null)
@@ -153,7 +146,7 @@ final:
         return value.opCmp(ahs);
     }
 
-    static if (!isScalarType!T)
+    static if (!isScalar!T)
     int opCmp(A)(const A ahs) shared
     {
         if (mutex is null)
@@ -166,7 +159,7 @@ final:
 
     public auto opOpAssign(string op, R)(R rhs) shared
     {
-        static if (isScalarType!T)
+        static if (isScalar!T)
             return value.atomicOp!(op~'=')(cast(shared(T))rhs);
         else static if (op == "~")
         {
@@ -189,7 +182,7 @@ final:
 
     auto opBinary(string op, R)(const R rhs) shared
     {
-        static if (isScalarType!T)
+        static if (isScalar!T)
             return mixin("Atomic!(T, M)(value.atomicLoad!M() "~op~" rhs)");
         else
         {
@@ -203,7 +196,7 @@ final:
 
     auto opBinaryRight(string op, L)(const L lhs) shared
     {
-        static if (isScalarType!T)
+        static if (isScalar!T)
             return mixin("Atomic!(T, M)(cast(shared(T))(lhs "~op~" value.atomicLoad!M()))");
         else
         {
@@ -331,7 +324,7 @@ final:
         {
             auto opDispatch(ARGS...)(ARGS args) shared
             {
-                static if (seqContains!(member, FunctionNames!T) || 
+                static if (seqContains!(member, Functions!T) || 
                     __traits(compiles, { mixin("return value.atomicLoad!M()."~member~"!TARGS(args);"); }) ||
                     (__traits(compiles, { mixin("return value.atomicLoad!M()."~member~';'); }) && ARGS.length == 0) ||
                     !__traits(compiles, { mixin("return value."~member~" = args[0];"); }))
@@ -375,22 +368,6 @@ final:
 shared(Atomic!T) atomic(T)(T val)
 {
     return Atomic!T(val);
-}
-
-unittest
-{
-    auto a = atomic(10);
-    a++;
-    assert(a == 11);
-
-    auto b = atomic(10);
-    b += 1.0;
-    assert(b.value == 11);
-
-    auto c = atomic([1, 2, 3]);
-    c[0] = c[0] + 1;
-    assert(c[0] == 2);
-    assert(c[0..$] == cast(shared(int[]))[2, 2, 3]);
 }
 
 /**
@@ -534,288 +511,4 @@ final:
 Blind!T blind(T)(T val)
 {
     return Blind!T(val);
-}
-
-unittest
-{
-    auto a = blind(10);
-    assert(a.numNextOps() > 4);
-    a++;
-    assert(a == 11);
-}
-
-/**
- * Wraps a type and automatically encrypts the data when possible, decrypting as needed.  
- * 
- * Defaults to using Mira256 as encryption, can be changed but must be a streaming cipher.
- */
-public struct Opaque(T, string KEY, DIGEST = Mira256)
-    if (isEncryptingDigest!DIGEST)
-{
-    Nullable!T value;
-    alias value this;
-
-public:
-final:
-    this(T val)
-    {
-        value = val;
-        digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-    }
-
-    auto opAssign(A)(A ahs)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        value = ahs;
-        return this;
-    }
-
-    auto opAssign(A)(A ahs) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        value = ahs;
-        return this;
-    }
-
-    auto opOpAssign(string op, A)(A ahs)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        mixin("value "~op~"= ahs;");
-        return this;
-    }
-
-    auto opBinary(string op, R)(const R rhs)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("Opaque!(T, KEY, DIGEST)(value "~op~" rhs)");
-    }
-
-    auto opBinary(string op, R)(const R rhs) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("Opaque!(T, KEY, DIGEST)(value "~op~" rhs)");
-    }
-
-    auto opBinaryRight(string op, L)(const L lhs)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("Opaque!(T, KEY, DIGEST)(lhs "~op~" value)");
-    }
-
-    auto opBinaryRight(string op, L)(const L lhs) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("Opaque!(T, KEY, DIGEST)(lhs "~op~" value)");
-    }
-
-    auto opUnary(string op)() 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("Opaque!(T, KEY, DIGEST)("~op~"value)");
-    }
-
-    auto opUnary(string op)() shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("Opaque!(T, KEY, DIGEST)("~op~"value)");
-    }
-
-    bool opEquals(A)(const A ahs)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value == ahs;
-    }
-
-    bool opEquals(A)(const A ahs) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value == ahs;
-    }
-
-    int opCmp(A)(const A ahs)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-
-        static if (isScalarType!A)
-            return cast(int)(value - ahs);
-        else
-            return value.opCmp(ahs);
-    }
-
-    int opCmp(A)(const A ahs) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-
-        static if (isScalarType!A)
-            return cast(int)(value - ahs);
-        else
-            return value.opCmp(ahs);
-    }
-
-    static if (isArray!T)
-    ref auto opIndex(size_t index)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[index];
-    }
-
-    static if (isArray!T)
-    ref auto opIndex(size_t index) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[index];
-    }
-
-    static if (isArray!T)
-    auto opIndexAssign(A)(A ahs, size_t index) 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[index] = ahs;
-    }
-
-    static if (isArray!T)
-    auto opIndexAssign(A)(A ahs, size_t index) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[index] = ahs;
-    }
-
-    static if (isArray!T)
-    auto opIndexUnary(string op)(size_t index) 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin(op~"value[index]");
-    }
-
-    static if (isArray!T)
-    auto opIndexUnary(string op)(size_t index) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin(op~"value[index]");
-    }
-
-    static if (isArray!T)
-    auto opIndexOpAssign(string op, T)(T value, size_t index) 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("value[index] "~op~"= ahs");
-    }
-
-    static if (isArray!T)
-    auto opIndexOpAssign(string op, T)(T value, size_t index) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("value[index] "~op~"= ahs");
-    }
-
-    static if (isArray!T)
-    auto opSlice(size_t start, size_t end)
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[start..end];
-    }
-
-    static if (isArray!T)
-    auto opSlice(size_t start, size_t end) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[start..end];
-    }
-
-    static if (isArray!T)
-    auto opSliceUnary(string op)(size_t start, size_t end) 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin(op~"value[start..end]");
-    }
-
-    static if (isArray!T)
-    auto opSliceUnary(string op)(size_t start, size_t end) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin(op~"value[start..end]");
-    }
-
-    static if (isArray!T)
-    auto opSliceAssign(A)(A ahs, size_t start, size_t end) 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[start..end] = ahs;
-    }
-
-    static if (isArray!T)
-    auto opSliceAssign(A)(A ahs, size_t start, size_t end) shared 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return value[start..end] = ahs;
-    }
-
-    static if (isArray!T)
-    auto opSliceOpAssign(string op, A)(A ahs, size_t start, size_t end) 
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("value[start..end] "~op~"= ahs");
-    }
-
-    static if (isArray!T)
-    auto opSliceOpAssign(string op, A)(A ahs, size_t start, size_t end) shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return mixin("value[start..end] "~op~"= ahs");
-    }
-
-    static if (isArray!T)
-    size_t opDollar()
-    {
-        return value.length;
-    }
-
-    static if (isArray!T)
-    size_t opDollar(size_t DIM : 0)()
-    {
-        return value[DIM].length;
-    }
-
-    string toString() const
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return to!string(value);
-    }
-
-    string toString() const shared
-    {
-        ingest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        scope (exit) digest!DIGEST((cast(ubyte*)&value)[0..T.sizeof], KEY);
-        return to!string(value);
-    }
 }

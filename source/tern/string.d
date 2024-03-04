@@ -1,9 +1,8 @@
-/// Highlighting, case conversions, parsing, and more.
 module tern.string;
 
 public import tern.algorithm;
 public import std.string : strip, stripLeft, stripRight;
-import tern.traits;
+import std.traits;
 
 public enum AnsiColor 
 {

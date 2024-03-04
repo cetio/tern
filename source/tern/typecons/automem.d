@@ -1,4 +1,3 @@
-/// Wrappers for automatically managing memory.
 module tern.typecons.automem;
 
 import tern.typecons.security;
@@ -255,12 +254,12 @@ final:
     /// Releases/frees this manager. Implementation defined.
     void release()
     {
-        static if (seqContains!("close", FunctionNames!T))
+        static if (seqContains!("close", Functions!T))
         {
             static assert(Parameters!(TypeOf!(T, "close")).length == 0, "Close function expected to have no parameters!");
             mixin("value.close();");
         }
-        else static if (seqContains!("dispose", FunctionNames!T))
+        else static if (seqContains!("dispose", Functions!T))
         {
             static assert(Parameters!(TypeOf!(T, "dispose")).length == 0, "Dispose function expected to have no parameters!");
             mixin("value.dispose();");

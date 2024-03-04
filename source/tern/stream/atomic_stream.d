@@ -5,9 +5,8 @@ module tern.stream.atomic_stream;
 public import tern.stream.impl;
 import tern.typecons;
 import tern.serialization;
-import tern.serialization;
 import tern.traits;
-import tern.memory;
+import tern.object;
 
 /// Thread-safe implementation of `BinaryStream`.
 public class AtomicStream : IStream
@@ -415,7 +414,7 @@ shared:
     T read(T, ARGS...)()
     {
         T val;
-        foreach (field; FieldNames!T)
+        foreach (field; Fields!T)
         {
             alias M = TypeOf!(val, field);
             bool cread;
@@ -460,7 +459,7 @@ shared:
                             }
                             else static if  (ARGS[i - 1] == ReadKind.Fixed)
                             {
-                                __traits(getMember, val, field) =  read!wchar(ARG).to!string;
+                                __traits(getMember, val, field) = read!wchar(ARG).to!string;
                             }
                             else
                             {
@@ -476,7 +475,7 @@ shared:
                             }
                             else static if  (ARGS[i - 1] == ReadKind.Fixed)
                             {
-                                __traits(getMember, val, field) =  read!dchar(ARG).to!string;
+                                __traits(getMember, val, field) = read!dchar(ARG).to!string;
                             }
                             else
                             {
@@ -531,7 +530,7 @@ shared:
         if (ARGS.length % 3 == 0)
     {
         T val;
-        foreach (field; FieldNames!T)
+        foreach (field; Fields!T)
         {
             bool cread = true;
             static foreach (i, ARG; ARGS)

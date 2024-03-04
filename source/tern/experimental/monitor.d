@@ -70,13 +70,13 @@ final:
 
 private shared static core.sync.mutex.Mutex mutex;
 
+public:
+static:
 shared static this()
 {
     mutex = new shared core.sync.mutex.Mutex();
 }
 
-public:
-static:
 /** 
  * Creates a monitor for `val`.
  *

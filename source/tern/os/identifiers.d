@@ -1,5 +1,4 @@
-/// Utilities for getting hardware identifiers to validate device identity.
-module tern.hardware;
+module tern.os.identifiers;
 
 import tern.string;
 import tern.digest;
@@ -13,16 +12,6 @@ else version (linux)
     import std.process;
     import std.file;
     import std.stdio : lines;
-}
-
-version (X86)
-{
-    /// True if the current processor supports SIMD-128
-    public enum supportsSIMD128 = __traits(compiles, { asm { vxorps XMM0, XMM0, XMM0; } });
-    /// True if the current processor supports SIMD-256
-    public enum supportsSIMD256 = __traits(compiles, { asm { vxorps YMM0, YMM0, YMM0; } });
-    /// True if the current processor supports SIMD-512
-    public enum supportsSIMD512 = __traits(compiles, { asm { vxorps ZMM0, ZMM0, ZMM0; } });
 }
 
 public:

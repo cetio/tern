@@ -1,13 +1,11 @@
-/// Multi-threaded easy arbitrary function invocation and queueing.
 module tern.concurrency;
 
-public import std.concurrency : Tid, send, receiveTimeout, receiveOnly, receive;
-import std.concurrency;
+import tern.functional : barter;
+import tern.object : loadLength;
 import tern.traits;
-import tern.blit;
-import tern.lambda;
-import tern.functional;
 import std.parallelism;
+import std.concurrency;
+import std.range : iota;
 
 public:
 /**
@@ -21,7 +19,7 @@ public:
  *  The return of `F`.
  */
 auto await(alias F, ARGS...)(ARGS args)
-    if (!is(ReturnType!F == void))
+    if (!isNoReturn!F)
 {
     void function(ARGS args) f = (ARGS args) { auto ret = F(args); send(ownerTid, ret); };
     spawn(f, args);
@@ -30,7 +28,7 @@ auto await(alias F, ARGS...)(ARGS args)
 
 /// ditto
 auto await(alias F, ARGS...)(ARGS args)
-    if (isCallable!F && !__traits(compiles, is(ReturnType!F == void)))
+    if (isCallable!F && !__traits(compiles, isNoReturn!F))
 {
     void function(ARGS args) f = (ARGS args) { auto ret = F(args); send(ownerTid, ret); };
     spawn(f, args);
@@ -39,7 +37,7 @@ auto await(alias F, ARGS...)(ARGS args)
 
 /// ditto
 bool await(alias F, ARGS...)(ARGS args)
-    if (is(ReturnType!F == void))
+    if (isNoReturn!F)
 {
     void function(ARGS args) f = (ARGS args) { F(args); send(ownerTid, true); };
     spawn(f, args);

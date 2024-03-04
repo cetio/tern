@@ -1,12 +1,6 @@
-/// Provides interface to MSABI/SystemV ABI as well as generic register shenanigans.
 module tern.experimental.assembly;
 
-public import tern.memory;
-import tern.meta;
-import std.conv;
 import std.traits;
-import std.meta;
-import std.string;
 
 public:
 static:

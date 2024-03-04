@@ -1,15 +1,413 @@
-/// General-purpose functional programming oriented functions.
 module tern.functional;
 
+// TODO: Plane currently uses normal indexing, it should use Range(T)
+
+public import std.functional: curry, compose, pipe, memoize, not, partial, reverseArgs, unaryFun, binaryFun, bind;
 import tern.traits;
-import tern.blit;
-import tern.lambda;
-import tern.meta;
-import tern.concurrency;
+import tern.object : loadLength;
+import std.conv;
+import std.meta;
 import std.typecons;
 import std.parallelism;
+import std.range : iota;
+import std.array;
+import std.string;
+
+/// Tries to automagically instantiate `F` by argument.
+package template Instantiate(alias F, ARGS...)
+    if (isDynamicLambda!F)
+{
+    string args()
+    {
+        string setup()
+        {
+            string ret;
+            string p = F.stringof[(F.stringof.lastIndexOf("(") + 1)..$];
+            string[] ps = p.split(", ");
+            foreach (i, _p; ps)
+            {
+                if (_p.replace("const ", "").replace("ref ", "").replace("shared ", "")
+                    .replace("immutable ", "").replace("auto ", "").replace("scope ", "").split(" ").length > 1)
+                    continue;
+
+                ret ~= i < ARGS.length ? "ARGS["~i.to!string~"], " : "ARGS[$-1], ";
+            }
+            return ret[0..(ret.length >= 2 ? $-2 : $)];
+        }
+
+        alias D = mixin("F!("~setup~")");
+        return setup.replace("ARGS[$-1]", fullIdentifier!(Unconst!(ReturnType!D)));
+    }
+
+    alias Instantiate = mixin("F!("~args~")");
+}
 
 public:
+/**
+ * Denatures `F` on `args` to create a void function with no arguments.
+ *
+ * This is particularly useful when (unsafely) invoking a function from another thread.
+ *
+ * Params:
+ *  F = The function to denature.
+ *  args = The arguments to denature `F` to.
+ *
+ * Returns:
+ *  A `void function()` which invokes `F` on `args`.
+ *
+ * Remarks:
+ *  Supports renaturing arguments by reference, which may be especially unsafe.
+ */
+auto denature(alias F, ARGS...)(auto ref ARGS args) @nogc
+    if (__traits(compiles, { F(args); }))
+{
+    string makeFun()
+    {
+        string ret = "() { F(";
+        static foreach (i, ARG; ARGS)
+            ret ~= "*cast(ARGS["~i.to!string~"]*)a"~i.to!string~", ";
+        return ret[0..(ARGS.length == 0 ? $ : $-2)]~"); }";
+        // TODO: blit back
+    }
+
+    static foreach (i, ARG; ARGS)
+    {
+        mixin("static shared(ARGS["~i.to!string~"])* a"~i.to!string~";
+        a"~i.to!string~" = cast(shared(ARGS["~i.to!string~"])*)&args["~i.to!string~"];");
+    }
+    void function() f = mixin(makeFun);
+    return f;
+}
+
+/**
+ * Renatures `F` to `SIG` on `args` to create a new arbitrary signature.
+ *
+ * Params:
+ *  F = The function to renature.
+ *  SIG = The new signature of `F` after renaturing.
+ *  args = The arguments to renature `F` to.
+ *
+ * Returns:
+ *  A `SIG` function which invokes `F` on `args`.
+ */
+public template renature(alias F, SIG...)
+    if (SIG.length >= 1)
+{
+    auto renature(ARGS...)(auto ref ARGS args) @nogc
+        if (__traits(compiles, { F(args); }))
+    {
+        string makeParams()
+        {
+            string ret = "(";
+            static foreach (i, ARG; SIG[1..$])
+                ret ~= fullIdentifier!ARG~", ";
+            return ret[0..(SIG.length == 1 ? $ : $-2)]~")";
+        }
+
+        string makeFun()
+        {
+            string ret = makeParams~" { F(";
+            static foreach (i, ARG; ARGS)
+                ret ~= "cast(ARGS["~i.to!string~"]a"~i.to!string~", ";
+            return ret[0..(ARGS.length == 0 ? $ : $-2)]~"); return SIG[0].init; }";
+            // TODO: blit back
+        }
+
+        static foreach (i, ARG; ARGS)
+        {
+            mixin("static shared ARGS["~i.to!string~"] a"~i.to!string~";
+            a"~i.to!string~" = cast(shared(ARGS["~i.to!string~"]))args["~i.to!string~"];");
+        }
+        mixin("SIG[0] function"~makeParams~" f = mixin(makeFun);");
+        return f;
+    }
+}
+
+/* auto shrinkWrap(alias F, ARGS...)(auto ref ARGS args)
+    if (__traits(compiles, { F(args); }))
+{
+    alias RETURN = typeof(F(args));
+    string makeFun()
+    {
+        static if (is(RETURN == void))
+            string ret = "() { F(";
+        else
+            string ret = "() { return F(";
+        static foreach (i, ARG; ARGS)
+            ret ~= "*a"~i.to!string~", ";
+        return ret[0..$-2]~"); }";
+    }
+
+    static foreach (i, ARG; ARGS)
+    {
+        mixin("static ARGS["~i.to!string~"]* a"~i.to!string~";
+        a"~i.to!string~" = &args["~i.to!string~"];");
+    }
+    RETURN function() f = mixin(makeFun);
+    return f;
+} */
+
+/**
+ * Asynchronously calls every function in `FUNCS` using the given arguments, and returns all of the values in a tuple.
+ *
+ * Params:
+ *  F = The function to be called.
+ *  args = The arguments to call `F` on.
+ *
+ * Returns:
+ *  A tuple of all returned values from every function in `FUNCS`.
+ *
+ * Remarks:
+ *  Race conditions are very likely, make sure that the functions are thread safe.
+ */
+public template juxt(FUNCS...)
+{
+    /**
+     * Asynchronously calls every function in `FUNCS` using the given arguments, and returns all of the values in a tuple.
+     *
+     * Params:
+     *  F = The function to be called.
+     *  args = The arguments to call `F` on.
+     *
+     * Returns:
+     *  A tuple of all returned values from every function in `FUNCS`.
+     *
+     * Remarks:
+     *  Race conditions are very likely, make sure that the functions are thread safe.
+     */
+    auto juxt(ARGS...)(auto ref ARGS args)
+    {
+        string makeTup()
+        {
+            string ret;
+            static foreach (F; FUNCS)
+            {{
+                alias RETURN = typeof(F(args));
+                ret ~= is(RETURN == void) ? "bool, " : fullIdentifier!RETURN~", ";
+            }}
+            return "Tuple!("~ret[0..$-2]~")";
+        }
+
+        string makeCase()
+        {
+            string ret;
+            static foreach (j, F; FUNCS)
+            {
+                static if (is(typeof(F(args)) == void))
+                {
+                    ret ~= "case "~j.to!string~":
+                    FUNCS["~j.to!string~"](args);
+                    ret["~j.to!string~"] = true;
+                    break;";
+                }
+                else
+                {
+                    ret ~= "case "~j.to!string~":
+                    ret["~j.to!string~"] = FUNCS["~j.to!string~"](args);
+                    break;";
+                }
+            }
+            return ret;
+        }
+        
+        mixin(makeTup) ret;
+        foreach (i; parallel(iota(0, FUNCS.length)))
+        {
+            switch (i)
+            {
+                mixin(makeCase);
+                default: assert(0);
+            }
+        }
+        return ret;
+    }
+}
+
+// TODO: tap
+
+/**
+ * Dynamically tries to barter a range based lambda.
+ *
+ * Params:
+ *  F = The lambda being fulfilled.
+ *  index = The current index in the range, by ref.
+ *  elem = The current element in the range, by ref.
+ * 
+ * Remarks:
+ *  - This will barter any kind of lambda, but throws if there are more than 3 arguments.
+ *  - Has no explicit parameter checking, just tries to match a call.
+ *  - Will allow for fulfilling normal functions, but has no optimizations and is simply for ease of use.
+ */
+auto barter(alias F, A, B)(auto ref A index, auto ref B elem)
+    if (isCallable!F)
+{
+    static if (Arity!F == 3)
+    {
+        static if (isDynamicLambda!F)
+        {
+            alias R = Instantiate!(F, A, B);
+            static assert(!is(Parameters!R[$-1] == void), "Cannot have a folding lambda with a void return type!");
+            static Parameters!R[$-1] prev;
+        }
+        else
+        {
+            static assert(!is(Parameters!R[$-1] == void), "Cannot have a folding lambda with a void return type!");
+            static Parameters!R[$-1] prev;
+        }
+    }
+
+    static if (isDynamicLambda!F)
+    {
+        /* alias K = Instantiate!(F, A, B);
+        static if (!is(ReturnType!K == void))
+            alias G = memoize!K;
+        else
+            alias G = K; */
+
+        static if (Arity!F == 0)
+            return F!()();
+        else static if (Arity!F == 1)
+            return Instantiate!(F, A, B)(index);
+        else static if (Arity!F == 2)
+            return Instantiate!(F, A, B)(index, elem);
+        else static if (Arity!F == 3)
+        {
+            auto ret = Instantiate!(F, A, B)(index, elem, prev);
+            static if (!is(typeof(ret) == bool))
+                scope (exit) prev = ret;
+            return ret;
+        }
+        else
+            static assert(0, "Unable to barter dynamic lambda with argument count "~Arity!F.to!string);
+    }
+    else
+    {
+        static if (Arity!F == 0)
+            return F();
+        else static if (Arity!F == 1)
+            return F(index);
+        else static if (Arity!F == 2)
+            return F(index, elem);
+        else static if (Arity!F == 3)
+        {
+            auto ret = F(index, elem, prev);
+            static if (!is(typeof(ret) == bool))
+                scope (exit) prev = ret;
+            return ret;
+        }
+        else
+            static assert(0, "Unable to barter lambda with argument count "~Arity!F.to!string);
+    }
+}
+
+/// ditto
+auto barter(alias F, A)(auto ref A elem)
+    if (isCallable!F)
+{
+    static if (Arity!F == 2)
+    {
+        static if (isDynamicLambda!F)
+        {
+            alias R = Instantiate!(F, A);
+            static assert(!is(ReturnType!R == void), "Cannot have a folding lambda with a void return type!");
+            static Parameters!R[$-1] prev;
+        }
+        else
+        {
+            static assert(!is(ReturnType!F == void), "Cannot have a folding lambda with a void return type!");
+            static Parameters!R[$-1] prev;
+        }
+    }
+        
+    static if (isDynamicLambda!F)
+    {
+        static if (Arity!F == 0)
+            return F!()();
+        else static if (Arity!F == 1)
+            return Instantiate!(F, A)(elem);
+        else static if (Arity!F == 2)
+        {
+            auto ret = Instantiate!(F, A)(elem, prev);
+            scope (exit) prev = ret;
+            return ret;
+        }
+        else
+            static assert(0, "Unable to barter dynamic lambda with argument count "~Arity!F.to!string);
+    }
+    else
+    {
+        static if (Arity!F == 0)
+            return F();
+        else static if (Arity!F == 1)
+            return F(elem);
+        else static if (Arity!F == 2)
+        {
+            auto ret = F(elem, prev.value);
+            scope (exit) prev = ret;
+            return ret;
+        }
+        else
+            static assert(0, "Unable to barter lambda with argument count "~Arity!F.to!string);
+    }
+}
+
+/// ditto
+auto barter(alias F, A, B, _ = void)(A index, B elem)
+    if (isCallable!F)
+{
+    static if (Arity!F == 3)
+    {
+        static if (isDynamicLambda!F)
+        {
+            alias R = Instantiate!(F, A, B);
+            static assert(!is(ReturnType!R == void), "Cannot have a folding lambda with a void return type!");
+            static Unqual!(Parameters!R[$-1]) prev;
+        }
+        else
+        {
+            static assert(!is(ReturnType!F == void), "Cannot have a folding lambda with a void return type!");
+            static Unqual!(Parameters!R[$-1]) prev;
+        }
+    }
+        
+    static if (isDynamicLambda!F)
+    {
+        static if (Arity!F == 0)
+            return F!()();
+        else static if (Arity!F == 1)
+            return Instantiate!(F, A, B)(index);
+        else static if (Arity!F == 2)
+            return Instantiate!(F, A, B)(index, elem);
+        else static if (Arity!F == 3)
+        {
+            auto ret = Instantiate!(F, A, B)(index, elem, prev);
+            static if (!is(typeof(ret) == bool))
+                scope (exit) prev = ret;
+            return ret;
+        }
+        else
+            static assert(0, "Unable to barter dynamic lambda with argument count "~Arity!F.to!string);
+    }
+    else
+    {
+        static if (Arity!F == 0)
+            return F();
+        else static if (Arity!F == 1)
+            return F(index);
+        else static if (Arity!F == 2)
+            return F(index, elem);
+        else static if (Arity!F == 3)
+        {
+            auto ret = F(index, elem, prev);
+            static if (!is(typeof(ret) == bool))
+                scope (exit) prev = ret;
+            return ret;
+        }
+        else
+            static assert(0, "Unable to barter lambda with argument count "~Arity!F.to!string);
+    }
+}
+
 /**
  * Iterates over every element in `range`, looking for matches.
  * 
@@ -20,7 +418,7 @@ public:
  *  range = The range being iterated over.
  *  elem = The element to match for.
  */
-auto plane(alias C, A, B)(auto ref A range, B elem)
+auto plane(alias C, A, B)(auto ref A range, scope B elem)
     if (isCallable!C && isIndexable!A && isElement!(A, B))
 {
     alias TYPE = ReturnType!(barter!(C, size_t, ElementType!A, void));
@@ -67,7 +465,7 @@ auto plane(alias C, A, B)(auto ref A range, B elem)
  *  range = The range being iterated over.
  *  subrange = The subrange to match for.
  */
-auto plane(alias C, A, B)(auto ref A range, B subrange)
+auto plane(alias C, A, B)(auto ref A range, scope B subrange)
     if (isCallable!C && isIndexable!A && isIndexable!B && !isElement!(A, B))
 {
     if (subrange.loadLength > range.loadLength)
@@ -165,7 +563,7 @@ auto plane(alias C, alias F, T)(auto ref T range)
  *  range = The range being iterated over.
  *  elem = The element to match for.
  */
-auto planeReverse(alias C, A, B)(auto ref A range, B elem)
+auto planeReverse(alias C, A, B)(auto ref A range, scope B elem)
     if (isCallable!C && isIndexable!A && isElement!(A, B))
 {
     alias TYPE = ReturnType!(barter!(C, size_t, ElementType!A, void));
@@ -212,7 +610,7 @@ auto planeReverse(alias C, A, B)(auto ref A range, B elem)
  *  range = The range being iterated over.
  *  subrange = The subrange to match for.
  */
-auto planeReverse(alias C, A, B)(auto ref A range, B subrange)
+auto planeReverse(alias C, A, B)(auto ref A range, scope B subrange)
     if (isCallable!C && isIndexable!A && isIndexable!B && !isElement!(A, B))
 {
     if (subrange.loadLength > range.loadLength)
@@ -298,149 +696,4 @@ auto planeReverse(alias C, alias F, T)(auto ref T range)
                 return;
         }
     }
-}
-
-/**
- * Creates an array of numbers ranging from `start`..`end` with increments of `step`.
- *
- * Params:
- *  start = Array start value.
- *  end = Array end value.
- *  step = Array increment value. Defaults to 1.
- *
- * Returns:
- *  Array of numbers from `start`..`end` with increment of `step`.
- *
- * Remarks:
- *  End is not included in the array of values, exclusive.
- */
-size_t[] iota(size_t start, size_t end, size_t step = 1)
-{
-    size_t[] buff = [start];
-    end--;
-    return buff.plane!(() => buff ~= buff[$-1] + step, () => buff[$-1] < end);
-}
-
-/**
- * Calls `F` with `args` and assigns `ex` if any exception is thrown.
- *
- * Params:
- *  F = The function to be called.
- *  args = The arguments to call `F` on.
- *
- * Returns:
- *  `F` return value, or false if an exception was thrown.
- *
- * Remarks:
- *  Will not catch throwables or errors, treated as critical.
- */
-auto attempt(alias F, ARGS...)(ARGS args, out Exception ex)
-{
-    try
-    {
-        return F(args);
-    }
-    catch (Exception _ex)
-    {
-        ex = _ex;
-        return false;
-    }
-}
-
-/**
- * Asynchronously calls every function in `FUNCS` using the given arguments, and returns all of the values in a tuple.
- *
- * Params:
- *  F = The function to be called.
- *  args = The arguments to call `F` on.
- *
- * Returns:
- *  A tuple of all returned values from every function in `FUNCS`.
- *
- * Remarks:
- *  Race conditions are very likely, make sure that the functions are thread safe.
- */
-public template juxt(FUNCS...)
-    if (seqAll!(isCallable, FUNCS))
-{
-    /**
-     * Asynchronously calls every function in `FUNCS` using the given arguments, and returns all of the values in a tuple.
-     *
-     * Params:
-     *  F = The function to be called.
-     *  args = The arguments to call `F` on.
-     *
-     * Returns:
-     *  A tuple of all returned values from every function in `FUNCS`.
-     *
-     * Remarks:
-     *  Race conditions are very likely, make sure that the functions are thread safe.
-     */
-    auto juxt(ARGS...)(ARGS args)
-    {
-        string tup()
-        {
-            string ret;
-            static foreach (F; FUNCS)
-                ret ~= is(ReturnType!F == void) ? "bool, " : fullyQualifiedName!(ReturnType!F)~", ";
-            return "Tuple!("~ret[0..$-2]~')';
-        }
-        
-        mixin(tup) ret;
-        foreach (i; parallel(iota(0, FUNCS.length)))
-        {
-            static foreach (j, F; FUNCS)
-                mixin("if (i == "~j.to!string~") ret["~j.to!string~"] = await!(FUNCS["~j.to!string~"])(args);");
-        }
-        return ret;
-    }
-}
-
-/**
- * Calls `F` as forcibly pure with `args`.
- *
- * Params:
- *  F = The function to be called.
- *  args = The arguments to call `F` on.
- *
- * Returns:
- *  The return value of `F`.
- */
-auto tap(alias F, ARGS...)(ARGS args)
-    if (isCallable!F && isModule!(__traits(parent, F)))
-{
-    static if (!hasFunctionAttributes!(F, "pure"))
-        auto G = cast(SetFunctionAttributes!(typeof(&F), functionLinkage!F, functionAttributes!F | FunctionAttribute.pure_))&F;
-    else
-        auto G = &F;
-    return G(args);
-}
-
-/**
- * Calls `F` as forcibly pure with `args` on `parent`, and prevents side effects on `parent`.
- *
- * Params:
- *  F = The function to be called.
- *  args = The arguments to call `F` on.
- *
- * Returns:
- *  The return value of `F`.
- *
- * Remarks:
- *  Static data may still be modified by the function.
- */
-auto tap(alias M, T, ARGS...)(auto ref T parent, ARGS args)
-    if (isCallable!M && isSame!(T, __traits(parent, M)))
-{
-    static if (!hasFunctionAttributes!(M, "pure"))
-        auto G = cast(SetFunctionAttributes!(
-                typeof(mixin("&parent."~__traits(identifier, M))), 
-                functionLinkage!M, 
-                functionAttributes!M | FunctionAttribute.pure_)
-            )mixin("&parent."~__traits(identifier, M));
-    else
-        auto G = mixin("&parent."~__traits(identifier, M));;
-    T t = parent.qdup;
-    scope (exit) parent.blit(t);
-    return G(args);
 }

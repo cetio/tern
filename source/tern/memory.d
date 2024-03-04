@@ -1,59 +1,191 @@
-/// General-purpose memory optimized memory utilities. For memory management, see `tern.typecons.automem`.
 module tern.memory;
 
-public import core.lifetime : emplace, copyEmplace, move, moveEmplace;
-import core.simd;
 import tern.experimental.heap_allocator;
 import tern.traits;
-import std.algorithm;
+import core.bitop;
+import inteli.tmmintrin;
+import inteli.emmintrin;
+import inteli.smmintrin;
 
-public enum Endianness
-{
-    Native,
-    LittleEndian,
-    BigEndian
-}
+// TODO: Support AVX, add c-compilation for if SSE/AVX isnt supported, add memset
 
 public:
-static:
-/**
- * Gets all bits in `val` as a boolean array.
- *
- * Params:
- *  val = The value to get bits from.
- *
- * Returns:
- *  Boolean array representing the state of all bits.
- */
-@trusted bool[] getBits(T)(T val)
-{
-    bool[] ret;
-    foreach_reverse (i, b; val.getBytes())
-    {
-        foreach_reverse (j; 0..7)
-            ret ~= (((b >> j) & 1) ? true : false);
-    }
-    return ret;
-}
-
-/**
- * Gets all bits in `val` as a string of 0 and 1.
- *
- * Params:
- *  val = The value to get bits from.
- *
- * Returns:
- *  String representing the state of all bits.
- */
-string toBitString(bool[] bits)
-{
-    string ret;
-    foreach (b; bits)
-        ret ~= b ? '1' : '0';
-    return ret;
-}
-
 @nogc:
+/**
+ * Counts the number of trailing zeroes in `DIR` direction in `mask`.
+ *
+ * Params:
+ *  DIR = Direction to count in, will find index if `DIR == 0` or last index if `DIR == 1`.
+ *  mask = Mask to be counted from.
+ * 
+ * Returns:
+ *  Number of trailing zeroes in `DIR` direction in `mask`.
+ */
+pragma(inline)
+size_t ctz(uint DIR)(size_t mask) 
+{
+    if (mask == 0)
+        return -1;
+
+    static if (DIR == 0)
+        return bsf(mask);
+    else
+        return bsr(mask);
+}
+
+/**
+ * Finds the index of `elem` in `src` within `0..len` using SIMD intrinsics.
+ *
+ * Assumes that `len` is a multiple of 16 and undefined behavior if `T` is not an integral or vector size.
+ *
+ * Params:
+ *  DIR = Direction to count in, will find index if `DIR == 0` or last index if `DIR == 1`.
+ *  src = Data source pointer.
+ *  len = Length of data to be scanned.
+ *  elem = Data to be searched for.
+ */
+pragma(inline)
+size_t scan(uint DIR, T)(const scope void* src, size_t len, const scope T elem)
+{
+    static if (T.sizeof == 16)
+    {
+        __m128d val = _mm_loadu_pd(cast(double*)&elem);
+        static if (DIR == 0)
+        {
+            foreach (i; 0..(len / 16))
+            {
+                if (_mm_cmpeq_pd(_mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)), val) != 0)
+                    return i;
+            }
+        }
+        else
+        {
+            foreach_reverse (i; 0..(len / 16))
+            {
+                if (_mm_cmpeq_pd(_mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)), val) != 0)
+                    return i;
+            }
+        }
+        return -1;
+    }
+    else static if (T.sizeof == 8)
+    {
+        ulong val = *cast(ulong*)&elem;
+        static if (DIR == 0)
+        {
+            foreach (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi64(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi64x(val));
+                size_t mask = cast(size_t)_mm_movemask_pd(cast(__m128d)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return index + (i * 2);
+            }
+        }
+        else
+        {
+            foreach_reverse (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi64(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi64x(val));
+                size_t mask = cast(size_t)_mm_movemask_pd(cast(__m128d)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return index + (i * 2);
+            }
+        }
+        return -1;
+    }
+    else static if (T.sizeof == 4)
+    {
+        uint val = *cast(uint*)&elem;
+        static if (DIR == 0)
+        {
+            foreach (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi32(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi32(val));
+                size_t mask = cast(size_t)_mm_movemask_ps(cast(__m128)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return index + (i * 4);
+            }
+        }
+        else
+        {
+            foreach_reverse (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi32(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi32(val));
+                size_t mask = cast(size_t)_mm_movemask_ps(cast(__m128)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return index + (i * 4);
+            }
+        }
+        return -1;
+    }
+    else static if (T.sizeof == 2)
+    {
+        ushort val = *cast(ushort*)&elem;
+        static if (DIR == 0)
+        {
+            foreach (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi16(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi16(val));
+                size_t mask = cast(size_t)_mm_movemask_epi8(cast(__m128)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return (index / 2) + (i * 8);
+            }
+        }
+        else
+        {
+            foreach_reverse (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi16(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi16(val));
+                size_t mask = cast(size_t)_mm_movemask_epi8(cast(__m128)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return (index / 2) + (i * 8);
+            }
+        }
+        return -1;
+    }
+    else
+    {
+        ubyte val = *cast(ubyte*)&elem;
+        static if (DIR == 0)
+        {
+            foreach (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi8(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi8(val));
+                size_t mask = cast(size_t)_mm_movemask_epi8(cast(__m128d)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return index + (i * 16);
+            }
+        }
+        else
+        {
+            foreach_reverse (i; 0..(len / 16))
+            {
+                __m128i cmp = _mm_cmpeq_epi8(_mm_loadu_si128(cast(__m128i*)src + i), _mm_set1_epi8(val));
+                size_t mask = cast(size_t)_mm_movemask_epi8(cast(__m128d)cmp);
+                size_t index = ctz!DIR(mask);
+
+                if (index != -1)
+                    return index + (i * 16);
+            }
+        }
+        return -1;
+    }
+}
+
 /**
  * Allocates an entry of `size` 
  *
@@ -105,157 +237,156 @@ string toBitString(bool[] bits)
  */
 @trusted bool free(void* ptr) => tern.experimental.heap_allocator.free!true(ptr);
 
+pure:
 /**
- * Clears and then frees `ptr` before allocating `ptr` as a new entry with `calloc`.
+ * Creates a reference to `V` instance data.
  *
- * Params:
- *  ptr = Pointer to entry to be exchanged.
- *  size = New size of `ptr`.
+ * Returns:
+ *  `void*` to `V` instance data.
  */
-@trusted bool exchange(ref void* ptr, size_t size)
+pragma(inline)
+@trusted scope void* reference(alias V)()
 {
-    wake(ptr);
-    bool ret = free(ptr);
-    ptr = calloc(size);
-    return ret;
+    static if (is(typeof(V) == class))
+        return cast(void*)V;
+    else static if (isIndexable!(typeof(V)))
+        return cast(void*)&V[0];
+    else
+        return cast(void*)&V;
 }
 
-pure:
+static:
 /** 
- * Copies all data from `src` to `dest` within range `0..length`.
+ * Copies all data from `src` to `dst` within range `0..len`.
  *
  * Params:
  *  src = Data source pointer.
- *  dest = Data destination pointer.
- *  length = Length of data to be copied.
- * 
- * Remarks:
- *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
+ *  dst = Data destination pointer.
+ *  len = Length of data to be copied.
  */
-@trusted void copy(scope void* src, scope void* dest, size_t length)
+pragma(inline)
+void memcpy(const scope void* src, const scope void* dst, size_t len)
 {
-    switch (length & 15)
+    switch (len % 16)
     {
         case 0:
-            foreach (j; 0..(length / 16))
-                (cast(ulong2*)dest)[j] = (cast(ulong2*)src)[j];
+            foreach (i; 0..(len / 16))
+                _mm_storeu_pd(cast(double*)dst + i, _mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)));
             break;
         case 8:
-            foreach (j; 0..(length / 8))
-                (cast(ulong*)dest)[j] = (cast(ulong*)src)[j];
+            foreach (i; 0..(len / 8))
+                (cast(ulong*)dst)[i] = (cast(ulong*)src)[i];
             break;
         case 4:
-            foreach (j; 0..(length / 4))
-                (cast(uint*)dest)[j] = (cast(uint*)src)[j];
+            foreach (i; 0..(len / 4))
+                (cast(uint*)dst)[i] = (cast(uint*)src)[i];
             break;
         case 2:
-            foreach (j; 0..(length / 2))
-                (cast(ushort*)dest)[j] = (cast(ushort*)src)[j];
+            foreach (i; 0..(len / 2))
+                (cast(ushort*)dst)[i] = (cast(ushort*)src)[i];
             break;
         default:
-            foreach (j; 0..length)
-                (cast(ubyte*)dest)[j] = (cast(ubyte*)src)[j];
+            foreach (i; 0..len)
+                (cast(ubyte*)dst)[i] = (cast(ubyte*)src)[i];
             break;
     }
 }
 
-
-/** 
- * Sets all bytes at `dest` to `val` within range `0..length`.
- *
- * Params:
- *  dest = Data destination pointer.
- *  length = Length of data to be copied.
- *  val = Value to set all bytes to.
- * 
- * Remarks:
- *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
- */
-@trusted void memset(scope void* dest, size_t length, ubyte val)
+/// ditto
+pragma(inline)
+void memcpy(size_t len)(const scope void* src, const scope void* dst)
 {
-    switch (length & 15)
+    static if (len % 16 == 0)
     {
-        case 0:
-            foreach (j; 0..(length / 16))
-                (cast(ulong2*)dest)[j] = cast(ulong2)val;
-            break;
-        case 8:
-            foreach (j; 0..(length / 8))
-                (cast(ulong*)dest)[j] = cast(ulong)val;
-            break;
-        case 4:
-            foreach (j; 0..(length / 4))
-                (cast(uint*)dest)[j] = cast(uint)val;
-            break;
-        case 2:
-            foreach (j; 0..(length / 2))
-                (cast(ushort*)dest)[j] = cast(ushort)val;
-            break;
-        default:
-            foreach (j; 0..length)
-                (cast(ubyte*)dest)[j] = cast(ubyte)val;
-            break;
+        static foreach (i; 0..(len / 16))
+            _mm_storeu_pd(cast(double*)dst + i, _mm_loadu_pd(cast(__m128d*)src + i));
+    }
+    else static if (len % 8 == 0)
+    {            
+        static foreach (i; 0..(len / 8))
+            (cast(ulong*)dst)[i] = (cast(ulong*)src)[i];
+    }
+    else static if (len % 4 == 0)
+    {            
+        static foreach (i; 0..(len / 4))
+            (cast(uint*)dst)[i] = (cast(uint*)src)[i];
+    }
+    else static if (len % 2 == 0)
+    {            
+        static foreach (i; 0..(len / 2))
+            (cast(ushort*)dst)[i] = (cast(ushort*)src)[i];
+    }
+    else
+    {            
+        static foreach (i; 0..len)
+            (cast(ubyte*)dst)[i] = (cast(ubyte*)src)[i];
     }
 }
 
 /** 
- * Zeros all bytes at `ptr` within range `0..length`.
+ * Zeroes all bytes at `src` within range `0..len`.
  *
  * Params:
- *  ptr = Data destination pointer.
- *  length = Length of data to be copied.
- * 
- * Remarks:
- *  This is optimized to do as little writes as necessary, and tries to avoid being O(n)
+ *  src = Data source pointer.
+ *  len = Length of data to be copied.
  */
-@trusted void zeroSecureMemory(void* ptr, size_t length) => memset(ptr, length, 0);
-
-/**
- * Swaps the endianness of the provided value, if applicable.
- *
- * Params:
- *  val = The value to swap endianness.
- *  endianness = The desired endianness.
- *
- * Returns:
- *  The value with swapped endianness.
- */
-@trusted T makeEndian(T)(T val, Endianness endianness)
+pragma(inline)
+void memzero(const scope void* src, size_t len)
 {
-    version (LittleEndian)
+    switch (len % 16)
     {
-        if (endianness == Endianness.BigEndian)
-        {
-            static if (is(T == class))
-                (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].reverse();
-            else
-                (cast(ubyte*)&val)[0..T.sizeof].reverse();
-        }
+        case 0:
+            foreach (i; 0..(len / 16))
+                _mm_storeu_pd(cast(double*)src + i, [0, 0]);
+            break;
+        case 8:
+            foreach (i; 0..(len / 8))
+                (cast(ulong*)src)[i] = 0;
+            break;
+        case 4:
+            foreach (i; 0..(len / 4))
+                (cast(uint*)src)[i] = 0;
+            break;
+        case 2:
+            foreach (i; 0..(len / 2))
+                (cast(ushort*)src)[i] = 0;
+            break;
+        default:
+            foreach (i; 0..len)
+                (cast(ubyte*)src)[i] = 0;
+            break;
     }
-    else version (BigEndian)
-    {
-        if (endianness == Endianness.LittleEndian)
-        {
-            static if (is(T == class))
-                (*cast(ubyte**)val)[0..__traits(classInstanceSize, T)].reverse();
-            else
-                (cast(ubyte*)&val)[0..T.sizeof].reverse();
-        }
-    }
-    return val;
 }
 
 /**
- * Checks if `val` is actually a valid, non-null class, and has a valid vtable.
+ * Swaps all bytes at `src` from `0..len`.
  *
  * Params:
- *  val = The value to check if null.
- *
- * Returns:
- *  True if `val` is null or has an invalid vtable.
+ *  src = Data source pointer.
+ *  len = Length of data to be byte-swapped.
  */
-@trusted bool isNull(T)(T val)
-    if (is(T == class) || isPointer!T)
+pragma(inline)
+void byteswap(const scope void* src, size_t len)
 {
-    return val is null || *cast(void**)val is null;
+    if (len % 16 == 0)
+    {
+        foreach (i; 0..(len / 16))
+        {
+            __m128i mask = _mm_setr_epi8(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+            _mm_storeu_pd(cast(double*)(cast(__m128i*)src + i), cast(__m128d)_mm_shuffle_epi8(_mm_loadu_si128(cast(__m128i*)src + i), mask));
+        }
+
+        size_t end = (len / 32);
+        foreach (i; 0..(len / 32))
+        {
+            __m128d t = _mm_loadu_pd(cast(double*)(cast(__m128*)src + i));
+            _mm_storeu_pd(cast(double*)(cast(__m128*)src + i), _mm_loadu_pd(cast(double*)(cast(__m128*)src + (end - i))));
+            _mm_storeu_pd(cast(double*)(cast(__m128*)src + (end - i)), t);
+        }
+        return;
+    }
+
+    // TODO: Not this
+    import std.algorithm : reverse;
+    (cast(ubyte*)src)[0..len].reverse();
 }

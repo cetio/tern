@@ -1,9 +1,8 @@
-/// General-purpose binary serializer and deserializer for arbitrary data types.
 module tern.serialization;
 
-public import tern.memory;
+public import tern.object : Endianness;
+import tern.object : factory, makeEndian;
 import tern.traits;
-import tern.blit;
 
 public:
 static:
@@ -34,9 +33,9 @@ pure:
     else static if (hasChildren!T)
     {
         ubyte[] bytes;
-        foreach (field; FieldNames!T)
+        foreach (field; Fields!T)
         {
-            static if (!isEnum!(__traits(getMember, T, field)))
+            static if (!isEnum!(getChild!(T, field)))
                 bytes ~= __traits(getMember, val, field).makeEndian(endianness).serialize!RAW();
         }
         return bytes;
@@ -89,26 +88,14 @@ pure:
 
         return ret;
     }
-    else static if (is(T == class))
-    {
-        if (bytes.length < __traits(classInstanceSize))
-            bytes ~= new ubyte[__traits(classInstanceSize) - bytes.length];
-
-        foreach (field; FieldNames!T)
-        {
-            static if (isMutable!(__traits(getMember, T, field)))
-                __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
-        }
-        return ret;
-    }
     else static if (hasChildren!T)
     {
-        if (bytes.length < T.sizeof)
-            bytes ~= new ubyte[T.sizeof - bytes.length];
+        if (bytes.length < sizeof!T)
+            bytes ~= new ubyte[sizeof!T - bytes.length];
 
-        foreach (field; FieldNames!T)
+        foreach (field; Fields!T)
         {
-            static if (isMutable!(__traits(getMember, T, field)))
+            static if (isMutable!(getChild!(T, field)))
                 __traits(getMember, ret, field) = deserialize!(TypeOf!(T, field))(bytes[offset..(offset += TypeOf!(T, field).sizeof)]).makeEndian(endianness);
         }
         return ret;
@@ -170,6 +157,15 @@ void unvacpp(ref ubyte[] data)
     data = data[0..(data.length - margin)];
 }
 
+/**
+ * Encodes `val` as a variable length integer.
+ *
+ * Params:
+ *  val = The integer to be encoded.
+ *
+ * Returns:
+ *  Array of bytes representing `val` in its variable length form.
+ */
 ubyte[] varEncode(T)(T val)
     if (isIntegral!T)
 {
@@ -188,6 +184,15 @@ ubyte[] varEncode(T)(T val)
     return bytes;
 }
 
+/**
+ * Decodes `bytes` as a variable length integer into a ulong.
+ *
+ * Params:
+ *  bytes = Bytes representing a variable length integer.
+ * 
+ * Returns:
+ *  A ulong as `bytes` decoded.
+ */
 ulong varDecode(ubyte[] bytes)
 {
     ulong ret;

@@ -1,9 +1,8 @@
-/// Thin wrapper around `tern.experimental.ds_allocator` that allows for allocating a type in the data segment.
 module tern.experimental.constexpr;
 
 import tern.experimental.ds_allocator;
-import tern.traits;
-import tern.serialization;
+import tern.object : store;
+import std.traits;
 import std.conv;
 
 /// Allocates `T` in the data segment when `T` is *not* a dynamic array, this is used identically to `T` normally.
@@ -17,19 +16,19 @@ public:
 final:
     auto opAssign(T)(T ahs)
     {
-        static if (isIntrinsicType!T && !isArray!T)
+        static if (isBuiltinType!T && !isArray!T)
             value = ahs;
         else
-            value.blit(ahs);
+            value.store(ahs);
         return this;
     }
 
     auto opAssign(T)(T ahs) shared
     {
-        static if (isIntrinsicType!T && !isArray!T)
+        static if (isBuiltinType!T && !isArray!T)
             value = ahs;
         else
-            value.blit(ahs);
+            value.store(ahs);
         return this;
     }
 
@@ -103,7 +102,6 @@ final:
 
     void opSliceAssign(T slice, size_t from, size_t to)
     {
-        import std.stdio;
         arr[from..to] = slice;
     }
 
@@ -161,33 +159,6 @@ final:
         return val;
     }
 }
-
-// This takes up too much compile time for it to be worth
-/* unittest 
-{
-    constexpr!(int[]) dsArray;
-    dsArray.reserve(5);
-
-    assert(dsArray.length == 5);
-    assert(!dsArray.empty);
-
-    dsArray[0] = 1;
-    dsArray[1] = 2;
-    assert(dsArray[0] == 1);
-    assert(dsArray[1] == 2);
-
-    assert(dsArray.front == 1);
-    assert(dsArray.back == 0);
-
-    dsArray.popFront();
-    assert(dsArray.front == 2);
-    dsArray.popBack();
-
-    dsArray ~= 1;
-    dsArray ~= 2;
-    assert(dsArray.length == 5);
-    assert(dsArray[$-1] == 2);
-} */
 
 /// Helper function to create a constexpr
 pragma(inline)

@@ -1,8 +1,6 @@
 module tests.serialization;
 
 import tern.serialization;
-import std.stdio;
-
 
 unittest
 {
@@ -11,13 +9,12 @@ unittest
         static foreach(typeS; ["ubyte", "byte", "ushort", "short", "int", "uint", "long", "ulong", "float", "real", "double"])
         {{
             alias T = mixin(typeS);
-            T initial = cast(T) value;
+            T initial = cast(T)value;
             assert(initial == initial.serialize().deserialize!T);
 
             T[] arrayTest = [initial, initial, initial, initial, initial, initial, initial];
             
             assert(arrayTest == arrayTest.serialize().deserialize!(T[]));
-
         }}
     }}
     static foreach(value; [1, 2, 4, ubyte.max, ushort.max, 3.14159265359, 6.28318530718, 1.234567])
@@ -25,7 +22,7 @@ unittest
         static foreach(typeS; ["ubyte", "byte", "ushort", "short", "int", "uint", "long", "ulong", "float", "real", "double"])
         {{
             alias T = mixin(typeS);
-            T initial = cast(T) value;
+            T initial = cast(T)value;
             assert(initial == initial.serialize().deserialize!T);
 
             T[] arrayTest = [initial, initial, initial, initial, initial, initial, initial];
@@ -33,5 +30,4 @@ unittest
             assert(arrayTest == arrayTest.serialize().deserialize!(T[]));
         }}
     }}
-
 }

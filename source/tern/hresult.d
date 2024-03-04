@@ -1,4 +1,3 @@
-/// Windows `HResult` enum implementation and helper functions.
 module tern.hresult;
 
 import tern.accessors : exempt;

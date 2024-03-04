@@ -1,4 +1,3 @@
-// Comptime and runtime Regex that matches fast and builds even faster.
 module tern.regex;
 
 import tern.regex.builder;

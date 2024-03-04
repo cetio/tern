@@ -1,8 +1,8 @@
-/// Lazy substitute-based _range (replace on state.)
 module tern.algorithm.lazy_substitute;
 
+
 import tern.traits;
-import tern.blit : loadLength, loadSlice, storeElem, storeSlice;
+import tern.object : loadLength;
 import std.conv;
 
 /// Lazy substitute-based _range implementation.
@@ -70,14 +70,9 @@ pure:
     ref auto opIndex(ptrdiff_t index)
     {
         if (_range[index] == from)
-            return _range.storeElem(to, index);
+            return _range[index] = to;
         else
             return _range[index];
-    }
-
-    auto opIndexAssign(T)(T ahs, ptrdiff_t index) 
-    {
-        return _range.storeElem(ahs, index);
     }
 
     size_t opDollar()

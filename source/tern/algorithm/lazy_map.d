@@ -1,8 +1,7 @@
-/// Lazy map-based range (mutate on function.)
 module tern.algorithm.lazy_map;
 
 import tern.traits;
-import tern.blit : loadLength;
+import tern.object : loadLength;
 import std.conv;
 
 /// Lazy map-based range implementation.

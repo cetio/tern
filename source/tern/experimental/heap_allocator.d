@@ -1,5 +1,3 @@
-/// Fast slab-entry based memory allocator with simple defragmentation.
-/// Recommended to use `tern.memory` instead if you want thread-safety.
 module tern.experimental.heap_allocator;
 
 import std.experimental.allocator.mmap_allocator;
@@ -168,14 +166,14 @@ pragma(inline)
         synchronized (mutex)
         {
             void* ptr = malloc(size);
-            memset(ptr, size, 0);
+            memzero(ptr, size);
             return ptr;
         }
     }
     else
     {
         void* ptr = malloc(size);
-        memset(ptr, size, 0);
+        memzero(ptr, size);
         return ptr;
     }
 }
@@ -216,7 +214,7 @@ pragma(inline)
                     if (entry.ptr == ptr)
                     {
                         void* dest = malloc(size);
-                        copy(ptr, dest, entry.size);
+                        memcpy(ptr, dest, entry.size);
                         slab.free(ptr);
                         ptr = dest;
                     }
@@ -246,7 +244,7 @@ pragma(inline)
                 if (entry.ptr == ptr)
                 {
                     void* dest = malloc(size);
-                    copy(ptr, dest, entry.size);
+                    memcpy(ptr, dest, entry.size);
                     slab.free(ptr);
                     ptr = dest;
                 }
@@ -277,7 +275,7 @@ pragma(inline)
                         return;
 
                     Entry entry = slab.entries[ptr];
-                    memset(ptr, entry.size, 0);
+                    memzero(ptr, entry.size);
                 }
             }
         }
@@ -292,7 +290,7 @@ pragma(inline)
                     return;
 
                 Entry entry = slab.entries[ptr];
-                memset(ptr, entry.size, 0);
+                memzero(ptr, entry.size);
             }
         }
     }
