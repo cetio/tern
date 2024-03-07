@@ -1,3 +1,4 @@
+/// Simple parser oriented throwable raising with highlighting.
 module tern.exception;
 
 import tern.string;
@@ -19,7 +20,7 @@ void raise(string exception, string matchTo = null, string matchOf = null)
 {
     if (matchTo == null)
         throw new Throwable(exception);
-
+        
     throw new Throwable(exception~"\n"~padding~highlight(AnsiColor.UnderlineRed, matchTo, matchOf));
 }
 

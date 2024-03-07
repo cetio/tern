@@ -1,3 +1,4 @@
+/// Multi-threaded easy arbitrary function invocation and iterating.
 module tern.concurrency;
 
 import tern.functional : barter;

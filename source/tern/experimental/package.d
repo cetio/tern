@@ -1,3 +1,4 @@
+/// Modules too unruly and volatile to be in the core.
 module tern.experimental;
 
 public import tern.experimental.assembly;

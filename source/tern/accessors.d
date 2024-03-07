@@ -1,3 +1,4 @@
+/// Automated accessor/property generation with support for flags.
 module tern.accessors;
 
 /// Attribute signifying an enum uses flags.

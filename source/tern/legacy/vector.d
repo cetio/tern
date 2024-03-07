@@ -1,3 +1,4 @@
+/// Arbitrary indexable SIMD optimized vector implementation.
 module tern.legacy.vector;
 
 import core.simd;

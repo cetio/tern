@@ -1,3 +1,4 @@
+/// Algorithms for mutating ranges and other various range functions.
 module tern.algorithm.mutation;
 
 public import tern.algorithm.lazy_filter;
@@ -28,12 +29,32 @@ public enum LIFO;
 public enum FILO;
 
 public:
+/**
+ * Maps `range` to `F`, where every value will become the output of `F`.
+ * 
+ * Params:
+ *  F = The function to map `range` to.
+ *  range = The range to be mapped to `F`.
+ *
+ * Returns:
+ *  A lazy map of `range` using `F`.
+ */
 LazyMap!(F, T) map(alias F, T)(T range)
     if (isForward!T && isCallable!F)
 {
     return LazyMap!(F, T)(range);
 }
 
+/**
+ * Filters `range` by predicate `F`, where values will removed if `F` is false.
+ * 
+ * Params:
+ *  F = The function predicate to filter `range` by.
+ *  range = The range to be filtered by `F`.
+ *
+ * Returns:
+ *  A lazy filter of `range` using `F`.
+ */
 LazyFilter!(F, T) filter(alias F, T)(T range)
     if (isForward!T && isCallable!F)
 {
@@ -85,6 +106,16 @@ A replaceMany(A, B, C...)(A range, B to, C from)
     return range;
 }
 
+/**
+ * Removes `val` from `range`.
+ * 
+ * Params:
+ *  range = The range to remove `vals` from.
+ *  vals = The value to be removed from `range`.
+ *
+ * Returns:
+ *  The new range after `val` has been removed.
+ */
 A remove(A, B)(A range, B val)
     if (isIndexable!A)
 {
@@ -96,6 +127,16 @@ A remove(A, B)(A range, B val)
     return ret.value;
 }
 
+/**
+ * Removes many `vals` from `range`.
+ * 
+ * Params:
+ *  range = The range to remove `vals` from.
+ *  vals = The values to be removed from `range`.
+ *
+ * Returns:
+ *  The new range after all `vals` have been removed.
+ */
 A removeMany(A, B...)(A range, B vals)
     if (B.length > 1 && isIndexable!A)
 {
@@ -104,6 +145,16 @@ A removeMany(A, B...)(A range, B vals)
     return range;
 }
 
+/**
+ * Joins an array of `ranges` by an element `by`.
+ *
+ * Params:
+ *  ranges = The ranges to be joined `by`.
+ *  by = The element to join each range in `ranges` by.
+ *
+ * Returns:
+ *  A joined range with `by` as the delimiter.
+ */
 A join(A, B)(A[] ranges, B by)
     if (isIndexable!A)
 {
@@ -118,6 +169,16 @@ A join(A, B)(A[] ranges, B by)
     return ret;
 }
 
+/**
+ * Splits `range` by a given element to split `by`.
+ *
+ * Params:
+ *  range = The range to be split.
+ *  by = The element to have `range` split by.
+ *
+ * Returns:
+ *  An array of `A` containing `range` after split `by`.
+ */
 A[] split(A, B)(A range, B by)
     if (isIndexable!A)
 {
@@ -133,6 +194,16 @@ A[] split(A, B)(A range, B by)
     return ret;
 }
 
+/**
+ * Splits `range` by a given predicate `F`.
+ *
+ * Params:
+ *  F = The function predicate to split `range` by.
+ *  range = The range to be split by the predicate `F`.
+ *
+ * Returns:
+ *  An array of `A` containing `range` after split by `F`.
+ */
 A[] split(alias F, A)(A range)
     if (isIndexable!A && isCallable!F)
 {
@@ -327,12 +398,22 @@ void alienate(T)(ref T range, size_t index, size_t length)
  */
 pragma(inline)
 void insert(A, B)(ref A range, size_t index, B elem)
-    if (isIndexable!A && (isElement!(B, A) || isIndexable!B))
+    if (isSliceable!A && (isElement!(B, A) || isIndexable!B))
 {
     Range!A ret = range;
     static if (isIndexable!B)
-        ret = ret[0..index]~cast(A)elem~ret[index..$];
+    {
+        if (index >= ret.length)
+            ret = ret[0..index]~cast(A)elem;
+        else
+            ret = ret[0..index]~cast(A)elem~ret[index..$];
+    }
     else
-        ret = ret[0..index]~cast(ElementType!A)elem~ret[(index + 1)..$];
+    {
+        if (index >= ret.length)
+            ret = ret[0..index]~cast(ElementType!A)elem;
+        else
+            ret = ret[0..index]~cast(ElementType!A)elem~ret[(index + 1)..$];
+    }
     range = ret.value;
 }

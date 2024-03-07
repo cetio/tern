@@ -1,13 +1,13 @@
+/// Comptime algorithm templates for working with `AliasSeq`.
 module tern.meta;
 
+// TODO: Function map try reinterpret
 public import std.meta : Alias, AliasSeq, aliasSeqOf, Erase, EraseAll, NoDuplicates, Stride,
     DerivedToFront, MostDerived, Repeat, Replace, ReplaceAll, Reverse, staticSort,
     templateAnd, templateNot, templateOr, ApplyLeft, ApplyRight;
 import tern.traits;
 import std.string;
 import std.conv;
-
-// TODO: Function map try reinterpret
 
 public template seqLoad(A...)
 {

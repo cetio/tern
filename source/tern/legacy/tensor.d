@@ -1,3 +1,4 @@
+/// Arbitrary indexable SIMD optimized tensor implementation.
 module tern.legacy.tensor;
 
 import tern.legacy.matrix;

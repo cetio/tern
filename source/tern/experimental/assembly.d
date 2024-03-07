@@ -1,3 +1,4 @@
+/// Provides interface to MSABI/SystemV ABI as well as generic register shenanigans.
 module tern.experimental.assembly;
 
 import std.traits;

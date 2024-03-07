@@ -1,3 +1,4 @@
+/// Lazy map-based range (mutate on function.)
 module tern.algorithm.lazy_map;
 
 import tern.traits;
@@ -13,13 +14,12 @@ public struct LazyMap(alias F, T)
     
 public:
 final:
+    size_t length;
+
     string toString()
     {
         return this[0..length].to!string;
     }
-    
-pure:
-    size_t length;
 
     /// Gets the internally held range after predication.
     T range()

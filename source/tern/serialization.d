@@ -1,5 +1,7 @@
+/// General-purpose binary serializer and deserializer for arbitrary data types.
 module tern.serialization;
 
+// TODO: Json, yaml, etc.
 public import tern.object : Endianness;
 import tern.object : factory, makeEndian;
 import tern.traits;

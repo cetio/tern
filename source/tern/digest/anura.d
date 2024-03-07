@@ -58,12 +58,6 @@ pure:
             rold << rola,
         ];
 
-        import std.stdio;
-        debug writeln(data.length);
-        vacpp(data, 8);
-        import std.stdio;
-        debug writeln(data.length);
-
         foreach (i; 0..(rola % 128))
         {
             size_t factor = ((set[i % 8] * i) % ((data.length / 16_384) | 2)) | 1;  

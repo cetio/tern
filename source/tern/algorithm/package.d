@@ -1,3 +1,4 @@
+/// General-purpose functional algorithms and types for working with ranges.
 module tern.algorithm;
 
 public import tern.algorithm.iteration;

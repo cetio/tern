@@ -1,3 +1,4 @@
+/// Arbitrary size integer implementation (must be 0<x<=64)
 module tern.integer;
 
 import tern.meta : isSame;

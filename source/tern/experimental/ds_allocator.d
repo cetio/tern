@@ -1,3 +1,4 @@
+/// Very fast and very not thread-safe fixed data segment allocator.
 module tern.experimental.ds_allocator;
 
 import tern.traits;

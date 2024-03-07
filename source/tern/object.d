@@ -1,3 +1,4 @@
+/// Advanced stores and loads, endianness, cloning, and more.
 module tern.object;
 
 import tern.memory;

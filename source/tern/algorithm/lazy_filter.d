@@ -1,3 +1,4 @@
+/// Lazy filter-based range (destroy on function.)
 module tern.algorithm.lazy_filter;
 
 // TODO: Barter?
@@ -21,7 +22,6 @@ public:
         return this[0..length].to!string;
     }
 
-pure:
     /// Gets the internally held range after predication.
     T range()
     {

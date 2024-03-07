@@ -1,7 +1,8 @@
+/// General-purpose yet powerful functional programming oriented functions.
 module tern.functional;
 
 // TODO: Plane currently uses normal indexing, it should use Range(T)
-
+// TODO: tap
 public import std.functional: curry, compose, pipe, memoize, not, partial, reverseArgs, unaryFun, binaryFun, bind;
 import tern.traits;
 import tern.object : loadLength;
@@ -222,8 +223,6 @@ public template juxt(FUNCS...)
         return ret;
     }
 }
-
-// TODO: tap
 
 /**
  * Dynamically tries to barter a range based lambda.

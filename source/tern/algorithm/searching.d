@@ -1,3 +1,4 @@
+/// Algorithms for searching in a range.
 module tern.algorithm.searching;
 
 // TODO: Barter?
@@ -5,7 +6,7 @@ import tern.traits;
 import tern.typecons;
 import tern.functional;
 import tern.object : loadLength;
-import tern.memory : scan, reference;
+import tern.memory : memchr, reference;
 
 public:
 /**
@@ -24,7 +25,7 @@ size_t indexOf(A, B)(A range, B elem)
         B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A))
     {
         if ((B.sizeof * range.loadLength) % 16 == 0)
-            return scan!0(reference!range, B.sizeof * range.loadLength, elem);
+            return memchr!0(reference!range, B.sizeof * range.loadLength, elem);
     }
 
     foreach (i; 0..range.loadLength)
@@ -78,7 +79,7 @@ size_t lastIndexOf(A, B)(A range, B elem)
         B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A))
     {
         if ((B.sizeof * range.loadLength) % 16 == 0)
-            return scan!1(reference!range, B.sizeof * range.loadLength, elem);
+            return memchr!1(reference!range, B.sizeof * range.loadLength, elem);
     }
 
     foreach (i; 0..range.loadLength)
@@ -240,36 +241,60 @@ bool contains(A, B)(A range, B subrange)
     return range.indexOf(subrange) != -1;
 }
 
+/// ditto
 bool contains(alias F, A)(A range)
     if (isIndexable!A && isCallable!F)
 {
     return range.indexOf!F != -1;
 }
 
+/// ditto
 bool canFind(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     return indexOf(range, elem) != -1;
 }
 
+/// ditto
 bool canFind(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
     return indexOf(range, subrange) != -1;
 }
 
+/// ditto
 bool canFind(alias F, A)(A range)
     if (isIndexable!A && isCallable!F)
 {
     return range.indexOf!F != -1;
 }
 
+/**
+ * Checks if all elements in `range` fulfill a given predicate `F`.
+ *
+ * Params:
+ *  F = The function predicate to use.
+ *  range = The range of values to check if fulfill `F`.
+ *
+ * Return:
+ *  True if all elements in `range` fulfill `F`.
+ */
 size_t all(alias F, A)(A range)
     if (isForward!A)
 {
     return range.filter!F.length == range.loadLength;
 }
 
+/**
+ * Checks if any elements in `range` fulfill a given predicate `F`.
+ *
+ * Params:
+ *  F = The function predicate to use.
+ *  range = The range of values to check if fulfill `F`.
+ *
+ * Return:
+ *  True if any elements in `range` fulfill `F`.
+ */
 size_t any(alias F, A)(A range)
     if (isForward!A)
 {

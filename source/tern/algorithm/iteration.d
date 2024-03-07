@@ -1,3 +1,4 @@
+/// Algorithms for doing calculations on a range.
 module tern.algorithm.iteration;
 
 import tern.traits;
@@ -18,7 +19,7 @@ public:
  * Remarks:
  *  `A` and `B` must both be string types.
  */
-size_t levenshteinDistance(A, B)(A comparer, B comparee)
+size_t levenshteinDistance(A, B)(A comparer, B comparee) pure nothrow
     if (isString!A && isString!B)
 {
     auto m = comparer.length + 1;
@@ -204,5 +205,30 @@ T repeat(T)(T range, size_t iter)
     T ret = range;
     foreach (i; 0..iter)
         ret ~= range;
+    return ret;
+}
+
+/**
+ * Creates a `size_t[][]` holding every indices combination of a range of `length`.
+ *
+ * Params:
+ *  length = Length of hypothetical range to derive combinations from.
+ *
+ * Returns:
+ *  `size_t[][]` containing every indices combination of a range of `length`.
+ */
+size_t[][] combinations(size_t length) pure nothrow
+{
+    size_t[][] ret;
+    foreach (i; 0..(1 << length)) 
+    {
+        size_t[] combination;
+        foreach (j; 0..length) 
+        {
+            if (i & (1 << j))
+                combination ~= j;
+        }
+        ret ~= combination;
+    }
     return ret;
 }

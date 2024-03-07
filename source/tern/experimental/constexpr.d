@@ -1,3 +1,4 @@
+/// Thin wrapper around `tern.experimental.ds_allocator` that allows for allocating a type in the data segment.
 module tern.experimental.constexpr;
 
 import tern.experimental.ds_allocator;

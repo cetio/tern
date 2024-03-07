@@ -56,8 +56,6 @@ pure:
             data[i - factor] = b0;
         }
 
-            import std.stdio;
-            debug writeln(&data[0]);
         foreach (i, ref vec; data.portionTo!ulong2)
         {
             size_t ri = ~i;
@@ -69,7 +67,6 @@ pure:
             vec ^= (d << si) - ri;
             vec[1] ^= vec[0] << 8;
             import std.stdio;
-            debug writeln(&vec);
         }
 
         foreach (i, ref _b; data[rlen..$])

@@ -1,3 +1,4 @@
+/// Expansive traits module meant to replace `std.traits`.
 module tern.traits;
 
 // TODO: Legacy imports, get rid of this eventually

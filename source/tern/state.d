@@ -1,3 +1,4 @@
+/// Flag enum to string conversion, flag get/sets, and mask interactions.
 module tern.state;
 
 import tern.traits;

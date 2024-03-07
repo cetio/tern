@@ -1,3 +1,4 @@
+/// Deprecated or no longer supported modules.
 module tern.legacy;
 
 public import tern.legacy.matrix;

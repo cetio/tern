@@ -1,8 +1,9 @@
+/// General-purpose wrapper/construct types for interacting with types.
 module tern.typecons.common;
 
 import tern.memory : memcpy;
 import tern.traits;
-import tern.object : qdup, factory;
+import tern.object : qdup, factory, loadLength;
 import std.conv;
 
 /// Implements all functions of an abstract class with an default/empty function.

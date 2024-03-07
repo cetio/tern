@@ -1,13 +1,13 @@
+/// General-purpose memory optimized memory utilities. For memory management, see `tern.typecons.automem`.
 module tern.memory;
 
+// TODO: Support AVX, add c-compilation for if SSE/AVX isnt supported, add memset
 import tern.experimental.heap_allocator;
 import tern.traits;
 import core.bitop;
 import inteli.tmmintrin;
 import inteli.emmintrin;
 import inteli.smmintrin;
-
-// TODO: Support AVX, add c-compilation for if SSE/AVX isnt supported, add memset
 
 public:
 @nogc:
@@ -41,11 +41,11 @@ size_t ctz(uint DIR)(size_t mask)
  * Params:
  *  DIR = Direction to count in, will find index if `DIR == 0` or last index if `DIR == 1`.
  *  src = Data source pointer.
- *  len = Length of data to be scanned.
+ *  len = Length of data to be memchrned.
  *  elem = Data to be searched for.
  */
 pragma(inline)
-size_t scan(uint DIR, T)(const scope void* src, size_t len, const scope T elem)
+size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem)
 {
     static if (T.sizeof == 16)
     {
@@ -249,8 +249,8 @@ pragma(inline)
 {
     static if (is(typeof(V) == class))
         return cast(void*)V;
-    else static if (isIndexable!(typeof(V)))
-        return cast(void*)&V[0];
+    else static if (isDynamicArray!(typeof(V)))
+        return cast(void*)V.ptr;
     else
         return cast(void*)&V;
 }
@@ -389,4 +389,22 @@ void byteswap(const scope void* src, size_t len)
     // TODO: Not this
     import std.algorithm : reverse;
     (cast(ubyte*)src)[0..len].reverse();
+}
+
+pragma(inline)
+void emplace(T)(T* ptr)
+{
+    if (!hasChildren!T)
+    {
+        T t;
+        memcpy!T.sizeof(cast(void*)ptr, cast(void*)&t);
+    }
+    else
+    {
+        static foreach (field; Fields!T)
+        {
+            typeof(getChild!(T, field)) t;
+            memcpy!T.sizeof(cast(void*)ptr + getChild!(T, field).offsetof, cast(void*)&t);
+        }
+    }
 }

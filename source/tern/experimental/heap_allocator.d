@@ -1,3 +1,4 @@
+/// Fast slab-entry based memory allocator with simple defragmentation.
 module tern.experimental.heap_allocator;
 
 import std.experimental.allocator.mmap_allocator;

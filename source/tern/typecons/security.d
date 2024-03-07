@@ -1,3 +1,4 @@
+/// Wrappers for thread and side-channel [mitigation] behavior.
 module tern.typecons.security;
 
 public import core.atomic;

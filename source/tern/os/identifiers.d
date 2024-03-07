@@ -1,3 +1,4 @@
+/// Hardware identifiers (HWID) and processor features.
 module tern.os.identifiers;
 
 import tern.string;

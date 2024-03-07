@@ -1,3 +1,4 @@
+/// Lazy substitute-based range (replace on state.)
 module tern.algorithm.lazy_substitute;
 
 
@@ -5,7 +6,7 @@ import tern.traits;
 import tern.object : loadLength;
 import std.conv;
 
-/// Lazy substitute-based _range implementation.
+/// Lazy substitute-based range implementation.
 public struct LazySubstitute(A, B, C)
     if (isForward!A && isIndexable!A && isCallable!F)
 {
@@ -14,15 +15,14 @@ public struct LazySubstitute(A, B, C)
     
 public:
 final:
+    size_t length;
+    B from;
+    C to;
+
     string toString()
     {
         return this[0..length].to!string;
     }
-    
-pure:
-    size_t length;
-    B from;
-    C to;
 
     /// Gets the internally held range after predication.
     T range()

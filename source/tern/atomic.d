@@ -1,3 +1,4 @@
+/// Reimplementation of `core.atomic` with better data support.
 module tern.atomic;
 
 import tern.traits;
