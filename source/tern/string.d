@@ -60,7 +60,7 @@ pure:
  * Params:
  *  str = The string to convert to uppercase.
  *
- * Return:
+ * Returns:
  *  `str` in uppercase.
  */
 string toUpper(string str)
@@ -77,7 +77,7 @@ string toUpper(string str)
  * Params:
  *  str = The string to convert to lowercase.
  *
- * Return:
+ * Returns:
  *  `str` in lowercase.
  */
 string toLower(string str)
@@ -94,7 +94,7 @@ string toLower(string str)
  * Params:
  *  c = The character to convert to uppercase.
  *
- * Return:
+ * Returns:
  *  `c` in uppercase.
  */
 T toUpper(T)(T c) if (isSomeChar!T)
@@ -111,7 +111,7 @@ T toUpper(T)(T c) if (isSomeChar!T)
  * Params:
  *  c = The character to convert to lowercase.
  *
- * Return:
+ * Returns:
  *  `c` in lowercase.
  */
 T toLower(T)(T c) if (isSomeChar!T)

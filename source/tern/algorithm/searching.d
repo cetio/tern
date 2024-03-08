@@ -15,7 +15,7 @@ public:
  * Params:
  *  range = The range to search in.
  *
- * Return:
+ * Returns:
  *  The index of the given argument in `range` or -1 if not found.
  */
 size_t indexOf(A, B)(A range, B elem)
@@ -69,7 +69,7 @@ size_t indexOf(alias F, A)(A range)
  * Params:
  *  range = The range to search in.
  *
- * Return:
+ * Returns:
  *  The last index of the given argument in `range` or -1 if not found.
  */
 size_t lastIndexOf(A, B)(A range, B elem)
@@ -171,7 +171,7 @@ P[] portionTo(P, T)(ref T range)
  * Params:
  *  range = The range to search in.
  *
- * Return:
+ * Returns:
  *  The index of the given argument in `range` or -1 if not found.
  */
 size_t countUntil(A, B)(A range, B elem)
@@ -200,7 +200,7 @@ size_t countUntil(alias F, A)(A range)
  * Params:
  *  range = The range to search in.
  *
- * Return:
+ * Returns:
  *  The last index of the given argument in `range` with 1-based indexing or -1 if not found.
  */
 size_t among(alias F, A)(A range)
@@ -216,7 +216,7 @@ size_t among(alias F, A)(A range)
  *  range = The range to search in.
  *  elem = The element to search for.
  *
- * Return:
+ * Returns:
  *  True if `range` contains `elem`.
  */
 bool contains(A, B)(A range, B elem)
@@ -232,7 +232,7 @@ bool contains(A, B)(A range, B elem)
  *  range = The range to search in.
  *  subrange = The range to search for.
  *
- * Return:
+ * Returns:
  *  True if `range` contains `subrange`.
  */
 bool contains(A, B)(A range, B subrange)
@@ -276,7 +276,7 @@ bool canFind(alias F, A)(A range)
  *  F = The function predicate to use.
  *  range = The range of values to check if fulfill `F`.
  *
- * Return:
+ * Returns:
  *  True if all elements in `range` fulfill `F`.
  */
 size_t all(alias F, A)(A range)
@@ -292,7 +292,7 @@ size_t all(alias F, A)(A range)
  *  F = The function predicate to use.
  *  range = The range of values to check if fulfill `F`.
  *
- * Return:
+ * Returns:
  *  True if any elements in `range` fulfill `F`.
  */
 size_t any(alias F, A)(A range)
@@ -301,30 +301,62 @@ size_t any(alias F, A)(A range)
     return range.indexOf!F != -1;
 }
 
+/**
+ * Checks if `range` starts with a given element.
+ *
+ * Params:
+ *  range = The range of values to check if starts with `elem`.
+ *  elem = The element to check if `range` starts with.
+ *
+ * Returns:
+ *  True if `range` starts with `elem`.
+ */
 bool startsWith(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     return range.length >= 1 && range[0..1].contains(elem);
 }
 
+/// ditto
 bool startsWith(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
     return range.length >= subrange.length && range[0..subrange.length].contains(subrange);
 }
 
+/**
+ * Checks if `range` ends with a given element.
+ *
+ * Params:
+ *  range = The range of values to check if ends with `elem`.
+ *  elem = The element to check if `range` ends with.
+ *
+ * Returns:
+ *  True if `range` ends with `elem`.
+ */
 bool endsWith(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     return range.length >= 1 && range[$-1..$].contains(elem);
 }
 
+/// ditto
 bool endsWith(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {
     return range.length >= subrange.length && range[$-subrange.length..$].contains(subrange);
 }
 
+/**
+ * Counts all occurrences of `elem` in `range`.
+ *
+ * Params:
+ *  range = The range of values to count in.
+ *  elem = The element to count for in `range`.
+ *
+ * Returns:
+ *  Number of occurrences of `elem` in range.
+ */
 size_t count(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
@@ -337,6 +369,7 @@ size_t count(A, B)(A range, B elem)
     return count;
 }
 
+/// ditto
 size_t count(A, B)(A range, B subrange)
     if (isIndexable!A && !isElement!(A, B) && isIndexable!B)
 {

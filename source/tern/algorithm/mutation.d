@@ -61,12 +61,34 @@ LazyFilter!(F, T) filter(alias F, T)(T range)
     return LazyFilter!(F, T)(range);
 }
 
+/**
+ * Substitutes all instances of `from` in `range` with `to`.
+ * 
+ * Params:
+ *  range = The range to be substituted in.
+ *  from = The value to be replaced.
+ *  to = The value to replace `from` with.
+ *
+ * Returns:
+ *  A lazy substitute of `range` using `from` and `to`.
+ */
 LazySubstitute!(A, B, C) substitute(A, B, C)(A range, B from, C to)
     if (isForward!T && isIndexable!T)
 {
     return LazySubstitute!(A, B, C)(range, from, to);
 }
 
+/**
+ * Replaces all instances of `from` in `range`
+ * 
+ * Params:
+ *  range = The range to replace `from` in.
+ *  to = The value to replace `from` with.
+ *  from = The value to be replaced in `range`.
+ *
+ * Returns:
+ *  The new range after all replaces.
+ */
 A replace(A, B, C)(A range, B from, C to)
     if (isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
@@ -77,6 +99,7 @@ A replace(A, B, C)(A range, B from, C to)
     return ret.value;
 }
 
+/// ditto
 A replace(A, B, C)(A range, B from, C to)
     if (isIndexable!A && isIndexable!B && isIndexable!C && !isElement!(A, B) && !isElement!(A, C))
 {
@@ -98,6 +121,17 @@ A replace(A, B, C)(A range, B from, C to)
     return ret.value;
 }
 
+/**
+ * Replaces all values in `from` with `to` in `range`.
+ * 
+ * Params:
+ *  range = The range to replace `from` in.
+ *  to = The value to replace all values in `from` with.
+ *  from = The values to be replaced in `range`.
+ *
+ * Returns:
+ *  The new range after all replaces.
+ */
 A replaceMany(A, B, C...)(A range, B to, C from)
     if (isIndexable!A)
 {

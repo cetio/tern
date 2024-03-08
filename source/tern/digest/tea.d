@@ -35,8 +35,7 @@ pure:
      */
     void encrypt(ref ubyte[] data, string key) 
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
+        assert(key.length == 16, "Key must be 128 bits!");
 
         uint[4] k = *cast(uint[4]*)key.ptr;
         uint delta = 0x9E3779B9;
@@ -74,8 +73,7 @@ pure:
      */
     void decrypt(ref ubyte[] data, string key) 
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
+        assert(key.length == 16, "Key must be 128 bits!");
 
         uint[4] k = *cast(uint[4]*)key.ptr;
         uint delta = 0x9E3779B9;
@@ -137,8 +135,7 @@ pure:
      */
     void encrypt(ref ubyte[] data, string key) 
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
+        assert(key.length == 16, "Key must be 128 bits!");
 
         int[4] k = *cast(int[4]*)key.ptr;
         int delta = 0x9E3779B9;
@@ -161,8 +158,8 @@ pure:
                 v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + k[sum & 3]);
             }
 
-     *cast(int*)block = v0;
-     *cast(int*)(block + 4) = v1;
+        *cast(int*)block = v0;
+        *cast(int*)(block + 4) = v1;
         }
     }
 
@@ -175,8 +172,7 @@ pure:
      */
     void decrypt(ref ubyte[] data, string key) 
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
+        assert(key.length == 16, "Key must be 128 bits!");
 
         int[4] k = *cast(int[4]*)key.ptr;
         int delta = 0x9E3779B9;
@@ -200,8 +196,8 @@ pure:
                 sum -= delta;
             }
 
-     *cast(int*)block = v0;
-     *cast(int*)(block + 4) = v1;
+            *cast(int*)block = v0;
+            *cast(int*)(block + 4) = v1;
         }
 
         unvacpp(data);
@@ -237,8 +233,7 @@ pure:
      */
     void encrypt(ref ubyte[] data, string key) 
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
+        assert(key.length == 16, "Key must be 128 bits!");
 
         int[4] k = *cast(int[4]*)key.ptr;
         int delta = 0x9E3779B9;
@@ -261,8 +256,8 @@ pure:
                 v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + k[sum & 3]);
             }
 
-     *cast(int*)block = v0;
-     *cast(int*)(block + 4) = v1;
+            *cast(int*)block = v0;
+            *cast(int*)(block + 4) = v1;
         }
     }
 
@@ -275,8 +270,7 @@ pure:
      */
     void decrypt(ref ubyte[] data, string key) 
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
+        assert(key.length == 16, "Key must be 128 bits!");
 
         int[4] k = *cast(int[4]*)key.ptr;
         int delta = 0x9E3779B9;
@@ -300,8 +294,8 @@ pure:
                 sum -= delta;
             }
 
-     *cast(int*)block = v0;
-     *cast(int*)(block + 4) = v1;
+            *cast(int*)block = v0;
+            *cast(int*)(block + 4) = v1;
         }
 
         unvacpp(data);

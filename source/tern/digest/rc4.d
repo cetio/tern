@@ -35,9 +35,8 @@ pure:
      */
     void encrypt(ref ubyte[] data, string key) 
     {        
-        if (key.length != 32)
-            throw new Throwable("Key must be 256 bits!");
-
+        assert(key.length == 32, "Key must be 256 bits!");
+        
         key = cast(string)Circe.hash(cast(ubyte[])key);
         ubyte[256] S;
         ubyte[256] T;

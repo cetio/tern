@@ -37,8 +37,7 @@ pure:
      */
     void encrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
-        if (key.length != 32)
-            throw new Throwable("Key is not 256 bits!");
+        assert(key.length == 32, "Key must be 256 bits!");
 
         ubyte[] keyFront = digest!Circe(cast(ubyte[])key, seed);
         ulong a = (cast(ulong*)keyFront.ptr)[0];
@@ -101,8 +100,7 @@ pure:
      */
     void decrypt(ref ubyte[] data, string key, ulong seed = 0)
     {
-        if (key.length != 32)
-            throw new Throwable("Key is not 256 bits!");
+        assert(key.length == 32, "Key must be 256 bits!");
             
         ubyte[] keyFront = digest!Circe(cast(ubyte[])key, seed);
         ulong a = (cast(ulong*)keyFront.ptr)[0];

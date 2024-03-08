@@ -36,9 +36,7 @@ pure:
      */
     void encrypt(ref ubyte[] data, string key)
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
-            
+        assert(key.length == 16, "Key must be 128 bits!");
         vacpp(data, 8);
 
         ushort[16] roundKeys;
@@ -79,9 +77,7 @@ pure:
      */
     void decrypt(ref ubyte[] data, string key)
     {
-        if (key.length != 16)
-            throw new Throwable("Key is not 128 bits!");
-
+        assert(key.length == 16, "Key must be 128 bits!");
         if (data.length % 8 != 0)
             vacpp(data, 8);
 
