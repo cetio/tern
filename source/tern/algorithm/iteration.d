@@ -3,6 +3,7 @@ module tern.algorithm.iteration;
 
 import tern.traits;
 import tern.object : loadLength;
+import tern.algorithm.mutation : filter;
 import tern.functional;
 
 public:
@@ -229,6 +230,28 @@ size_t[][] combinations(size_t length) pure nothrow
                 combination ~= j;
         }
         ret ~= combination;
+    }
+    return ret;
+}
+
+/**
+ * Creates a `ubyte[][]` holding every `ubyte[]` permutation of a range of `length`.
+ *
+ * Params:
+ *  length = Length of the `ubyte[]` from which to generate from.
+ *
+ * Returns:
+ *  `ubyte[][]` containing every `ubyte[]` permutation of a range of `length`.
+ */
+ubyte[][] permutations(size_t length) pure nothrow
+{
+    ubyte[][] ret;
+    foreach (i; 0..(256 ^^ length))
+    {
+        ubyte[] perm;
+        foreach (j; 0..length)
+            perm ~= cast(ubyte)(i >> (8 * j));
+        ret ~= perm;
     }
     return ret;
 }
