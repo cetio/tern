@@ -261,7 +261,7 @@ A[] split(alias F, A)(A range)
  *  i0 = First i to swap.
  *  i1 = Second i to swap.
  */
-pragma(inline)
+pragma(inline, true)
 void swap(T)(ref T range, size_t i0, size_t i1)
     if (isIndexable!T)
 {
@@ -283,7 +283,7 @@ void swap(T)(ref T range, size_t i0, size_t i1)
  * Remarks:returns:
  *  Defaults to `LIFO`.
  */
-pragma(inline)
+pragma(inline, true)
 ElementType!T pop(O = LIFO, T)(ref T range)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
@@ -312,7 +312,7 @@ ElementType!T pop(O = LIFO, T)(ref T range)
  * Remarks:
  *  Defaults to `LIFO`.
  */
-pragma(inline)
+pragma(inline, true)
 ElementType!T peek(O, T)(ref T range)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
@@ -332,7 +332,7 @@ ElementType!T peek(O, T)(ref T range)
  * Remarks:
  *  Defaults to `LIFO`.
  */
-pragma(inline)
+pragma(inline, true)
 void swap(O = LIFO, T)(ref T range)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!T)
 {
@@ -349,7 +349,7 @@ void swap(O = LIFO, T)(ref T range)
  *  range = The range being pushed to.
  *  val = The value to push onto the range.
  */
-pragma(inline)
+pragma(inline, true)
 nothrow void push(A, B)(ref A range, B val)
     if ((is(O == LIFO) || is(O == FILO)) && isIndexable!A && isElement!(A, B))
 {
@@ -362,7 +362,7 @@ nothrow void push(A, B)(ref A range, B val)
  * Params:
  *  range = The range to be reversed.
  */
-pragma(inline)
+pragma(inline, true)
 void reverse(T)(ref T range) 
     if (isIndexable!T)
 {
@@ -377,7 +377,7 @@ void reverse(T)(ref T range)
  *  range = The range to be filled.
  *  elem = The range to fill all elements with.
  */
-pragma(inline)
+pragma(inline, true)
 void fill(A, B)(ref A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
@@ -395,7 +395,7 @@ void fill(A, B)(ref A range, B elem)
  * Params:
  *  range = The range to be cleared.
  */
-pragma(inline)
+pragma(inline, true)
 void clear(T)(ref T range)
     if (isIndexable!T)
 {
@@ -413,7 +413,7 @@ void clear(T)(ref T range)
  *  index = Start index of the elements to be alienated.
  *  length = The length of the section to be alienated.
  */
-pragma(inline)
+pragma(inline, true)
 void alienate(T)(ref T range, size_t index, size_t length)
     if (isSliceable!T)
 {
@@ -430,7 +430,7 @@ void alienate(T)(ref T range, size_t index, size_t length)
  *  index = The index where `elem` will be inserted.
  *  elem = The element to insert.
  */
-pragma(inline)
+pragma(inline, true)
 void insert(A, B)(ref A range, size_t index, B elem)
     if (isSliceable!A && (isElement!(B, A) || isIndexable!B))
 {

@@ -36,7 +36,7 @@ final:
         this.size = size;
     }
 
-    pragma(inline)
+    pragma(inline, true)
     bool empty()
     {
         size_t count;
@@ -45,7 +45,7 @@ final:
         return count == entries.length;
     }
 
-    pragma(inline)
+    pragma(inline, true)
     bool free(void* ptr)
     {
         if (ptr !in entries)
@@ -60,7 +60,7 @@ final:
         return true;
     }
 
-    pragma(inline)
+    pragma(inline, true)
     void* insertEntry(size_t size)
     {
         void* ptr = baseAddress + offset;
@@ -93,7 +93,7 @@ static:
  * Returns:
  *  Pointer to the allocated entry.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted void* malloc(bool threadSafe = false)(size_t size)
 {
     static if (threadSafe)
@@ -159,7 +159,7 @@ pragma(inline)
  * Returns:
  *  Pointer to the allocated entry.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted void* calloc(bool threadSafe = false)(size_t size)
 {
     static if (threadSafe)
@@ -188,7 +188,7 @@ pragma(inline)
  *  ptr = Pointer to entry to be reallocated.
  *  size = Size of the new entry.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted void realloc(bool threadSafe = false)(ref void* ptr, size_t size)
 {
     static if (threadSafe)
@@ -261,7 +261,7 @@ pragma(inline)
  *  threadSafe = Should this operation be thread safe? Default false.
  *  ptr = Pointer to entry to be zeroed.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted void wake(bool threadSafe = false)(void* ptr)
 {
     static if (threadSafe)
@@ -307,7 +307,7 @@ pragma(inline)
  * Returns:
  *  True if this succeeded, otherwise false.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted bool free(bool threadSafe = false)(void* ptr)
 {
     static if (threadSafe)
@@ -333,7 +333,7 @@ pragma(inline)
     }
 }
 
-pragma(inline)
+pragma(inline, true)
 @trusted bool deallocate(bool threadSafe = false)(void* ptr)
 {
     static if (threadSafe)

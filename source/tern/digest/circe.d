@@ -35,7 +35,7 @@ pure:
      * Remarks:
      *  Does not validate the length of `data`.
      */
-    pragma(inline)
+    pragma(inline, true)
     ubyte[] hash(ubyte[] data, ulong seed = 0)
     {
         if (data.length != 32)

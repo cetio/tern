@@ -162,7 +162,7 @@ final:
 }
 
 /// Helper function to create a constexpr
-pragma(inline)
+pragma(inline, true)
 constexpr!T constexpr(T)(T val)
 {
     return constexpr!T(val);

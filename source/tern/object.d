@@ -51,7 +51,7 @@ pure:
  * Returns:
  *  The loaded length.
  */
-pragma(inline)
+pragma(inline, true)
 size_t loadLength(size_t DIM : 0, T)(T val)
 {
     static if (__traits(compiles, { auto _ = val.opDollar!DIM; }))
@@ -70,7 +70,7 @@ size_t loadLength(size_t DIM : 0, T)(T val)
 }
 
 /// ditto
-pragma(inline)
+pragma(inline, true)
 size_t loadLength(T)(T val)
 {
     static if (__traits(compiles, { auto _ = val.opDollar(); }))
@@ -103,7 +103,7 @@ size_t loadLength(T)(T val)
  * A b = a.dup();
  * ```
  */
-pragma(inline)
+pragma(inline, true)
 T dup(T)(T val)
     if (!isArray!T && !isAssignable!(T, Object))
 {
@@ -125,7 +125,7 @@ T dup(T)(T val)
  * B b = a.ddup();
  * ```
  */
-pragma(inline)
+pragma(inline, true)
 T ddup(T)(T val)
     if (!isArray!T && !isAssociativeArray!T)
 {
@@ -149,7 +149,7 @@ T ddup(T)(T val)
 }
 
 /// ditto
-pragma(inline)
+pragma(inline, true)
 T ddup(T)(T arr)
     if (isArray!T && !isAssociativeArray!T)
 {
@@ -160,7 +160,7 @@ T ddup(T)(T arr)
 }
 
 /// ditto
-pragma(inline)
+pragma(inline, true)
 T ddup(T)(T arr)
     if (isAssociativeArray!T)
 {
@@ -181,7 +181,7 @@ T ddup(T)(T arr)
  * Returns:
  *  Clone of `val`.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted T qdup(T)(T val)
 {
     static if (isArray!T)
@@ -200,7 +200,7 @@ pragma(inline)
 }
 
 /// Creates a new instance of `T` dynamically based on its traits, with optional construction args.
-pragma(inline)
+pragma(inline, true)
 T factory(T, ARGS...)(ARGS args)
 {
     static if (isDynamicArray!T)
@@ -229,7 +229,7 @@ T factory(T, ARGS...)(ARGS args)
  *  src = Value to copy data from.
  *  dst = Value to copy data to.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted void store(A, B)(const scope A src, ref B dst)
 {
     static if (isReinterpretable!(A, B))

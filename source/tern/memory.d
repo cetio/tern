@@ -21,7 +21,7 @@ public:
  * Returns:
  *  Number of trailing zeroes in `DIR` direction in `mask`.
  */
-pragma(inline)
+pragma(inline, true)
 size_t ctz(uint DIR)(size_t mask) 
 {
     if (mask == 0)
@@ -44,7 +44,7 @@ size_t ctz(uint DIR)(size_t mask)
  *  len = Length of data to be memchrned.
  *  elem = Data to be searched for.
  */
-pragma(inline)
+pragma(inline, true)
 size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem)
 {
     static if (T.sizeof == 16)
@@ -244,7 +244,7 @@ pure:
  * Returns:
  *  `void*` to `V` instance data.
  */
-pragma(inline)
+pragma(inline, true)
 @trusted scope void* reference(alias V)()
 {
     static if (is(typeof(V) == class))
@@ -264,7 +264,7 @@ static:
  *  dst = Data destination pointer.
  *  len = Length of data to be copied.
  */
-pragma(inline)
+pragma(inline, true)
 void memcpy(const scope void* src, const scope void* dst, size_t len)
 {
     switch (len % 16)
@@ -293,7 +293,7 @@ void memcpy(const scope void* src, const scope void* dst, size_t len)
 }
 
 /// ditto
-pragma(inline)
+pragma(inline, true)
 void memcpy(size_t len)(const scope void* src, const scope void* dst)
 {
     static if (len % 16 == 0)
@@ -330,7 +330,7 @@ void memcpy(size_t len)(const scope void* src, const scope void* dst)
  *  src = Data source pointer.
  *  len = Length of data to be copied.
  */
-pragma(inline)
+pragma(inline, true)
 void memzero(const scope void* src, size_t len)
 {
     switch (len % 16)
@@ -365,7 +365,7 @@ void memzero(const scope void* src, size_t len)
  *  src = Data source pointer.
  *  len = Length of data to be byte-swapped.
  */
-pragma(inline)
+pragma(inline, true)
 void byteswap(const scope void* src, size_t len)
 {
     if (len % 16 == 0)
@@ -391,7 +391,7 @@ void byteswap(const scope void* src, size_t len)
     (cast(ubyte*)src)[0..len].reverse();
 }
 
-pragma(inline)
+pragma(inline, true)
 void emplace(T)(T* ptr)
 {
     if (!hasChildren!T)

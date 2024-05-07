@@ -17,14 +17,14 @@ shared static this()
 }
 
 /// Inserts a load/store memory fence, ensuring that all loads and stores before this call happen before any loads and stores after.
-pragma(inline)
+pragma(inline, true)
 void fence()
 {
     atomicFence();
 }
 
 /// Atomically loads the value of `rhs`.
-pragma(inline)
+pragma(inline, true)
 auto atomicLoad(R)(ref shared R rhs)
 {
     static if (isScalar!R)
@@ -38,7 +38,7 @@ auto atomicLoad(R)(ref shared R rhs)
 }
 
 /// Atomically loads an array element in the value of `rhs`.
-pragma(inline)
+pragma(inline, true)
 auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs)
 {
     mutex.lock();
@@ -47,7 +47,7 @@ auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs)
 }
 
 /// Atomically loads a field element in the value of `rhs`.
-pragma(inline)
+pragma(inline, true)
 auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
 {
     mutex.lock();
@@ -57,7 +57,7 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
 
 
 /// Atomically stores `lhs` in `rhs`.
-pragma(inline)
+pragma(inline, true)
 void atomicStore(R, L)(ref shared R rhs, L lhs)
 {
     static if (isScalar!R)
@@ -71,7 +71,7 @@ void atomicStore(R, L)(ref shared R rhs, L lhs)
 }
 
 /// Atomically stores the array element `lhs` in an array element of `rhs`.
-pragma(inline)
+pragma(inline, true)
 auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs, L lhs)
 {
     mutex.lock();
@@ -80,7 +80,7 @@ auto atomicLoadElem(size_t ELEM, R)(ref shared R rhs, L lhs)
 }
 
 /// Atomically stores the field element `lhs` in a field element of `rhs`.
-pragma(inline)
+pragma(inline, true)
 auto atomicLoadElem(string ELEM, R)(ref shared R rhs, L lhs)
 {
     mutex.lock();
@@ -89,7 +89,7 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs, L lhs)
 }
 
 /// Atomically exchanges `rhs` and `lhs`.
-pragma(inline)
+pragma(inline, true)
 void atomicExchange(R, L)(ref shared R rhs, L lhs)
 {
     static if (isScalar!R)
@@ -105,7 +105,7 @@ void atomicExchange(R, L)(ref shared R rhs, L lhs)
 }
 
 /// Performs an atomic operation `op` on `rhs` and `lhs`.
-pragma(inline)
+pragma(inline, true)
 auto atomicOp(string op, R, L)(ref shared R rhs, L lhs)
 {
     static if (isScalar!R)
