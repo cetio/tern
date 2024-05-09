@@ -616,6 +616,16 @@ public template Implements(T)
     }  
 }
 
+/// Gets the type of member `MEMBER` in `A`  
+/// This will return a function alias if `MEMBER` refers to a function, and do god knows what if `MEMBER` is a package or module.
+public template TypeOf(alias A, string MEMBER)
+{
+    static if (isType!(__traits(getMember, A, MEMBER)) || isTemplate!(__traits(getMember, A, MEMBER)) || isFunction!(__traits(getMember, A, MEMBER)))
+        alias TypeOf = __traits(getMember, A, MEMBER);
+    else
+        alias TypeOf = typeof(__traits(getMember, A, MEMBER));
+}
+
 /// Gets an `AliasSeq` of the names of all fields in `A`.
 public template Fields(alias A)
 {

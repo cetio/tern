@@ -1,6 +1,8 @@
 /// Automated accessor/property generation with support for flags.
 module tern.accessors;
 
+import tern.traits;
+
 /// Attribute signifying an enum uses flags.
 public enum flags;
 /// Attribute signifying an enum should not have properties made.
