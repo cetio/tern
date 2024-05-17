@@ -57,6 +57,12 @@ final:
 
     this(T val)
     {
+        static if (isReferenceType!T)
+        {
+            if (val == null)
+                return;
+        }
+
         value = val;
         ptr = &value;
     }
@@ -68,6 +74,15 @@ final:
 
     auto opAssign(A)(A ahs)
     {
+        static if (is(A == Nullable!T))
+        {
+            if (ahs == null)
+            {
+                ptr = null;
+                return this;
+            }
+        }
+
         value = ahs;
         ptr = &value;
         return this;
@@ -75,6 +90,15 @@ final:
 
     auto opAssign(A)(A ahs) shared
     {
+        static if (is(A == Nullable!T))
+        {
+            if (ahs == null)
+            {
+                ptr = null;
+                return this;
+            }
+        }
+
         value = ahs;
         ptr = &value;
         return this;

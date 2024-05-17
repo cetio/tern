@@ -15,6 +15,10 @@ unittest
     b ~= 1;
     assert(b == [1]);
 
+    // evil bug
+    b = nullable!(uint[])(null);
+    assert(b == null);
+
     Nullable!(short*) c = cast(short*)&a;
     assert(c[0] == cast(const(short))4);
 }
