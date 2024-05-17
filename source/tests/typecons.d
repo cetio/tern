@@ -2,6 +2,11 @@ module tests.typecons;
 
 import tern.typecons;
 
+class A
+{
+    int a;
+}
+
 unittest 
 {
     Nullable!uint a;
@@ -18,6 +23,11 @@ unittest
     // evil bug
     b = nullable!(uint[])(null);
     assert(b == null);
+
+    Nullable!A g;
+    assert(g == null);
+    g = nullable!A(null);
+    assert(g == null);
 
     Nullable!(short*) c = cast(short*)&a;
     assert(c[0] == cast(const(short))4);

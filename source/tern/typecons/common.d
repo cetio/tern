@@ -51,15 +51,16 @@ public struct Nullable(T)
     T value;
     alias value this;
 
-public:
+private:
 final:
     T* ptr;
 
+public:
     this(T val)
     {
         static if (isReferenceType!T)
         {
-            if (val == null)
+            if (val is null)
                 return;
         }
 
