@@ -7,6 +7,8 @@
   <a href="https://raw.githubusercontent.com/cetio/tern/main/LICENSE.txt"><img src="https://img.shields.io/github/license/cetio/tern.svg" alt="GitHub repo license"/></a>
 </p>
 
+> [!WARNING]
+> Tern is now archived, as issues with the language have made it incredibly annoying to maintain.
 
 GET JOLLY
 
