@@ -296,6 +296,7 @@ shared:
             immutable(CHAR)[] ret;
             while (peek!CHAR != '\0')
                 ret ~= read!CHAR;
+            position++;
             return ret;
         }
     }
