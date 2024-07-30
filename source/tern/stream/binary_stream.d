@@ -5,6 +5,7 @@ public import tern.stream.impl;
 import tern.serialization;
 import tern.traits;
 import tern.object;
+import tern.algorithm.mutation : insert;
 
 /// Binary stream implementation backed by an array.
 public class BinaryStream : IStream
@@ -17,10 +18,7 @@ final:
 
     this(T)(T data, Endianness endianness = Endianness.Native)
     {
-        if (isArray!T)
-            this.data = cast(ubyte[])data;
-        else
-            this.data = data.serialize();
+        this.data = data.serialize!true();
         this.endianness = endianness;
     }
 
@@ -216,7 +214,7 @@ final:
     void write(T)(T val)
     {        
         if (position + T.sizeof > data.length)
-            throw new Throwable("Tried to write past the end of stream!");
+            data.insert(position, new ubyte[(position + T.sizeof) - data.length]);
 
         auto _val = val.makeEndian(endianness);
         data[position..(position += T.sizeof)] = (cast(ubyte*)&_val)[0..T.sizeof];
@@ -232,7 +230,7 @@ final:
     void put(T)(T val)
     {
         if (position + T.sizeof > data.length)
-            throw new Throwable("Tried to write past the end of stream!");
+            data.insert(position, new ubyte[(position + T.sizeof) - data.length]);
 
         _val = val.makeEndian(endianness);
         data[position..(position + T.sizeof)] = (cast(ubyte*)&_val)[0..T.sizeof];

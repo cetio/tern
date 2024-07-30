@@ -46,7 +46,7 @@ public class WhiteHole(T)
  *  - const Nullable(T) is not supported, but shared Nullable(T) is.
  */
 private alias NULL = typeof(null);
-public struct Nullable(T)
+deprecated public struct Nullable(T)
 {
     T value;
     alias value this;
@@ -283,13 +283,13 @@ public:
 }
 
 /// Helper function for creating a nullable.
-Nullable!T nullable(T)(T val)
+deprecated Nullable!T nullable(T)(T val)
 {
     return Nullable!T(val);
 }
 
 /// Helper function for creating a nullable.
-Nullable!T nullable(T)(NULL val)
+deprecated Nullable!T nullable(T)(NULL val)
 {
     return Nullable!T(null);
 }

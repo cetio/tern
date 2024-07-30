@@ -217,14 +217,13 @@ A[] split(A, B)(A range, B by)
     if (isIndexable!A)
 {
     A[] ret;
+    size_t l;
     range.plane!((ref i) {
-        if (i != 0)
-            ret ~= range[0..i];
+        if (l - i != 0)
+            ret ~= range[l..i];
 
-        range = range[(i + by.loadLength)..$];
-        i = 0;
+        l = i + by.loadLength;
     })(by);
-    ret ~= range[0..$];
     return ret;
 }
 
@@ -243,13 +242,13 @@ A[] split(alias F, A)(A range)
 {
     A[] ret;
     range.plane!((ref i) {
-        if (i != 0)
-            ret ~= range[0..i];
+        if (l - i != 0)
+            ret ~= range[l..i];
 
-        range = range[(i + 1)..$];
-        i = 0;
+        l = i + by.loadLength;
     }, F);
-    ret ~= range[0..$];
+    if (range.length > 0)
+        ret ~= range[0..$];
     return ret;
 }
 
