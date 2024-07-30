@@ -279,7 +279,7 @@ bool canFind(alias F, A)(A range)
  * Returns:
  *  True if all elements in `range` fulfill `F`.
  */
-size_t all(alias F, A)(A range)
+bool all(alias F, A)(A range)
     if (isForward!A)
 {
     return range.filter!F.length == range.loadLength;
@@ -295,7 +295,7 @@ size_t all(alias F, A)(A range)
  * Returns:
  *  True if any elements in `range` fulfill `F`.
  */
-size_t any(alias F, A)(A range)
+bool any(alias F, A)(A range)
     if (isForward!A)
 {
     return range.indexOf!F != -1;
