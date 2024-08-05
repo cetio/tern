@@ -97,7 +97,7 @@ size_t difference(A, B)(A comparer, B comparee)
  *  The sum of all values in `range`.
  */
 ElementType!T sum(T)(T range)
-    if (isForward!T && isIntegral!(ElementType!T))
+    if (isForward!T && isNumeric!(ElementType!T))
 {
     ElementType!T sum;
     foreach (u; range)
@@ -115,7 +115,7 @@ ElementType!T sum(T)(T range)
  *  The mean of all values in `range`.
  */
 ElementType!T mean(T)(T range)
-    if (isIndexable!T && isIntegral!(ElementType!T))
+    if (isIndexable!T && isNumeric!(ElementType!T))
 {
     return range.sum / range.loadLength;
 }

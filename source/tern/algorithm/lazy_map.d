@@ -22,10 +22,10 @@ final:
     }
 
     /// Gets the internally held range after predication.
-    T range()
+    auto range()
     {
         if (length == 0)
-            return T.init;
+            return typeof(F(ElementType!T.init))[].init;
             
         return this[0..length];
     }
@@ -36,9 +36,9 @@ final:
         length = _range.loadLength;
     }
 
-    T opSlice(ptrdiff_t start, ptrdiff_t end)
+    auto opSlice(ptrdiff_t start, ptrdiff_t end)
     {
-        T slice;
+        typeof(F(_range[start]))[] slice;
         foreach (ref u; _range)
         {
             slice ~= opIndex(start++);        
