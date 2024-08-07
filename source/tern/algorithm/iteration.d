@@ -99,7 +99,7 @@ size_t difference(A, B)(A comparer, B comparee)
 ElementType!T sum(T)(T range)
     if (isForward!T && isNumeric!(ElementType!T))
 {
-    ElementType!T sum;
+    ElementType!T sum = 0;
     foreach (u; range)
         sum += u;
     return sum;

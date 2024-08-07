@@ -250,13 +250,13 @@ public enum isDImplDefined(alias A) =
 /// True if `A` is not D implementation defined.
 public enum isOrganic(alias A) = !isDImplDefined!A;
 /// True if `T` is able to be indexed.
-public enum isIndexable(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { T t; auto _ = t[0]; });
+public enum isIndexable(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { template t(T) { T v; auto t() => v[0]; } alias x = t!T; });
 /// True if `T` is able to be index assigned.
-public enum isIndexAssignable(T) = __traits(compiles, { T t; auto _ = (t[0] = t[1]); }) && isMutable!(ElementType!T);
+public enum isIndexAssignable(T) = __traits(compiles, { template t(T) { T v; auto t() => v[0] = v[1]; } alias x = t!T; }) && isMutable!(ElementType!T);
 /// True if `T` is able to be sliced.
-public enum isSliceable(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { T t; auto _ = t[0..1]; });
+public enum isSliceable(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { template t(T) { T v; auto t() => v[0..1]; } alias x = t!T; });
 /// True if `T` is able to be slice assigned.
-public enum isSliceAssignable(T) = __traits(compiles, { T t; auto _ = (t[0..1] = t[1..2]); } && isMutable!(ElementType!T));
+public enum isSliceAssignable(T) = __traits(compiles, { template t(T) { T v; auto t() => v[0..1] = v[1..2]; } alias x = t!T; }) && isMutable!(ElementType!T);
 /// True if `T` is able to be iterated upon forwards.
 public enum isForward(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { T t; foreach (u; t) { } });
 /// True if `T` is able to be iterated upon forwards.
