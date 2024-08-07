@@ -11,7 +11,6 @@ public struct LazySubstitute(A, B, C)
     if (isForward!A && isIndexable!A && isCallable!F)
 {
     A _range;
-    alias _range this;
     
 public:
 final:
@@ -32,6 +31,7 @@ final:
             
         return this[0..length];
     }
+    alias range this;
     
     this(A _range, B from, C to)
     {

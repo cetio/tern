@@ -10,7 +10,6 @@ public struct LazyMap(alias F, T)
     if (isForward!T && isCallable!F)
 {
     T _range;
-    alias _range this;
     
 public:
 final:
@@ -29,6 +28,7 @@ final:
             
         return this[0..length];
     }
+    alias range this;
 
     this(T range)
     {
