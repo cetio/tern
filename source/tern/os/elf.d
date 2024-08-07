@@ -1,4 +1,4 @@
-module tern.elf;
+module tern.os.elf;
 
 import tern.object : Endianness;
 

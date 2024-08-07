@@ -24,18 +24,18 @@ final:
     }
 
     /// Gets the internally held range after predication.
-    T range()
+    A range()
     {
         if (length == 0)
-            return T.init;
+            return A.init;
             
         return this[0..length];
     }
     alias range this;
     
-    this(A _range, B from, C to)
+    this(A range, B from, C to)
     {
-        _range = _range;
+        _range = range;
         length = _range.loadLength;
         this.from = from;
         this.to = to;
@@ -44,6 +44,8 @@ final:
     A opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         A slice;
+        import std.stdio;
+        writeln(_range);
         foreach (ref u; _range)
         {
             slice ~= opIndex(start++);        

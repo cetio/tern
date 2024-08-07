@@ -3,7 +3,7 @@ module tern.traits;
 
 // TODO: Legacy imports, get rid of this eventually
 public import std.traits : functionAttributes, hasFunctionAttributes, functionLinkage, FunctionTypeOf,
-    ParameterDefaults, ParameterIdentifierTuple, ParameterStorageClassTuple, SetFunctionAttributes, variadicFunctionStyle,
+    ParameterDefaults, ParameterStorageClassTuple, SetFunctionAttributes, variadicFunctionStyle,
     BaseClassesTuple, BaseTypeTuple, EnumMembers, FieldNameTuple, hasStaticMember, hasNested, hasIndirections, isNested,
     RepresentationTypeTuple, TemplateArgsOf, TemplateOf, TransitiveBaseTypeTuple, InoutOf, ConstOf, SharedOf, SharedInoutOf,
     SharedConstInoutOf, SharedConstOf, ImmutableOf, QualifierOf, allSameType, ForeachType, KeyType, Largest, mostNegative,
@@ -19,20 +19,23 @@ import std.conv;
 /// Gets the partial identifier of `A` excluding all parents.
 public enum identifier(alias A) =
 {
-    static if (!__traits(compiles, { auto _ = __traits(identifier, A); }) || isType!A || isExpression!A)
+    static if (isExpression!A)
         return A.stringof;
-    else
+    static if (hasIdentifier!A)
         return __traits(identifier, A);
+    else
+        return A.stringof;
 }();
 /// Gets the full identifier of `A` including all parents.
 public enum fullIdentifier(alias A) =
 {
     // TODO: Fix, use identifier unless type or expression
     static if (hasParents!A)
-        return identifier!(Parent!A)~"."~identifier!A;
+        return fullIdentifier!(Parent!A)~"."~identifier!A;
     else
         return identifier!A;
 }();
+
 /// Gets the parent of `A`.
 public alias Parent(alias A) = __traits(parent, A);
 /// Gets the children of `A`.
@@ -56,7 +59,7 @@ public alias getChild(alias A, string M) = __traits(getMember, A, M);
 /// True if `A` has a parent `P`.
 public enum hasParent(alias A, alias P) = staticIndexOf!(P, Implements!A) != -1;
 /// True if type `B` is an instance of type `A`.
-public enum isInstanceOf(A, B) = hasParent!(A, B) || (isTemplate!A && std.traits.isInstanceOf!(A, B));
+public enum isInstanceOf(alias A, alias B) = (isTemplate!A && std.traits.isInstanceOf!(A, B)) || hasParent!(A, B);
 /// True if `A` contains any kind of aliasing.
 public enum hasAliasing(alias A) = std.traits.hasAliasing!A;
 /// True if `A` contains any kind of unshared (thread-unsafe) aliasing.
@@ -180,6 +183,8 @@ public enum isReferenceType(T) = is(T == class) || is(T == interface) || isPoint
 public enum isValueType(T) = is(T == struct) || is(T == enum) || is(T == union) || isBuiltinType!T || hasModifiers!T;
 /// True if `A` is a template.
 public enum isTemplate(alias A) = __traits(isTemplate, A);
+/// True if `A` is a template, uninstantiated or instatiated.
+public enum isTemplated(alias A) = __traits(compiles, TemplateArgsOf!A) || isTemplate!A;
 /// True if `A` is a module.
 public enum isModule(alias A) = __traits(isModule, A);
 /// True if `A` is a package.
@@ -231,9 +236,9 @@ public enum isManifest(alias A) = __traits(compiles, { enum _ = __traits(getMemb
 /// True if `A` is an implementation defined alias (ie: __ctor, std, rt, etc.)
 public enum isDImplDefined(alias A) =
 {
-    static if ((isModule!A || (isType!A && !isBuiltinType!A)) && (getPackage!A.stringof == "package std" || getPackage!A.stringof == "package rt" || getPackage!A.stringof == "package core"))
+    static if ((isModule!A || (isType!A && !isBuiltinType!A)) && (identifier!(getPackage!A) == "std" || identifier!(getPackage!A) == "rt" || identifier!(getPackage!A) == "core"))
         return true;
-    else static if (isPackage!A && (A.stringof == "package std" || A.stringof == "package rt" || A.stringof == "package core"))
+    else static if (isPackage!A && (identifier!A == "std" || identifier!A == "rt" || identifier!A == "core"))
         return true;
     else static if (isType!A && isBuiltinType!A)
         return true;
@@ -265,10 +270,12 @@ public enum isBackward(T) = isDynamicArray!T || isStaticArray!T || __traits(comp
 public enum isElement(A, B) = isAssignable!(B, ElementType!A);
 /// True if `B` is able to be used as a range the same as `A`.
 public enum isSimRange(A, B) = isAssignable!(ElementType!B, ElementType!A);
+/// True if `A` has an identifier.
+public enum hasIdentifier(alias A) = !isType!A || !isBuiltinType!A;
 /// True if `F` is a lambda.
-public enum isLambda(alias F) = __traits(identifier, F).startsWith("__lambda");
+public enum isLambda(alias F) = hasIdentifier!F && __traits(identifier, F).startsWith("__lambda");
 /// True if `F` is a dynamic lambda (templated, ie: `x => x + 1`)
-public enum isTemplatedCallable(alias F) = std.traits.isCallable!(DefaultInstance!F);
+public enum isTemplatedCallable(alias F) = isTemplate!F && isCallable!(DefaultInstantiate!F);
 /// True if `F` is a dynamic lambda (templated, ie: `x => x + 1`)
 public enum isDynamicLambda(alias F) = isLambda!F && is(typeof(F) == void);
 /// True if `F` is a function, lambda, or otherwise may be called using `(...)`
@@ -279,6 +286,19 @@ public enum isProperty(alias F) = hasUDA!(F, property);
 public enum isPure(alias F) = isCallable!F && hasFunctionAttributes!(F, "pure");
 /// True if type `A` implements type `B`.
 public enum isImplement(A, B) = staticIndexOf!(B, Implements!A) != -1;
+/// True if `A` has a frame-limited generic parameter.
+enum hasExternalFrameLimit(alias A) =
+{
+    static if (isTemplated!A)
+    static foreach (B; TemplateArgsOf!A)
+    {
+        static if (isFrameLimited!B)
+            return true;
+    }
+    return false;
+}();
+/// True if `A` is frame-limited, such as a type with a generic lambda parameter.
+public enum isFrameLimited(alias A) = isLambda!A || isDelegate!A || (isTemplated!A && hasExternalFrameLimit!A);
 /// True if `A` is not mutable (const, immutable, enum, etc.).
 public enum isMutable(alias A) =
 {
@@ -486,7 +506,7 @@ public template DefaultInstantiate(alias T)
         string ret;
         static foreach (arg; T.stringof[(T.stringof.indexOf("(") + 1)..T.stringof.indexOf(")")].split(", "))
         {
-            static if (arg.split(" ").length == 1)
+            static if (arg.split(" ").length == 1 || arg.split(" ")[0] == "alias")
                 ret ~= "void[], ";
             else
                 ret ~= arg.split(" ")[0]~".init, ";
@@ -494,18 +514,18 @@ public template DefaultInstantiate(alias T)
         return ret[0..(ret.length >= 2 ? $-2 : $)];
     }
 
-    alias defaultInstantiate = mixin("T!("~args~")");
+    alias DefaultInstantiate = mixin("T!("~args~")");
 }
 
 /// Gets the number of arguments that `F` takes, undefined or variadic.
 public enum Arity(alias F) =
 {
-    static if (F.stringof.startsWith("__lambda") && !is(typeof(F) == void))
+    static if (identifier!F.startsWith("__lambda") && !is(typeof(F) == void))
     {
         typeof(toDelegate(F)) dg;
         return Parameters!dg.length;
     }
-    static if (!F.stringof.startsWith("__lambda") || !is(typeof(F) == void))
+    static if (!identifier!F.startsWith("__lambda") || !is(typeof(F) == void))
         return Parameters!F.length;
     else
     {
@@ -551,13 +571,30 @@ public template ReturnType(alias F)
 public template Parameters(alias F)
     if (isCallable!F)
 {
-    static if (isLambda!F && !__traits(compiles, { alias _ = std.traits.Parameters!F; }))
+    static if (isTemplatedCallable!F)
+        alias ParameterIdentifiers = std.traits.ParameterIdentifierTuple!(DefaultInstantiate!F);
+    else static if (isLambda!F && !__traits(compiles, { alias _ = std.traits.Parameters!F; }))
     {
         typeof(toDelegate(F)) dg;
         alias Parameters = std.traits.Parameters!dg;
     }  
     else
         alias Parameters = std.traits.Parameters!F;
+}
+
+/// Gets the parameter identifiers of a callable symbol.
+public template ParameterIdentifiers(alias F)
+    if (isCallable!F)
+{
+    static if (isTemplatedCallable!F)
+        alias ParameterIdentifiers = std.traits.ParameterIdentifierTuple!(DefaultInstantiate!F);
+    else static if (isLambda!F && !__traits(compiles, { alias _ = std.traits.ParameterIdentifierTuple!F; }))
+    {
+        typeof(toDelegate(F)) dg;
+        alias ParameterIdentifiers = std.traits.ParameterIdentifierTuple!dg;
+    }  
+    else
+        alias ParameterIdentifiers = std.traits.ParameterIdentifierTuple!F;
 }
 
 /// Gets the element type of `T`, if applicable.  
