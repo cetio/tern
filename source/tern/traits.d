@@ -258,9 +258,9 @@ public enum isSliceable(T) = isDynamicArray!T || isStaticArray!T || __traits(com
 /// True if `T` is able to be slice assigned.
 public enum isSliceAssignable(T) = __traits(compiles, { template t(T) { T v; auto t() => v[0..1] = v[1..2]; } alias x = t!T; }) && isMutable!(ElementType!T);
 /// True if `T` is able to be iterated upon forwards.
-public enum isForward(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { T t; foreach (u; t) { } });
+public enum isForward(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { template t(T) { T v; auto t() { foreach (u; v) { } } } alias x = t!T; });
 /// True if `T` is able to be iterated upon forwards.
-public enum isBackward(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { T t; foreach_reverse (u; t) { } });
+public enum isBackward(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { template t(T) { T v; auto t() { foreach_reverse (u; v) { } } } alias x = t!T; });
 /// True if `B` is an element type of `A` (assignable as element.)
 public enum isElement(A, B) = isAssignable!(B, ElementType!A);
 /// True if `B` is able to be used as a range the same as `A`.
