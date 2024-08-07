@@ -8,7 +8,7 @@ import std.conv;
 
 /// Lazy substitute-based range implementation.
 public struct LazySubstitute(A, B, C)
-    if (isForward!A && isIndexable!A && isCallable!F)
+    if (isForward!A && isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
     A _range;
     

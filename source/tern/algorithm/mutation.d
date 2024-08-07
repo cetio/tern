@@ -73,7 +73,7 @@ LazyFilter!(F, T) filter(alias F, T)(T range)
  *  A lazy substitute of `range` using `from` and `to`.
  */
 LazySubstitute!(A, B, C) substitute(A, B, C)(A range, B from, C to)
-    if (isForward!T && isIndexable!T)
+    if (isForward!A && isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
     return LazySubstitute!(A, B, C)(range, from, to);
 }
