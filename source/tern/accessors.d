@@ -20,7 +20,8 @@ public enum exempt;
 /// Does not support multiple fields with the same enum type!
 public template accessors()
 {
-    import std.traits;
+    import tern.traits;
+    import std.traits : fullyQualifiedName;
     import std.string;
     import std.meta;
 

@@ -1,5 +1,7 @@
 module tern.os.syscall;
 
+version (Windows)
+{
 import core.sys.windows.winbase;
 import tern.os.pe;
 import tern.os.process;
@@ -47,3 +49,4 @@ shared static this()
 } */
 
 public:
+}

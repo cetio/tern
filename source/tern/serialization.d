@@ -205,3 +205,73 @@ ulong varDecode(ubyte[] bytes)
     ret = (ret << 8) | bytes[0];
     return ret >> 3;
 }
+
+/+
+// read T
+// - count
+// - condition
+// - prefixed (arrays)
+// write T
+// - count
+// - condition
+// - prefixed (arrays)
+// align
+// - bound
+// step
+// - to
+// - by
+// - until
+// run
+// - function
+// - parameters
+
+// eval stack
+// block reference
+
+package enum BlockFlags : ubyte
+{
+    Prefixed = 1 << 0,
+    NoForward = 1 << 1,
+    Success = 1 << 2,
+    Fail = 1 << 3,
+}
+
+package struct Read(T)
+{
+    BlockFlags flags;
+    size_t count;
+}
+
+package struct Write(T)
+{
+    bool condition;
+    size_t count;
+    bool prefix;
+}
+
+package struct Align
+{
+    bool condition;
+    size_t bound;
+}
+
+package struct Step(T)
+{
+    bool condition;
+    union
+    {
+        size_t to;
+        Read!T until;
+    }
+}
+
+package struct Run(F)
+{
+    bool condition;
+}
+
+public:
+T read(T, ARGS...)(ARGS args)
+{
+
+}+/

@@ -6,6 +6,24 @@ import tern.object : loadLength;
 import tern.algorithm.mutation : filter;
 import tern.functional;
 
+// TODO:
+// stdev
+// variance
+// correlation
+// covariance
+// trix
+// slope
+// linreg
+// sar
+// isar
+// adxdi
+// slant
+// sma
+// ema
+// wma
+// rva
+// volat (realized volatility)
+
 public:
 /**
  * Calculates the distance between `comparer` and `comparee`.

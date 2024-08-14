@@ -44,8 +44,6 @@ final:
     A opSlice(ptrdiff_t start, ptrdiff_t end)
     {
         A slice;
-        import std.stdio;
-        writeln(_range);
         foreach (ref u; _range)
         {
             slice ~= opIndex(start++);        

@@ -1,5 +1,7 @@
 module tern.os.process;
 
+version (Windows)
+{
 import core.sys.windows.windows;
 import core.sys.windows.tlhelp32;
 import core.sys.windows.winbase;
@@ -8,8 +10,6 @@ import std.datetime;
 import std.string;
 import std.conv;
 
-version (Windows)
-{
 public struct Process
 {
 public:
