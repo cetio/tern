@@ -1,0 +1,10 @@
+- refactor accessors
+- add block based parsing to serialization
+- streams should be serialization based
+- math functions in algorithm
+- more tests
+- os
+    - pe
+    - process
+    - syscall
+    - macho

@@ -23,7 +23,7 @@ public template accessors()
     import tern.traits;
     import std.traits : fullyQualifiedName;
     import std.string;
-    import std.meta;
+    import tern.meta;
 
     static foreach (string member; __traits(allMembers, typeof(this)))
     {

@@ -427,3 +427,33 @@ final:
         return length == 0;
     }
 }
+
+public struct series(T)
+{
+private:
+final:
+    T[] data;
+
+public:
+    string toString()
+    {
+        return data.to!string;
+    }
+
+    this(T[] data)
+    {
+        this.data = data;
+    }
+
+    ref auto opCall(size_t index) => data[index];
+
+    ref auto opOpAssign(string op)(T val)
+        if (op == "~")
+    {
+        data ~= val;
+        return this;
+    }
+
+    ref auto opIndex(size_t index) => series!T(data[0..$-index]);
+    ref auto opIndex() => data;
+}

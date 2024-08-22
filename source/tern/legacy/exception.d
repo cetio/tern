@@ -1,5 +1,5 @@
 /// Simple parser oriented throwable raising with highlighting.
-module tern.exception;
+module tern.legacy.exception;
 
 import tern.string;
 

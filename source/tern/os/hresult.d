@@ -1,5 +1,5 @@
 /// Windows `HResult` enum implementation and helper functions.
-module tern.hresult;
+module tern.os.hresult;
 
 import tern.accessors : exempt;
 
