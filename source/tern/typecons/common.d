@@ -430,11 +430,11 @@ final:
 
 public struct series(T)
 {
-private:
-final:
     T[] data;
+    alias data this;
 
 public:
+final:
     string toString()
     {
         return data.to!string;
