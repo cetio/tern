@@ -7,7 +7,7 @@
   <a href="https://raw.githubusercontent.com/cetio/tern/main/LICENSE.txt"><img src="https://img.shields.io/github/license/cetio/tern.svg" alt="GitHub repo license"/></a>
 </p>
 
-## Functional programming
+## FUNCTIONAL
 
 - `tern.algorithm` algorithms, lazy ranges, and common range functionality.
   - `tern.algorithm.iteration`
@@ -24,7 +24,7 @@
   - `renature` unflatten function to add args.
   - provides support for invoking lambdas dynamically based on arguments, ie: `(ref index, element, sum) => ...` and everything in-between.
 
-## Meta programming
+## COMPTIME
 
 - `tern.accessors` automatic accessor/property generation with support for any flags that are present.
 - `tern.object` for arbitrary and specialized fast interaction with objects.
@@ -50,7 +50,7 @@
 - `tern.typecons.variant`
   - `tern.typecons.variant.VadType` for partial mocking and arbitrary field modification/addition.
 
-## Threading
+## THREADING
 
 - `tern.atomic` improved atomic operations, built upon `core.atomic`.
 - `tern.concurrency` arbitrary threaded function execution and parallel processing
@@ -61,7 +61,7 @@
   - `juxt` call multiple functions async.
   - `denature` flatten function to remove args.
 
-## Memory
+## MEMORY
 
 - `tern.experimental.constexpr` data segment allocated type wrapper.
 - `tern.experimental.ds_allocator` data segment allocator.
@@ -72,7 +72,7 @@
 - `tern.serialization` serialization for arbitrarily typed data.
 - `tern.object` specialized storing, loading, and more.
 
-## Data
+## DATA
 
 - `tern.stream` various different performant stream implementations.
   - `tern.stream.atomic_stream`
@@ -95,7 +95,7 @@
   - `tern.os.hresult` Windows HResult.
   - `tern.os.process` Windows processes.
 
-## Cryptography
+## CRYPTO
 
 - `tern.digest` digest implementation and crypto algorithms.
   - `tern.digest.adler32`
@@ -129,7 +129,7 @@
   - `tern.digest.xxhash`
 - `tern.typecons.security.Blind` timing/power attack protected type wrapper.
 
-## Other
+## MISC
 
 - `tern.experimental.assembly` assembly shenannigans and ABI support.
 - `tern.legacy` outdated or deprecated features.
