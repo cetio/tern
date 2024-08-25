@@ -103,7 +103,7 @@ static:
  *  - If `T` has a hash function present, the output will be the output of the hash function.
  *  - If `T` has an encrypt function present, the output will be the output of the encryption function.
  */
-public auto digest(T, ARGS...)(ARGS args)
+auto digest(T, ARGS...)(ARGS args)
     if (isEncryptingDigest!T)
 {
     return T.encrypt(args);
@@ -117,7 +117,7 @@ public auto digest(T, ARGS...)(ARGS args)
  *  - If `T` has a hash function present, the output will be the output of the hash function serialized as a string.
  *  - If `T` has a decrypt function present, the output will be the output of the decryption function.
  */
-public auto ingest(T, ARGS...)(ARGS args)
+auto ingest(T, ARGS...)(ARGS args)
     if (isEncryptingDigest!T)
 {
     return T.decrypt(args);
@@ -131,7 +131,7 @@ public auto ingest(T, ARGS...)(ARGS args)
  *  - If `T` has a hash function present, the output will be the output of the hash function.
  *  - If `T` has an encrypt function present, the output will be the output of the encryption function.
  */
-public auto digest(T, ARGS...)(ARGS args)
+auto digest(T, ARGS...)(ARGS args)
     if (isHashingDigest!T)
 {
     return T.hash(args);
@@ -145,7 +145,7 @@ public auto digest(T, ARGS...)(ARGS args)
  *  - If `T` has a hash function present, the output will be the output of the hash function serialized as a string.
  *  - If `T` has a decrypt function present, the output will be the output of the decryption function.
  */
-public auto ingest(T, ARGS...)(ARGS args)
+auto ingest(T, ARGS...)(ARGS args)
     if (isHashingDigest!T)
 {
     return (serialize!true(T.hash(args))).toHexString();
@@ -166,4 +166,3 @@ string toHexString(ubyte[] data)
     }
     return ret;
 }
-
