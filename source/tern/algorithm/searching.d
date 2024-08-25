@@ -5,6 +5,7 @@ module tern.algorithm.searching;
 import tern.traits;
 import tern.typecons;
 import tern.functional;
+import tern.algorithm;
 import tern.object : loadLength;
 import tern.memory : memchr, reference;
 

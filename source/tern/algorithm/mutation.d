@@ -92,7 +92,6 @@ LazySubstitute!(A, B, C) substitute(A, B, C)(A range, B from, C to)
 A replace(A, B, C)(A range, B from, C to)
     if (isIndexable!A && isElement!(A, B) && isElement!(A, C))
 {
-    Range!A ret = range;
     ret.plane!((ref i) {
         ret[i] = from;
     })(from);
@@ -224,6 +223,8 @@ A[] split(A, B)(A range, B by)
 
         l = i + by.loadLength;
     })(by);
+    if (l < range.loadLength)
+        ret ~= range[l..$];
     return ret;
 }
 
@@ -247,8 +248,8 @@ A[] split(alias F, A)(A range)
 
         l = i + by.loadLength;
     }, F);
-    if (range.length > 0)
-        ret ~= range[0..$];
+    if (l < range.loadLength)
+        ret ~= range[l..$];
     return ret;
 }
 
