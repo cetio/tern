@@ -607,10 +607,8 @@ public template ElementType(T)
         alias ElementType = U;
     else static if (isIndexable!T)
     {
-        pragma(msg, T);
-        pragma(msg, isIndexable!T);
-        T temp;
-        alias ElementType = typeof(temp[0]);
+        T _;
+        alias ElementType = typeof(_[0]);
     }
     else
         alias ElementType = std.traits.OriginalType!T;
