@@ -257,7 +257,7 @@ public enum isDImplDefined(alias A) =
 /// True if `A` is not D implementation defined.
 public enum isOrganic(alias A) = !isDImplDefined!A;
 /// True if `T` is able to be indexed.
-public enum isIndexable(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { template t(T) { T v; auto t() => v[0]; } alias x = t!T; });
+public enum isIndexable(T) = isDynamicArray!T || isStaticArray!T || __traits(compiles, { template t(T) { T v; auto t() => v[0]; } auto x = t!T; });
 /// True if `T` is able to be index assigned.
 public enum isIndexAssignable(T) = __traits(compiles, { template t(T) { T v; auto t() => v[0] = v[1]; } alias x = t!T; }) && isMutable!(ElementType!T);
 /// True if `T` is able to be sliced.
@@ -604,11 +604,13 @@ public template ParameterIdentifiers(alias F)
 public template ElementType(T) 
 {
     static if (is(T == U[], U) || is(T == U*, U) || is(T U == U[L], size_t L))
-        alias ElementType = ElementType!U;
+        alias ElementType = U;
     else static if (isIndexable!T)
     {
+        pragma(msg, T);
+        pragma(msg, isIndexable!T);
         T temp;
-        alias ElementType = ElementType!(typeof(temp[0]));
+        alias ElementType = typeof(temp[0]);
     }
     else
         alias ElementType = std.traits.OriginalType!T;
