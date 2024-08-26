@@ -145,6 +145,8 @@ public enum isArray(T) = std.traits.isArray!T;
 public enum isDynamicArray(T) = std.traits.isDynamicArray!T;
 /// True if `T` is a static array.
 public enum isStaticArray(T) = std.traits.isStaticArray!T;
+/// True if `T` is a vector, this is any fixed-length indexable.
+public enum isVector(T) = !isDynamicArray!T && isIndexable!T && isNumeric!(ElementType!T);
 /// True if `T` is an associative array.
 public enum isAssociativeArray(T) = std.traits.isAssociativeArray!T;
 /// True if `T` is an auto-decodeable string.
@@ -271,7 +273,7 @@ public enum isElement(A, B) = isAssignable!(B, ElementType!A);
 /// True if `B` is able to be used as a range the same as `A`.
 public enum isSimRange(A, B) = isAssignable!(ElementType!B, ElementType!A);
 /// True if `A` has an identifier.
-public enum hasIdentifier(alias A) = !isType!A || !isBuiltinType!A;
+public enum hasIdentifier(alias A) = __traits(compiles, { enum _ = __traits(identifier, A); });
 /// True if `F` is a lambda.
 public enum isLambda(alias F) = hasIdentifier!F && __traits(identifier, F).startsWith("__lambda");
 /// True if `F` is a dynamic lambda (templated, ie: `x => x + 1`)
