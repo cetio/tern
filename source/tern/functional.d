@@ -210,7 +210,7 @@ public template juxt(FUNCS...)
             }
             return ret;
         }
-        
+
         mixin(makeTup) ret;
         foreach (i; parallel(iota(0, FUNCS.length)))
         {
@@ -226,12 +226,13 @@ public template juxt(FUNCS...)
 
 /**
  * Dynamically tries to barter a range based lambda.
+ * This is any function with exclusively one or more of index, element, or boolean typed parameters.
  *
  * Params:
  *  F = The lambda being fulfilled.
  *  index = The current index in the range, by ref.
  *  elem = The current element in the range, by ref.
- * 
+ *
  * Remarks:
  *  - This will barter any kind of lambda, but throws if there are more than 3 arguments.
  *  - Has no explicit parameter checking, just tries to match a call.
@@ -317,7 +318,7 @@ auto barter(alias F, A)(auto ref A elem)
             static Parameters!R[$-1] prev;
         }
     }
-        
+
     static if (isDynamicLambda!F)
     {
         static if (Arity!F == 0)
@@ -368,7 +369,7 @@ auto barter(alias F, A, B, _ = void)(A index, B elem)
             static Unqual!(Parameters!R[$-1]) prev;
         }
     }
-        
+
     static if (isDynamicLambda!F)
     {
         static if (Arity!F == 0)
@@ -409,7 +410,7 @@ auto barter(alias F, A, B, _ = void)(A index, B elem)
 
 /**
  * Iterates over every element in `range`, looking for matches.
- * 
+ *
  * Calls `C` using bartering (see `tern.lambda`) when a match is made.
  *
  * Params:
@@ -456,7 +457,7 @@ auto plane(alias C, A, B)(auto ref A range, scope B elem)
 
 /**
  * Iterates over every element in `range`, looking for matches.
- * 
+ *
  * Calls `C` using bartering (see `tern.lambda`) when a match is made.
  *
  * Params:
@@ -476,7 +477,7 @@ auto plane(alias C, A, B)(auto ref A range, scope B subrange)
         TYPE ret;
     size_t i;
     while (true)
-    {   
+    {
         auto slice = range[i..(i + subrange.loadLength)];
         if (slice != subrange)
         {
@@ -507,7 +508,7 @@ auto plane(alias C, A, B)(auto ref A range, scope B subrange)
 
 /**
  * Iterates over every element in `range`, looking for matches.
- * 
+ *
  * Calls `C` using bartering (see `tern.lambda`) when a match is made.
  *
  * Params:
@@ -554,7 +555,7 @@ auto plane(alias C, alias F, T)(auto ref T range)
 
 /**
  * Iterates over every element in `range` in reverse, looking for matches.
- * 
+ *
  * Calls `C` using bartering (see `tern.lambda`) when a match is made.
  *
  * Params:
@@ -571,7 +572,7 @@ auto planeReverse(alias C, A, B)(auto ref A range, scope B elem)
         TYPE ret;
     size_t i = range.loadLength - 1;
     while (true)
-    {  
+    {
         if (range[i] != elem)
         {
             if (--i < 0)
@@ -601,7 +602,7 @@ auto planeReverse(alias C, A, B)(auto ref A range, scope B elem)
 
 /**
  * Iterates over every element in `range` in reverse, looking for matches.
- * 
+ *
  * Calls `C` using bartering (see `tern.lambda`) when a match is made.
  *
  * Params:
@@ -634,7 +635,7 @@ auto planeReverse(alias C, A, B)(auto ref A range, scope B subrange)
             }
             continue;
         }
-            
+
         static if (RETURN)
         {
             auto ret = barter!C(i, slice);
@@ -652,7 +653,7 @@ auto planeReverse(alias C, A, B)(auto ref A range, scope B subrange)
 
 /**
  * Iterates over every element in `range` in reverse, looking for matches.
- * 
+ *
  * Calls `C` using bartering (see `tern.lambda`) when a match is made.
  *
  * Params:

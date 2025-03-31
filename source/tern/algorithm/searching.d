@@ -2,6 +2,7 @@
 module tern.algorithm.searching;
 
 // TODO: Barter?
+// TODO: Optimize.
 import tern.traits;
 import tern.typecons;
 import tern.functional;
@@ -23,7 +24,8 @@ size_t indexOf(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     static if ((B.sizeof == 1 || B.sizeof == 2 || B.sizeof == 4 ||
-        B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A))
+        B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A) &&
+        !isReferenceType!B)
     {
         if ((B.sizeof * range.loadLength) % 16 == 0)
             return memchr!0(reference!range, B.sizeof * range.loadLength, elem);
@@ -77,13 +79,14 @@ size_t lastIndexOf(A, B)(A range, B elem)
     if (isIndexable!A && isElement!(A, B))
 {
     static if ((B.sizeof == 1 || B.sizeof == 2 || B.sizeof == 4 ||
-        B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A))
+        B.sizeof == 8 || B.sizeof == 16) && (isDynamicArray!A || isStaticArray!A) &&
+        !isReferenceType!B)
     {
         if ((B.sizeof * range.loadLength) % 16 == 0)
             return memchr!1(reference!range, B.sizeof * range.loadLength, elem);
     }
 
-    foreach (i; 0..range.loadLength)
+    foreach_reverse (i; 0..range.loadLength)
     {
         if (range[i] == elem)
             return i;
@@ -118,7 +121,7 @@ size_t lastIndexOf(alias F, A)(A range)
     return -1;
 }
 
-/** 
+/**
  * Portions `range` into blocks of `blockSize`, with optional padding.
  *
  * Params:
@@ -126,7 +129,7 @@ size_t lastIndexOf(alias F, A)(A range)
  *  blockSize = The size of the blocks to be portioned.
  *  pad = Should the range be padded? Defaults to true.
  *
- * Returns: 
+ * Returns:
  *  `range` portioned into blocks of `blockSize`.
  */
 T[] portionBy(T)(ref T range, size_t blockSize, bool pad = true)
@@ -134,14 +137,14 @@ T[] portionBy(T)(ref T range, size_t blockSize, bool pad = true)
 {
     if (pad)
         range ~= new ElementType!T[blockSize - (range.loadLength % blockSize)];
-    
+
     T[] ret;
     foreach (i; 0..((range.loadLength / 8) - 1))
         ret ~= range[(i * 8)..((i + 1) * 8)];
     return ret;
 }
 
-/** 
+/**
  * Portions `range` into blocks of `blockSize`.
  *
  * Params:
@@ -149,7 +152,7 @@ T[] portionBy(T)(ref T range, size_t blockSize, bool pad = true)
  *  blockSize = The size of the blocks to be portioned.
  *  pad = Should the range be padded? Defaults to true.
  *
- * Returns: 
+ * Returns:
  *  `range` portioned into blocks of `blockSize`.
  */
 P[] portionTo(P, T)(ref T range)
@@ -159,7 +162,7 @@ P[] portionTo(P, T)(ref T range)
         range ~= new ElementType!T[P.sizeof - (range.loadLength % P.sizeof)];
     else
         static assert(Length!T % P.sizeof == 0, "Static range cannot be portioned, does not align to size!");
-    
+
     P[] ret;
     foreach (i; 0..((range.loadLength / P.sizeof) - 1))
         ret ~= *cast(P*)(&range[(i * P.sizeof)]);

@@ -55,7 +55,6 @@ auto atomicLoadElem(string ELEM, R)(ref shared R rhs)
     return mixin("rhs."~ELEM);
 }
 
-
 /// Atomically stores `lhs` in `rhs`.
 pragma(inline, true)
 void atomicStore(R, L)(ref shared R rhs, L lhs)
@@ -99,7 +98,7 @@ void atomicExchange(R, L)(ref shared R rhs, L lhs)
         mutex.lock();
         scope (exit) mutex.unlock();
         R t = lhs;
-        lhs = rhs; 
+        lhs = rhs;
         rhs = t;
     }
 }

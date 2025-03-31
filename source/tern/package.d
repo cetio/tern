@@ -1,4 +1,4 @@
-/// Tern library
+/// Tern library.
 module tern;
 
 public import tern.memory;

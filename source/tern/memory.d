@@ -17,12 +17,12 @@ public:
  * Params:
  *  DIR = Direction to count in, will find index if `DIR == 0` or last index if `DIR == 1`.
  *  mask = Mask to be counted from.
- * 
+ *
  * Returns:
  *  Number of trailing zeroes in `DIR` direction in `mask`.
  */
 pragma(inline, true)
-size_t ctz(uint DIR)(size_t mask) 
+size_t ctz(uint DIR)(size_t mask)
 {
     if (mask == 0)
         return -1;
@@ -49,12 +49,12 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
 {
     static if (T.sizeof == 16)
     {
-        __m128d val = _mm_loadu_pd(cast(double*)&elem);
+        __m128d val = _mm_loadu_pd(cast(double*)reference!elem);
         static if (DIR == 0)
         {
             foreach (i; 0..(len / 16))
             {
-                if (_mm_cmpeq_pd(_mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)), val) != 0)
+                if (_mm_movemask_pd(_mm_cmpeq_pd(_mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)), val)) != 0)
                     return i;
             }
         }
@@ -62,7 +62,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
         {
             foreach_reverse (i; 0..(len / 16))
             {
-                if (_mm_cmpeq_pd(_mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)), val) != 0)
+                if (_mm_movemask_pd(_mm_cmpeq_pd(_mm_loadu_pd(cast(double*)(cast(__m128d*)src + i)), val)) != 0)
                     return i;
             }
         }
@@ -70,7 +70,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
     }
     else static if (T.sizeof == 8)
     {
-        ulong val = *cast(ulong*)&elem;
+        ulong val = *cast(ulong*)reference!elem;
         static if (DIR == 0)
         {
             foreach (i; 0..(len / 16))
@@ -99,7 +99,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
     }
     else static if (T.sizeof == 4)
     {
-        uint val = *cast(uint*)&elem;
+        uint val = *cast(uint*)reference!elem;
         static if (DIR == 0)
         {
             foreach (i; 0..(len / 16))
@@ -128,7 +128,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
     }
     else static if (T.sizeof == 2)
     {
-        ushort val = *cast(ushort*)&elem;
+        ushort val = *cast(ushort*)reference!elem;
         static if (DIR == 0)
         {
             foreach (i; 0..(len / 16))
@@ -157,7 +157,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
     }
     else
     {
-        ubyte val = *cast(ubyte*)&elem;
+        ubyte val = *cast(ubyte*)reference!elem;
         static if (DIR == 0)
         {
             foreach (i; 0..(len / 16))
@@ -187,7 +187,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
 }
 
 /**
- * Allocates an entry of `size` 
+ * Allocates an entry of `size`
  *
  * Params:
  *  size = Size to be allocated.
@@ -209,7 +209,7 @@ size_t memchr(uint DIR, T)(const scope void* src, size_t len, const scope T elem
 @trusted void* calloc(size_t size) => tern.experimental.heap_allocator.calloc!true(size);
 
 /**
- * Reallocates `ptr` with `size`  
+ * Reallocates `ptr` with `size`
  * Tries to avoid actually doing a new allocation if possible.
  *
  * Params:
@@ -256,7 +256,7 @@ pragma(inline, true)
 }
 
 static:
-/** 
+/**
  * Copies all data from `src` to `dst` within range `0..len`.
  *
  * Params:
@@ -302,28 +302,28 @@ void memcpy(size_t len)(const scope void* src, const scope void* dst)
             _mm_storeu_pd(cast(double*)dst + i, _mm_loadu_pd(cast(__m128d*)src + i));
     }
     else static if (len % 8 == 0)
-    {            
+    {
         static foreach (i; 0..(len / 8))
             (cast(ulong*)dst)[i] = (cast(ulong*)src)[i];
     }
     else static if (len % 4 == 0)
-    {            
+    {
         static foreach (i; 0..(len / 4))
             (cast(uint*)dst)[i] = (cast(uint*)src)[i];
     }
     else static if (len % 2 == 0)
-    {            
+    {
         static foreach (i; 0..(len / 2))
             (cast(ushort*)dst)[i] = (cast(ushort*)src)[i];
     }
     else
-    {            
+    {
         static foreach (i; 0..len)
             (cast(ubyte*)dst)[i] = (cast(ubyte*)src)[i];
     }
 }
 
-/** 
+/**
  * Zeroes all bytes at `src` within range `0..len`.
  *
  * Params:
